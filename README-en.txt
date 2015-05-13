@@ -1,7 +1,7 @@
 Limit Load
 ==========
 
-An arcade cockpit flight game.
+An arcade cockpit flight game with story-driven campaigns.
 
 Visit http://www.limitload.org for more information.
 
