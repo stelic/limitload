@@ -1,0 +1,39 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-04-27 16:12+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../../src/campaigns/wotns/__init__.py:13
+msgctxt "campaign name"
+msgid "Way of the Northern Storm"
+msgstr ""
+
+#: ../../../src/campaigns/wotns/__init__.py:15
+msgctxt "campaign description"
+msgid ""
+"\n"
+"It is mid 1972 and the war in Vietnam is raging through its final chapter. United States regime is making the last push to end the conflict on their terms, while the unyielding North Vietnamese are furiously contesting the aerial onslaught. Join the two elite US Navy crewmen in their unexpected next generation fighter, or step into the cockpit of MiG-21 as a young Soviet officer volunteer to aid the people's army. The outcome of the war hangs in balance, but the breaking point is at hand. The next few weeks could prove crucial for either side.\n"
+msgstr ""
+
+#: ../../../src/campaigns/wotns/__init__.py:19
+msgctxt "campaign name, compact"
+msgid ""
+"Way\n"
+"of the\n"
+"Northern\n"
+"Storm"
+msgstr ""

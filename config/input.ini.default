@@ -1,0 +1,81 @@
+[devices]
+joystick-id = 1
+joystick-b-id = 2
+joystick-c-id = 3
+
+[actions]
+; Character keys: (only ASCII, only lower case)
+; Whitespace keys: space, tab, backspace, return
+; Control keys: arrow_left, arrow_right, arrow_down, arrow_right
+; Modifier keys: shift, control, alt (e.g. shift-z, shift-control-x)
+; Mouse buttons: mouse1, mouse2, mouse3
+; Joystick buttons: joy1, joy2, ..., joy1b, joy2b, ...
+; Joystick axes: axis1, axis2, ..., axis1b, axis2b, ...
+pitch = axis2
+pitch-up = arrow_up
+pitch-down = arrow_down
+roll = axis1
+roll-left = arrow_left
+roll-right = arrow_right
+throttle =
+throttle-up = =
+throttle-down = -
+air-brake = b, joy5
+landing-gear = g
+next-waypoint-target = tab, joy2
+deselect-target = z
+fire-weapon = space, joy1
+next-target-section = s
+next-weapon = w, joy4
+previous-weapon = q
+radar-on-off = alt-r
+radar-scale-up = shift-r
+radar-scale-down = r
+next-mfd-mode = m
+previous-mfd-mode = shift-m
+fire-decoy = d, joy3
+cockpit-light-on-off = shift-l
+eject = control-e
+view-lock-on-off = f, joy6
+cockpit-view = f1
+external-view = f2
+rear-view = f3
+target-view = f4
+fire-chaser-on-off = f5
+head-look = hat1
+head-turn =
+head-turn-left =
+head-turn-right =
+head-pitch =
+head-pitch-up =
+head-pitch-down =
+zoom-view-in = wheel_up, p
+zoom-view-out = wheel_down, o
+virtual-cockpit-on-off = alt-v
+
+[axes]
+pitch-deadzone = 0.05
+pitch-exponent = 2.0
+pitch-min = -1.0
+pitch-max = 1.0
+pitch-inverted = false
+roll-deadzone = 0.05
+roll-exponent = 2.0
+roll-min = -1.0
+roll-max = 1.0
+roll-inverted = false
+throttle-deadzone = 0.0
+throttle-exponent = 1.0
+throttle-min = -1.0
+throttle-max = 1.0
+throttle-inverted = false
+head-turn-deadzone = 0.05
+head-turn-exponent = 1.0
+head-turn-min = -1.0
+head-turn-max = 1.0
+head-turn-inverted = false
+head-pitch-deadzone = 0.05
+head-pitch-exponent = 1.0
+head-pitch-min = -1.0
+head-pitch-max = 1.0
+head-pitch-inverted = false

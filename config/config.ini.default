@@ -1,0 +1,51 @@
+[cpu]
+; Number of CPU cores to use: auto, 1, 2, 3.
+; Parallel execution may boost performance on multicore CPUs.
+use-cores = 2
+
+[video]
+; Graphics API: gl, dx8, dx9.
+api = gl
+; Resolution: desktop, <width> <height>.
+resolution = desktop
+; Full screen: true, false.
+full-screen = true
+; Antialiasing: 0, 2, 4
+multi-sampling-antialiasing = 4
+; Anisotropic filtering: 0, 4, 8, 16
+anisotropic-filtering = 16
+; Vertical sync: true, false.
+vertical-sync = false
+
+[audio]
+; Audio system: none, al, fmod.
+; It is recommended to use al unless there are errors in sound.
+sound-system = al
+
+[misc]
+; Language of in-game text: system, <code>
+; Language can be set either as default from the user environment (system),
+; or requested directly by code, which can be seen from one of available
+; language/po/limload/<code>.po files.
+language = system
+; Frame rate meter: true, false.
+frame-rate-meter = false
+
+[path]
+; Other game root directories to search.
+; Separate multiple paths by colon (:).
+; On Linux, automatically included is the root under $XDG_DATA_DIR
+; (e.g. $HOME/.local/share/limload).
+; %base% can be used to refer to base root directory in the path,
+; and %home% to user's home directory.
+root-path =
+
+[debug]
+; Game debug output level: 0, 1, 2.
+output-level = 1
+; Panda3D debug output level: fatal, error, warning, info, debug, spam.
+panda-output-level = fatal
+; Panda3D pstats profiling: true, false.
+panda-pstats = false
+; Panda3D verbose task timer: true, false.
+panda-verbose-timer = false

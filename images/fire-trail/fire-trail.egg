@@ -1,0 +1,285 @@
+<Comment> {
+  "egg-texture-cards -o fire-trail.egg fire-particles-01.png fire-particles-02.png fire-particles-03.png fire-particles-04.png fire-particles-05.png fire-particles-06.png fire-particles-07.png fire-particles-08.png fire-particles-09.png fire-particles-10.png fire-particles-11.png fire-particles-12.png fire-particles-13.png fire-particles-14.png fire-particles-15.png fire-particles-16.png fire-particles-17.png fire-particles-18.png fire-particles-19.png fire-particles-20.png fire-particles-21.png fire-particles-22.png fire-particles-23.png fire-particles-24.png fire-particles-25.png fire-particles-26.png"
+}
+<Texture> fire-particles-26 {
+  fire-particles-26.png
+}
+<Texture> fire-particles-25 {
+  fire-particles-25.png
+}
+<Texture> fire-particles-24 {
+  fire-particles-24.png
+}
+<Texture> fire-particles-23 {
+  fire-particles-23.png
+}
+<Texture> fire-particles-22 {
+  fire-particles-22.png
+}
+<Texture> fire-particles-21 {
+  fire-particles-21.png
+}
+<Texture> fire-particles-20 {
+  fire-particles-20.png
+}
+<Texture> fire-particles-19 {
+  fire-particles-19.png
+}
+<Texture> fire-particles-18 {
+  fire-particles-18.png
+}
+<Texture> fire-particles-17 {
+  fire-particles-17.png
+}
+<Texture> fire-particles-16 {
+  fire-particles-16.png
+}
+<Texture> fire-particles-15 {
+  fire-particles-15.png
+}
+<Texture> fire-particles-14 {
+  fire-particles-14.png
+}
+<Texture> fire-particles-13 {
+  fire-particles-13.png
+}
+<Texture> fire-particles-12 {
+  fire-particles-12.png
+}
+<Texture> fire-particles-11 {
+  fire-particles-11.png
+}
+<Texture> fire-particles-10 {
+  fire-particles-10.png
+}
+<Texture> fire-particles-09 {
+  fire-particles-09.png
+}
+<Texture> fire-particles-08 {
+  fire-particles-08.png
+}
+<Texture> fire-particles-07 {
+  fire-particles-07.png
+}
+<Texture> fire-particles-06 {
+  fire-particles-06.png
+}
+<Texture> fire-particles-05 {
+  fire-particles-05.png
+}
+<Texture> fire-particles-04 {
+  fire-particles-04.png
+}
+<Texture> fire-particles-03 {
+  fire-particles-03.png
+}
+<Texture> fire-particles-02 {
+  fire-particles-02.png
+}
+<Texture> fire-particles-01 {
+  fire-particles-01.png
+}
+<Group> {
+  <Switch> { 1 }
+  <Scalar> fps { 2 }
+  <VertexPool> vpool {
+    <Vertex> 0 {
+      -0.5 0.5 0
+      <UV> { 0 1 }
+    }
+    <Vertex> 1 {
+      -0.5 -0.5 0
+      <UV> { 0 0 }
+    }
+    <Vertex> 2 {
+      0.5 -0.5 0
+      <UV> { 1 0 }
+    }
+    <Vertex> 3 {
+      0.5 0.5 0
+      <UV> { 1 1 }
+    }
+  }
+  <Group> fire-particles-01 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-01 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-02 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-02 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-03 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-03 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-04 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-04 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-05 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-05 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-06 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-06 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-07 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-07 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-08 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-08 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-09 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-09 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-10 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-10 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-11 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-11 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-12 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-12 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-13 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-13 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-14 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-14 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-15 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-15 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-16 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-16 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-17 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-17 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-18 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-18 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-19 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-19 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-20 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-20 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-21 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-21 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-22 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-22 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-23 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-23 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-24 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-24 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-25 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-25 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+  <Group> fire-particles-26 {
+    <Polygon> {
+      <RGBA> { 1 1 1 1 }
+      <TRef> { fire-particles-26 }
+      <VertexRef> { 0 1 2 3 <Ref> { vpool } }
+    }
+  }
+}

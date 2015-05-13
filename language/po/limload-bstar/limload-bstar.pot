@@ -1,0 +1,37 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-04-27 16:11+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../../../src/campaigns/bstar/__init__.py:13
+msgctxt "campaign name"
+msgid "Broken Star"
+msgstr ""
+
+#: ../../../src/campaigns/bstar/__init__.py:15
+msgctxt "campaign description"
+msgid ""
+"\n"
+"The story about an old Soviet ace, his customized MiG-29 fighter, and a secretive committee, operating from deep in Siberia. Despite having been denounced in the country that was once the core of the great Union, this bunch of red commissars never gave up on the Revolution. Their actions, entangled in the chaotic political life of the Russian Federation at the turn of the new millennium, are going to get them into a variety of local intrigues and geopolitical games.\n"
+msgstr ""
+
+#: ../../../src/campaigns/bstar/__init__.py:19
+msgctxt "campaign name, compact"
+msgid ""
+"Broken\n"
+"Star"
+msgstr ""

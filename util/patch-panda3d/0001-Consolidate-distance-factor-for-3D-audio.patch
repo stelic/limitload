@@ -1,0 +1,199 @@
+From c0b2468b048b01dd9ff3c1d1ba4b3cca74ade823 Mon Sep 17 00:00:00 2001
+From: Nikola Milentijevic <nikolmiv@gmail.com>
+Date: Mon, 16 Mar 2015 22:24:29 +0100
+Subject: [PATCH] Consolidate distance factor for 3D audio
+
+The semantics of distance factor is now same for both OpenAL and Fmod.
+The value is given in units per meter, and the default is 1.0.
+This means that Panda units are understood to be meters by default.
+For example, for feet one would have to set this value to 3.28.
+---
+ panda/src/audio/audioManager.h               |  8 ++++----
+ panda/src/audiotraits/fmodAudioManager.cxx   | 11 +++--------
+ panda/src/audiotraits/fmodAudioManager.h     |  7 ++++---
+ panda/src/audiotraits/fmodAudioSound.cxx     |  3 +++
+ panda/src/audiotraits/openalAudioManager.cxx |  9 ++++-----
+ panda/src/audiotraits/openalAudioManager.h   | 10 ++++++----
+ panda/src/audiotraits/openalAudioSound.cxx   |  6 +++---
+ 7 files changed, 27 insertions(+), 27 deletions(-)
+
+diff --git a/panda/src/audio/audioManager.h b/panda/src/audio/audioManager.h
+index 4c0915a..7fc269f 100644
+--- a/panda/src/audio/audioManager.h
++++ b/panda/src/audio/audioManager.h
+@@ -166,10 +166,10 @@ PUBLISHED:
+                                                 PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
+                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
+  
+-  // Control the "relative scale that sets the distance factor" units for 3D spacialized audio. Default is 1.0
+-  // Fmod uses meters internally, so give a float in Units-per meter
+-  // Don't know what Miles uses.
+-  // Default is 1.0 which is adjust in panda to be feet.
++  // Control the "relative scale that sets the distance factor" units for 3D spacialized audio.
++  // This is a float in units-per-meter. Default value is 1.0, which means that Panda units
++  // are understood as meters; for e.g. feet, set 3.28.
++  // This factor is applied only to Fmod and OpenAL at the moment.
+   virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
+   virtual PN_stdfloat audio_3d_get_distance_factor() const;
+ 
+diff --git a/panda/src/audiotraits/fmodAudioManager.cxx b/panda/src/audiotraits/fmodAudioManager.cxx
+index 3a6a4a8..1ee2ffc 100644
+--- a/panda/src/audiotraits/fmodAudioManager.cxx
++++ b/panda/src/audiotraits/fmodAudioManager.cxx
+@@ -45,15 +45,8 @@ pset<FmodAudioManager *> FmodAudioManager::_all_managers;
+ bool FmodAudioManager::_system_is_valid = false;
+ 
+ 
+-//  This sets the distance factor for 3D audio to use feet. 
+-//  FMOD uses meters by default.
+-//  Since Panda use feet we need to compensate for that with a factor of 3.28
+-//
+-//  This can be overwritten.  You just need to call
+-//  audio_3d_set_distance_factor(PN_stdfloat factor) and set your new factor.
+-
+ PN_stdfloat FmodAudioManager::_doppler_factor = 1;
+-PN_stdfloat FmodAudioManager::_distance_factor = 3.28;
++PN_stdfloat FmodAudioManager::_distance_factor = 1;
+ PN_stdfloat FmodAudioManager::_drop_off_factor = 1;
+ 
+ 
+@@ -110,6 +103,8 @@ FmodAudioManager() {
+   _up.y = 0;
+   _up.z = 0;
+ 
++  _active = true;
++
+   _saved_outputtype = FMOD_OUTPUTTYPE_AUTODETECT;
+ 
+   if (_system == (FMOD::System *)NULL) {
+diff --git a/panda/src/audiotraits/fmodAudioManager.h b/panda/src/audiotraits/fmodAudioManager.h
+index d43933d..cde625c 100644
+--- a/panda/src/audiotraits/fmodAudioManager.h
++++ b/panda/src/audiotraits/fmodAudioManager.h
+@@ -132,9 +132,10 @@ class EXPCL_FMOD_AUDIO FmodAudioManager : public AudioManager {
+                                                 PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
+                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
+           
+-  // Control the "relative distance factor" for 3D spacialized audio. Default is 1.0
+-  // Fmod uses meters internally, so give a float in Units-per meter
+-  // Don't know what Miles uses.
++  // Control the "relative scale that sets the distance factor" units for 3D spacialized audio.
++  // This is a float in units-per-meter. Default value is 1.0, which means that Panda units
++  // are understood as meters; for e.g. feet, set 3.28.
++  // This factor is applied only to Fmod and OpenAL at the moment.
+   virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
+   virtual PN_stdfloat audio_3d_get_distance_factor() const;
+ 
+diff --git a/panda/src/audiotraits/fmodAudioSound.cxx b/panda/src/audiotraits/fmodAudioSound.cxx
+index 4b9446f..4a5c788 100644
+--- a/panda/src/audiotraits/fmodAudioSound.cxx
++++ b/panda/src/audiotraits/fmodAudioSound.cxx
+@@ -59,6 +59,9 @@ FmodAudioSound(AudioManager *manager, Filename file_name, bool positional) {
+   _velocity.y = 0;
+   _velocity.z = 0;
+ 
++  _min_dist = 1.0;
++  _max_dist = 1000000000.0;
++
+   //Play Rate Variable
+   _playrate = 1;
+ 
+diff --git a/panda/src/audiotraits/openalAudioManager.cxx b/panda/src/audiotraits/openalAudioManager.cxx
+index e87ebee..d3be901 100644
+--- a/panda/src/audiotraits/openalAudioManager.cxx
++++ b/panda/src/audiotraits/openalAudioManager.cxx
+@@ -97,7 +97,7 @@ OpenALAudioManager() {
+   _is_valid = true;
+ 
+   //Init 3D attributes
+-  _distance_factor = 3.28;
++  _distance_factor = 1;
+   _drop_off_factor = 1;
+ 
+   _position[0] = 0;
+@@ -664,11 +664,10 @@ audio_3d_get_listener_attributes(PN_stdfloat *px, PN_stdfloat *py, PN_stdfloat *
+ ////////////////////////////////////////////////////////////////////
+ //     Function: OpenALAudioManager::audio_3d_set_distance_factor
+ //       Access: Public
+-//  Description: Set units per foot
++//  Description: Set value in units per meter
+ //               WARNING: OpenAL has no distance factor but we use this as a scale
+ //                        on the min/max distances of sounds to preserve FMOD compatibility.
+ //                        Also, adjusts the speed of sound to compensate for unit difference.
+-//                        OpenAL's default speed of sound is 343.3 m/s == 1126.3 ft/s
+ ////////////////////////////////////////////////////////////////////
+ void OpenALAudioManager::
+ audio_3d_set_distance_factor(PN_stdfloat factor) {
+@@ -680,7 +679,7 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
+   alGetError(); // clear errors
+ 
+   if (_distance_factor>0) {
+-    alSpeedOfSound(1126.3*_distance_factor);
++    alSpeedOfSound(343.3*_distance_factor);
+     al_audio_errcheck("alSpeedOfSound()");
+     // resets the doppler factor to the correct setting in case it was set to 0.0 by a distance_factor<=0.0
+     alDopplerFactor(_doppler_factor);
+@@ -701,7 +700,7 @@ audio_3d_set_distance_factor(PN_stdfloat factor) {
+ ////////////////////////////////////////////////////////////////////
+ //     Function: OpenALAudioManager::audio_3d_get_distance_factor
+ //       Access: Public
+-//  Description: Sets units per foot
++//  Description: Get value in units per meter
+ ////////////////////////////////////////////////////////////////////
+ PN_stdfloat OpenALAudioManager::
+ audio_3d_get_distance_factor() const {
+diff --git a/panda/src/audiotraits/openalAudioManager.h b/panda/src/audiotraits/openalAudioManager.h
+index 0dcc0e0..787069f 100644
+--- a/panda/src/audiotraits/openalAudioManager.h
++++ b/panda/src/audiotraits/openalAudioManager.h
+@@ -88,10 +88,12 @@ class EXPCL_OPENAL_AUDIO OpenALAudioManager : public AudioManager {
+                                                 PN_stdfloat *fx, PN_stdfloat *fy, PN_stdfloat *fz,
+                                                 PN_stdfloat *ux, PN_stdfloat *uy, PN_stdfloat *uz);
+ 
+-  // Control the "relative distance factor" for 3D spacialized audio in units-per-foot. Default is 1.0
+-  // OpenAL has no distance factor but we use this as a scale
+-  // on the min/max distances of sounds to preserve FMOD compatibility.
+-  // Also, adjusts the speed of sound to compensate for unit difference.
++  // Control the "relative scale that sets the distance factor" units for 3D spacialized audio.
++  // This is a float in units-per-meter. Default value is 1.0, which means that Panda units
++  // are understood as meters; for e.g. feet, set 3.28.
++  // This factor is applied only to Fmod and OpenAL at the moment.
++  // OpenAL in fact has no distance factor like Fmod, but works with the speed of sound instead,
++  // so we use this factor to scale the speed of sound.
+   virtual void audio_3d_set_distance_factor(PN_stdfloat factor);
+   virtual PN_stdfloat audio_3d_get_distance_factor() const;
+ 
+diff --git a/panda/src/audiotraits/openalAudioSound.cxx b/panda/src/audiotraits/openalAudioSound.cxx
+index eb34d24..a5cecd7 100644
+--- a/panda/src/audiotraits/openalAudioSound.cxx
++++ b/panda/src/audiotraits/openalAudioSound.cxx
+@@ -53,7 +53,7 @@ OpenALAudioSound(OpenALAudioManager* manager,
+   _balance(0),
+   _play_rate(1.0),
+   _positional(positional),
+-  _min_dist(3.28f),
++  _min_dist(1.0f),
+   _max_dist(1000000000.0f),
+   _drop_off_factor(1.0f),
+   _length(0.0),
+@@ -745,7 +745,7 @@ set_3d_min_distance(PN_stdfloat dist) {
+     _manager->make_current();
+ 
+     alGetError(); // clear errors
+-    alSourcef(_source,AL_REFERENCE_DISTANCE,_min_dist*_manager->audio_3d_get_distance_factor());
++    alSourcef(_source,AL_REFERENCE_DISTANCE,_min_dist);
+     al_audio_errcheck("alSourcefv(_source,AL_REFERENCE_DISTANCE)");
+   }
+ }
+@@ -774,7 +774,7 @@ set_3d_max_distance(PN_stdfloat dist) {
+     _manager->make_current();
+ 
+     alGetError(); // clear errors
+-    alSourcef(_source,AL_MAX_DISTANCE,_max_dist*_manager->audio_3d_get_distance_factor());
++    alSourcef(_source,AL_MAX_DISTANCE,_max_dist);
+     al_audio_errcheck("alSourcefv(_source,AL_MAX_DISTANCE)");
+   }
+ }
+-- 
+2.1.4
+
