@@ -1,0 +1,2373 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2015-05-06 16:00+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: ../../../src/intro.py:35
+msgid ""
+"\n"
+"The stick shook, the view faded into darkness.\n"
+"There was no yielding to the inertia.\n"
+"Engines howled with the afterburner,\n"
+"pressing towards...\n"
+msgstr ""
+
+#: ../../../src/intro.py:41
+msgid "LIMIT LOAD"
+msgstr ""
+
+#: ../../../src/main.py:56
+msgctxt "game description in command-line help"
+msgid "Limit Load -- an arcade cockpit flight game."
+msgstr ""
+
+#: ../../../src/main.py:63 ../../../src/main.py:78
+msgctxt "command-line option argument pattern"
+msgid "PACK:MISSION[:ZONE]"
+msgstr ""
+
+#: ../../../src/main.py:66
+msgctxt "command-line option description"
+msgid "Start game directly on the given campaign mission. The mission starts on the mission menu, or in the mission zone if given. If empty campaign pack is given (i.e. just leading semicolon), the mission is looked for through all known campaign packs; if more than one mission is found, exits with error. If empty zone is given (i.e. just trailing semicolon), the mission starts in the default zone."
+msgstr ""
+
+#: ../../../src/main.py:81
+msgctxt "command-line option description"
+msgid "Start game directly on the given skirmish mission. The mission starts with the intro dialogue (if any), or in the mission zone if given. If empty skirmish pack is given (i.e. just leading semicolon), the mission is looked for through all known skirmish packs; if more than one mission is found, exits with error. If empty zone is given (i.e. just trailing semicolon), the mission starts in the default zone."
+msgstr ""
+
+#: ../../../src/main.py:93
+msgctxt "command-line option argument pattern"
+msgid "PACK:MISSION[:ZONE|.LOOP]"
+msgstr ""
+
+#: ../../../src/main.py:96
+msgctxt "command-line option description"
+msgid "Start game directly on the given test mission. The mission starts with the intro dialogue (if any), or in the mission zone if given. If empty test pack is given (i.e. just leading semicolon), the mission is looked for through all known test packs; if more than one mission is found, exits error. If empty zone is given (i.e. just trailing semicolon), the mission starts in the default zone. Instead of the zone, a loop extension can be given to request a particular mission loop to execute alone."
+msgstr ""
+
+#: ../../../src/main.py:110
+msgctxt "command-line option argument pattern"
+msgid "SECONDS"
+msgstr ""
+
+#: ../../../src/main.py:113
+msgctxt "command-line option description"
+msgid "Use the given fixed time step for game physics, instead of variable, rendering-dependent time step. Note that action will not run in real-time with fixed time step."
+msgstr ""
+
+#: ../../../src/main.py:121
+msgctxt "command-line option argument pattern"
+msgid "SEED[:FXSEED]"
+msgstr ""
+
+#: ../../../src/main.py:124
+msgctxt "command-line option description"
+msgid "Use the given integer number as random seed, instead of system-derived seed. If second seed is given, it is used for randomness in game effects. If negative number is given, system-derived seed is used instead."
+msgstr ""
+
+#: ../../../src/main.py:134
+msgctxt "command-line option argument pattern"
+msgid "VARIANT"
+msgstr ""
+
+#: ../../../src/main.py:137
+msgctxt "command-line option description"
+msgid "Read game configuration from config-VARIANT.ini instead of from config.ini."
+msgstr ""
+
+#: ../../../src/main.py:143
+msgctxt "command-line option argument pattern"
+msgid "ATTR=VALUE"
+msgstr ""
+
+#: ../../../src/main.py:146
+msgctxt "command-line option description"
+msgid "Set a game context attribute. Value will be converted to first possible type of integer, float, True/False/None, string. String type can be forced by prepending and appending either two dots (e.g. foo=..123..), or single or double quotes (which may need to be escaped for the shell). Can be repeated to set multiple attributes."
+msgstr ""
+
+#: ../../../src/main.py:157
+#, python-format
+msgctxt "game name with release string in command-line help"
+msgid "Limit Load %s"
+msgstr ""
+
+#: ../../../src/main.py:171
+#, python-format
+msgid "Requested game configuration file '%s' does not exist."
+msgstr ""
+
+#: ../../../src/main.py:183
+msgid "Only one of campaign, skirmish or test mission can be started directly."
+msgstr ""
+
+#: ../../../src/main.py:210
+#, python-format
+msgid "Campaign mission must be requested as PACK:MISSION[:ZONE], got '%s' instead."
+msgstr ""
+
+#: ../../../src/main.py:218
+#, python-format
+msgid "Mission '%s' does not exist in any campaign pack."
+msgstr ""
+
+#: ../../../src/main.py:221
+#, python-format
+msgid "Mission '%(m)s' exists in more than one campaign pack: %(lst)s."
+msgstr ""
+
+#: ../../../src/main.py:227
+#, python-format
+msgid "There is no campaign '%s'."
+msgstr ""
+
+#: ../../../src/main.py:229
+#, python-format
+msgid "There is no mission '%(m)s' in campaign '%(c)s'."
+msgstr ""
+
+#: ../../../src/main.py:238
+#, python-format
+msgid "Skirmish mission must be requested as PACK:MISSION[:ZONE], got '%s' instead."
+msgstr ""
+
+#: ../../../src/main.py:246
+#, python-format
+msgid "Mission '%s' does not exist in any skirmish pack."
+msgstr ""
+
+#: ../../../src/main.py:249
+#, python-format
+msgid "Mission '%(m)s' exists in more than one skirmish pack: %(lst)s."
+msgstr ""
+
+#: ../../../src/main.py:255
+#, python-format
+msgid "There is no skirmish '%s'."
+msgstr ""
+
+#: ../../../src/main.py:257
+#, python-format
+msgid "There is no mission '%(m)s' in skirmish '%(s)s'."
+msgstr ""
+
+#: ../../../src/main.py:269
+#, python-format
+msgid "Test mission must be requested as PACK:MISSION[:ZONE|.LOOP], got '%s' instead."
+msgstr ""
+
+#: ../../../src/main.py:285
+#, python-format
+msgid "Mission '%s' does not exist in any test pack."
+msgstr ""
+
+#: ../../../src/main.py:288
+#, python-format
+msgid "Mission '%(m)s' exists in more than one test pack: %(lst)s."
+msgstr ""
+
+#: ../../../src/main.py:294
+#, python-format
+msgid "There is no test '%s'."
+msgstr ""
+
+#: ../../../src/main.py:296
+#, python-format
+msgid "There is no mission '%(m)s' in test '%(t)s."
+msgstr ""
+
+#: ../../../src/main.py:307
+#, python-format
+msgid "Time step must be a real number, got '%s' instead."
+msgstr ""
+
+#: ../../../src/main.py:310
+#, python-format
+msgid "Time step must be in range (0.0, %(num1).3f], got '%(num2).3f' instead."
+msgstr ""
+
+#: ../../../src/main.py:320
+#, python-format
+msgid "Exactly one or two random seeds can be given, got %(num)d instead ('%(fmt)s')."
+msgid_plural "Exactly one or two random seeds can be given, got %(num)d instead ('%(fmt)s')."
+msgstr[0] ""
+msgstr[1] ""
+
+#: ../../../src/main.py:331
+#, python-format
+msgid "Random seed must be an integer number, got '%s' instead."
+msgstr ""
+
+#: ../../../src/main.py:345
+#, python-format
+msgid "Equal sign not found in game context attribute '%s'."
+msgstr ""
+
+#: ../../../src/main.py:371
+msgid "Starting game."
+msgstr ""
+
+#: ../../../src/main.py:401
+#, python-format
+msgid ""
+"Setting game context:\n"
+"%s"
+msgstr ""
+
+#: ../../../src/main.py:529
+#, python-format
+msgid "Game configuration field '%(fld)s' value '%(val)s' cannot be converted to type '%(typ)s'."
+msgstr ""
+
+#: ../../../src/main.py:558
+#, python-format
+msgid "Game configuration field '%(fld)s' set to inadmissible value '%(val)s' (admissible values: %(lst)s)."
+msgstr ""
+
+#: ../../../src/main.py:595
+#, python-format
+msgid "Game configuration field '%(fld)s' must have value '%(specval)s' or width and height in pixels as '<width> <height>', got '%(val)s' instead."
+msgstr ""
+
+#: ../../../src/main.py:632
+#, python-format
+msgid "Unknown game configuration section '%s'."
+msgstr ""
+
+#: ../../../src/main.py:639
+#, python-format
+msgid "Unknown game configuration field '%(fld)s' in section '%(sec)s'."
+msgstr ""
+
+#: ../../../src/main.py:673
+#, python-format
+msgid "Game configuration field '%(fld)s' contains unknown variable '%(var)s'."
+msgstr ""
+
+#: ../../../src/main.py:797
+msgctxt "input command description"
+msgid "rotate plane around pitch axis"
+msgstr ""
+
+#: ../../../src/main.py:799 ../../../src/main.py:824
+msgctxt "input command note"
+msgid "Needed when using joystick for rotation."
+msgstr ""
+
+#: ../../../src/main.py:806
+msgctxt "input command description"
+msgid "rotate plane in pitch upwards"
+msgstr ""
+
+#: ../../../src/main.py:808 ../../../src/main.py:816 ../../../src/main.py:833
+#: ../../../src/main.py:841
+msgctxt "input command note"
+msgid "Needed only when using keyboard for rotation, which is not recommended."
+msgstr ""
+
+#: ../../../src/main.py:814
+msgctxt "input command description"
+msgid "rotate plane in pitch downwards"
+msgstr ""
+
+#: ../../../src/main.py:822
+msgctxt "input command description"
+msgid "rotate plane around roll axis"
+msgstr ""
+
+#: ../../../src/main.py:831
+msgctxt "input command description"
+msgid "rotate plane in roll to the left"
+msgstr ""
+
+#: ../../../src/main.py:839
+msgctxt "input command description"
+msgid "rotate plane in roll to the right"
+msgstr ""
+
+#: ../../../src/main.py:847
+msgctxt "input command description"
+msgid "set engine throttle"
+msgstr ""
+
+#: ../../../src/main.py:849
+msgctxt "input command note"
+msgid "Needed when using a hardware throttle, on joystick or standalone."
+msgstr ""
+
+#: ../../../src/main.py:857
+msgctxt "input command description"
+msgid "increase engine throttle"
+msgstr ""
+
+#: ../../../src/main.py:859 ../../../src/main.py:866
+msgctxt "input command note"
+msgid "Needed when using keyboard for engine control."
+msgstr ""
+
+#: ../../../src/main.py:864
+msgctxt "input command description"
+msgid "decrease engine throttle"
+msgstr ""
+
+#: ../../../src/main.py:871
+msgctxt "input command description"
+msgid "deploy or retract air brake"
+msgstr ""
+
+#: ../../../src/main.py:873
+msgctxt "input command note"
+msgid "Use for quick airspeed decreases, such as in maneuvering combat or on landing, without or in addition to throttle setting."
+msgstr ""
+
+#: ../../../src/main.py:880
+msgctxt "input command description"
+msgid "lower or raise landing gear"
+msgstr ""
+
+#: ../../../src/main.py:882
+msgctxt "input command note"
+msgid "Do not forget this when landing."
+msgstr ""
+
+#: ../../../src/main.py:887
+msgctxt "input command description"
+msgid "switch to next waypoint or next target"
+msgstr ""
+
+#: ../../../src/main.py:889
+msgctxt "input command note"
+msgid "Waypoints are switched in the HUD navigation mode, and targets in the HUD weapon modes. When a target is selected, the selection can be cancelled either by holding this input pressed for a little while longer or by pressing the dedicated target deselection input."
+msgstr ""
+
+#: ../../../src/main.py:899
+msgctxt "input command description"
+msgid "cancel target selection"
+msgstr ""
+
+#: ../../../src/main.py:901
+msgctxt "input command note"
+msgid "This can be useful to recover rotation through all HUD modes, and not only through weapons with which the target can be attacked."
+msgstr ""
+
+#: ../../../src/main.py:908
+msgctxt "input command description"
+msgid "fire currently selected weapon"
+msgstr ""
+
+#: ../../../src/main.py:910
+msgctxt "input command note"
+msgid "Guns and rocket pods keep firing while the input is pressed."
+msgstr ""
+
+#: ../../../src/main.py:916
+msgctxt "input command description"
+msgid "switch to next target section"
+msgstr ""
+
+#: ../../../src/main.py:918
+msgctxt "input command note"
+msgid "Big targets have multiple sections which can be acquired."
+msgstr ""
+
+#: ../../../src/main.py:924
+msgctxt "input command description"
+msgid "switch to next weapon or to navigation"
+msgstr ""
+
+#: ../../../src/main.py:926
+msgctxt "input command note"
+msgid "Rotates through all weapon and navigation modes when target is not acquired. If a target is acquired, rotates only through weapons with which the target can be attacked."
+msgstr ""
+
+#: ../../../src/main.py:934
+msgctxt "input command description"
+msgid "switch to previous weapon or to navigation"
+msgstr ""
+
+#: ../../../src/main.py:941
+msgctxt "input command description"
+msgid "turn on or off the radar"
+msgstr ""
+
+#: ../../../src/main.py:943
+msgctxt "input command note"
+msgid "Turning the radar off can be used sometimes to sneak behind the enemies. Passive sensors (such as IRST) keep working."
+msgstr ""
+
+#: ../../../src/main.py:950
+msgctxt "input command description"
+msgid "increase the scale on the radar screen"
+msgstr ""
+
+#: ../../../src/main.py:952
+msgctxt "input command note"
+msgid "Higher scales are useful for search and engagement beyond visual range."
+msgstr ""
+
+#: ../../../src/main.py:958
+msgctxt "input command description"
+msgid "decrease the scale on the radar screen"
+msgstr ""
+
+#: ../../../src/main.py:960
+msgctxt "input command note"
+msgid "Lower scales are useful for close combat."
+msgstr ""
+
+#: ../../../src/main.py:965
+msgctxt "input command description"
+msgid "switch to next MFD mode"
+msgstr ""
+
+#: ../../../src/main.py:967
+msgctxt "input command note"
+msgid "Sometimes the MFD mode will switch automatically to support a weapon, and then it cannot be changed as long as the weapon is selected."
+msgstr ""
+
+#: ../../../src/main.py:974
+msgctxt "input command description"
+msgid "switch to previous MFD mode"
+msgstr ""
+
+#: ../../../src/main.py:981
+msgctxt "input command description"
+msgid "launch missile decoys"
+msgstr ""
+
+#: ../../../src/main.py:983
+msgctxt "input command note"
+msgid "Launch decoys only when the missile is one-two seconds away, or else they may be ineffective."
+msgstr ""
+
+#: ../../../src/main.py:989
+msgctxt "input command description"
+msgid "turn on or off the instrument panel lights"
+msgstr ""
+
+#: ../../../src/main.py:991
+msgctxt "input command note"
+msgid "Lights will normally be on or off automatically, depending on the time of day in the current zone."
+msgstr ""
+
+#: ../../../src/main.py:997
+msgctxt "input command description"
+msgid "eject from the plane"
+msgstr ""
+
+#: ../../../src/main.py:999
+msgctxt "input command note"
+msgid "Use in case of panic."
+msgstr ""
+
+#: ../../../src/main.py:1004
+msgctxt "input command description"
+msgid "enable or disable visual target tracking"
+msgstr ""
+
+#: ../../../src/main.py:1006
+msgctxt "input command note"
+msgid "Useful to quickly switch sights between the target and the HUD and instruments, which is crucial in maneuvering combat."
+msgstr ""
+
+#: ../../../src/main.py:1013
+msgctxt "input command description"
+msgid "switch to cockpit view"
+msgstr ""
+
+#: ../../../src/main.py:1020
+msgctxt "input command description"
+msgid "switch to world-oriented external view"
+msgstr ""
+
+#: ../../../src/main.py:1022
+msgctxt "input command note"
+msgid "This view keeps north-front upwards orientation independently of the plane attitude."
+msgstr ""
+
+#: ../../../src/main.py:1028
+msgctxt "input command description"
+msgid "switch to chase external view"
+msgstr ""
+
+#: ../../../src/main.py:1030
+msgctxt "input command note"
+msgid "This view is following and rotating with the plane from behind."
+msgstr ""
+
+#: ../../../src/main.py:1036
+msgctxt "input command description"
+msgid "switch to target view"
+msgstr ""
+
+#: ../../../src/main.py:1038
+msgctxt "input command note"
+msgid "This view can be activated when a target is acquired."
+msgstr ""
+
+#: ../../../src/main.py:1044
+msgctxt "input command description"
+msgid "enable or disable the missile view"
+msgstr ""
+
+#: ../../../src/main.py:1046
+msgctxt "input command note"
+msgid "If enabled, when a missile (or bomb) is launched, the view will follow the missile to destruction."
+msgstr ""
+
+#: ../../../src/main.py:1052
+msgctxt "input command description"
+msgid "look around in the cockpit"
+msgstr ""
+
+#: ../../../src/main.py:1054
+msgctxt "input command note"
+msgid "Needed when using a digital joystick hat to look around."
+msgstr ""
+
+#: ../../../src/main.py:1060
+msgctxt "input command description"
+msgid "rotate cockpit view left or right"
+msgstr ""
+
+#: ../../../src/main.py:1062 ../../../src/main.py:1088
+msgctxt "input command note"
+msgid "Needed when using an analog joystick hat to look around."
+msgstr ""
+
+#: ../../../src/main.py:1070
+msgctxt "input command description"
+msgid "rotate cockpit view to the left"
+msgstr ""
+
+#: ../../../src/main.py:1072 ../../../src/main.py:1080
+#: ../../../src/main.py:1098 ../../../src/main.py:1106
+msgctxt "input command note"
+msgid "Needed when using the keyboard to look around."
+msgstr ""
+
+#: ../../../src/main.py:1078
+msgctxt "input command description"
+msgid "rotate cockpit view to the right"
+msgstr ""
+
+#: ../../../src/main.py:1086
+msgctxt "input command description"
+msgid "rotate cockpit view up or down"
+msgstr ""
+
+#: ../../../src/main.py:1096
+msgctxt "input command description"
+msgid "rotate cockpit view upwards"
+msgstr ""
+
+#: ../../../src/main.py:1104
+msgctxt "input command description"
+msgid "rotate cockpit view downwards"
+msgstr ""
+
+#: ../../../src/main.py:1112
+msgctxt "input command description"
+msgid "zoom in current view"
+msgstr ""
+
+#: ../../../src/main.py:1114
+msgctxt "input command note"
+msgid "Decrease the FOV of the current view."
+msgstr ""
+
+#: ../../../src/main.py:1119
+msgctxt "input command description"
+msgid "zoom out current view"
+msgstr ""
+
+#: ../../../src/main.py:1121
+msgctxt "input command note"
+msgid "Increases the FOV of the current view."
+msgstr ""
+
+#: ../../../src/main.py:1126
+msgctxt "input command description"
+msgid "enable or disable virtual cockpit"
+msgstr ""
+
+#: ../../../src/main.py:1128
+msgctxt "input command note"
+msgid "A limited set of virtual cockpit indicators appear by default in some external views, and this can be used to turned them on or off."
+msgstr ""
+
+#: ../../../src/main.py:1225
+#, python-format
+msgid "Unknown input configuration field '%(fld)s' in section '%(sec)s'."
+msgstr ""
+
+#: ../../../src/main.py:1231
+#, python-format
+msgid "Missing input configuration field '%(fld)s' in section '%(sec)s', using default '%(val)s'."
+msgstr ""
+
+#: ../../../src/main.py:1247
+#, python-format
+msgid ""
+"Aborting, backtrace follows:\n"
+"%s"
+msgstr ""
+
+#: ../../../src/core/body.py:757
+msgid "(unknown)"
+msgstr ""
+
+#: ../../../src/core/body.py:757
+msgid "n/k"
+msgstr ""
+
+#: ../../../src/core/bomb.py:21 ../../../src/core/droptank.py:15
+#: ../../../src/core/jammer.py:115 ../../../src/core/podrocket.py:21
+#: ../../../src/core/rocket.py:28 ../../../src/core/shell.py:286
+msgid "generic"
+msgstr ""
+
+#: ../../../src/core/bomb.py:22
+msgid "G/BMB"
+msgstr ""
+
+#: ../../../src/core/clouds.py:235
+msgid "Constructing clouds."
+msgstr ""
+
+#: ../../../src/core/cockpit.py:533
+msgid "Autopilot:"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:548
+#, python-format
+msgid "[%(key)s] %(navpoint)s"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:1589
+msgid "R"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:1607
+msgid "IR"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:2175
+msgid "LA"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:2290
+msgid "STALL"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:2325
+msgid "GND"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:2330
+msgid "ATK"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:2335
+msgid "NAV"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:4362
+msgctxt "target information display: currently there is no target"
+msgid "NO TARGET"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:4408
+#, python-format
+msgctxt "target information display: weight to wing area"
+msgid "W/S: %s kg/m²"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:4419
+#, python-format
+msgctxt "target information display: thrust to weight"
+msgid "T/W: %s"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:4437
+#, python-format
+msgctxt "target information display: speed for best turn"
+msgid "Vturn: %s km/h"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:4448
+#, python-format
+msgctxt "target information display: speed for best climb"
+msgid "Vclimb: %s km/h"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:4476
+#, python-format
+msgctxt "target information display: class"
+msgid "CL: %s"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:4485
+#, python-format
+msgctxt "target information display: country of origin"
+msgid "OR: %s"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:4495
+#, python-format
+msgctxt "target information display: span"
+msgid "b: %(1)s/%(2)s m"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:4502
+#, python-format
+msgctxt "target information display: span"
+msgid "b: %s m"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:4511
+#, python-format
+msgctxt "target information display: weight"
+msgid "W: %s t"
+msgstr ""
+
+#: ../../../src/core/cockpit.py:4520
+#, python-format
+msgctxt "target information display: limit load factor"
+msgid "nmax: %s"
+msgstr ""
+
+#: ../../../src/core/dialog.py:1079
+#, python-format
+msgid "%(key)s. %(line)s"
+msgstr ""
+
+#: ../../../src/core/droptank.py:16
+msgid "G/TAN"
+msgstr ""
+
+#: ../../../src/core/game.py:50
+msgid "Saved games disabled."
+msgstr ""
+
+#: ../../../src/core/game.py:177
+#, python-format
+msgid "Loading campaign: %s"
+msgstr ""
+
+#: ../../../src/core/game.py:207
+#, python-format
+msgid "Starting campaign mission: %(pack)s:%(name)s"
+msgstr ""
+
+#: ../../../src/core/game.py:273
+#, python-format
+msgid "Starting skirmish mission: %(pack)s:%(name)s"
+msgstr ""
+
+#: ../../../src/core/game.py:323
+#, python-format
+msgid "Starting test mission: %(pack)s:%(name)s"
+msgstr ""
+
+#: ../../../src/core/game.py:336
+#, python-format
+msgid "Entering zone loop: %s"
+msgstr ""
+
+#: ../../../src/core/game.py:418
+msgid "Mission ended."
+msgstr ""
+
+#: ../../../src/core/game.py:423
+msgid "Restarting mission."
+msgstr ""
+
+#: ../../../src/core/game.py:429
+msgid "Quitting mission."
+msgstr ""
+
+#: ../../../src/core/game.py:518
+msgid "Quitting game."
+msgstr ""
+
+#: ../../../src/core/game.py:575
+#, python-format
+msgid "Saving game: %s"
+msgstr ""
+
+#: ../../../src/core/game.py:585
+#, python-format
+msgid "Loading game: %s"
+msgstr ""
+
+#: ../../../src/core/game.py:602
+msgid "GAME OVER"
+msgstr ""
+
+#: ../../../src/core/interface.py:512
+msgid "NO DATA"
+msgstr ""
+
+#. TRNOTE: This determines how the game name in the main menu
+#. title will be split into two pieces, which will be moved
+#. into their final position by an animation.
+#. Translate this *exactly* as one of:
+#. - horiz: title is one line, split into left and right part
+#. - vert: title is two lines, split into upper and lower part
+#: ../../../src/core/interface.py:1327
+msgctxt "title splitting type: horiz, vert"
+msgid "horiz"
+msgstr ""
+
+#. TRNOTE: If the name is split at a space character, include it
+#. either at end of left part or at start of right part.
+#: ../../../src/core/interface.py:1333
+msgctxt "game name as main menu title, left part (used when 'horiz' splitting)"
+msgid "LIMIT"
+msgstr ""
+
+#. TRNOTE: If the name is split at a space character, include it
+#. either at end of left part or at start of right part.
+#: ../../../src/core/interface.py:1338
+msgctxt "game name as main menu title, right part (used when 'horiz' splitting)"
+msgid " LOAD"
+msgstr ""
+
+#. TRNOTE: Do not include any trailing or leading space characters.
+#: ../../../src/core/interface.py:1343
+msgctxt "game name as main menu title, upper part (used when 'vert' splitting)"
+msgid "LIMIT"
+msgstr ""
+
+#. TRNOTE: Do not include any trailing or leading space characters.
+#: ../../../src/core/interface.py:1347
+msgctxt "game name as main menu title, lower part (used when 'vert' splitting)"
+msgid "LOAD"
+msgstr ""
+
+#: ../../../src/core/interface.py:1421
+msgctxt "main menu: play a campaign"
+msgid "Campaign"
+msgstr ""
+
+#: ../../../src/core/interface.py:1428
+msgctxt "main menu: play a skirmish"
+msgid "Skirmish"
+msgstr ""
+
+#: ../../../src/core/interface.py:1467
+msgctxt "main menu: quit the game"
+msgid "Quit Game"
+msgstr ""
+
+#: ../../../src/core/interface.py:1598
+msgid "CAMPAIGN"
+msgstr ""
+
+#: ../../../src/core/interface.py:1607
+msgctxt "campaign menu: start the campaign"
+msgid "Start"
+msgstr ""
+
+#: ../../../src/core/interface.py:1615
+msgctxt "campaign menu: go to the previous menu"
+msgid "Go Back"
+msgstr ""
+
+#: ../../../src/core/interface.py:1628
+msgctxt "campaign not available"
+msgid "(unavailable)"
+msgstr ""
+
+#: ../../../src/core/interface.py:1723
+msgid "LOAD GAME"
+msgstr ""
+
+#: ../../../src/core/interface.py:1732
+msgctxt "load game menu: go to the previous menu"
+msgid "Go Back"
+msgstr ""
+
+#: ../../../src/core/interface.py:1739
+msgctxt "load game menu: delete a saved game"
+msgid "Delete"
+msgstr ""
+
+#: ../../../src/core/interface.py:1748
+msgctxt "load game menu: load a saved game"
+msgid "Load"
+msgstr ""
+
+#: ../../../src/core/interface.py:1778
+msgid "Campaigns:"
+msgstr ""
+
+#: ../../../src/core/interface.py:1780 ../../../src/core/interface.py:1810
+#: ../../../src/core/interface.py:2074
+msgctxt "column name"
+msgid "Name"
+msgstr ""
+
+#: ../../../src/core/interface.py:1808
+msgid "Saved games:"
+msgstr ""
+
+#: ../../../src/core/interface.py:1940
+msgctxt "pre-campaign menu: continue the current campaign"
+msgid "Continue"
+msgstr ""
+
+#: ../../../src/core/interface.py:1949
+msgctxt "pre-campaign menu: load a saved game"
+msgid "Load Game"
+msgstr ""
+
+#: ../../../src/core/interface.py:1957
+msgctxt "pre-campaign menu: start a new campaign"
+msgid "Start New"
+msgstr ""
+
+#: ../../../src/core/interface.py:1964
+msgctxt "pre-campaign menu: go to the previous menu"
+msgid "Go Back"
+msgstr ""
+
+#: ../../../src/core/interface.py:2011
+msgid "SKIRMISH"
+msgstr ""
+
+#: ../../../src/core/interface.py:2020
+msgctxt "skirmish menu: start the skirmish mission"
+msgid "Start"
+msgstr ""
+
+#: ../../../src/core/interface.py:2028
+msgctxt "skirmish menu: go to the previous menu"
+msgid "Go Back"
+msgstr ""
+
+#: ../../../src/core/interface.py:2039
+msgctxt "skirmish difficulty"
+msgid "easy"
+msgstr ""
+
+#: ../../../src/core/interface.py:2040
+msgctxt "skirmish difficulty"
+msgid "hard"
+msgstr ""
+
+#: ../../../src/core/interface.py:2041
+msgctxt "skirmish difficulty"
+msgid "extreme"
+msgstr ""
+
+#: ../../../src/core/interface.py:2042
+msgctxt "skirmish difficulty"
+msgid "unknown"
+msgstr ""
+
+#: ../../../src/core/interface.py:2044
+msgctxt "skirmish type"
+msgid "dogfight"
+msgstr ""
+
+#: ../../../src/core/interface.py:2045
+msgctxt "skirmish type"
+msgid "ground attack"
+msgstr ""
+
+#: ../../../src/core/interface.py:2046
+msgctxt "skirmish type"
+msgid "unknown"
+msgstr ""
+
+#: ../../../src/core/interface.py:2050
+msgid "Description:"
+msgstr ""
+
+#: ../../../src/core/interface.py:2072
+msgid "Scenarios:"
+msgstr ""
+
+#: ../../../src/core/interface.py:2075
+msgctxt "column name"
+msgid "Type"
+msgstr ""
+
+#: ../../../src/core/interface.py:2076
+msgctxt "column name"
+msgid "Difficulty"
+msgstr ""
+
+#: ../../../src/core/interface.py:2208
+msgctxt "mission menu: start playing the mission"
+msgid "Mission"
+msgstr ""
+
+#: ../../../src/core/interface.py:2218
+msgctxt "mission menu: go have some relaxation"
+msgid "Vodka!"
+msgstr ""
+
+#: ../../../src/core/interface.py:2227
+msgctxt "mission menu: manage saved games"
+msgid "Archive"
+msgstr ""
+
+#: ../../../src/core/interface.py:2236
+msgctxt "mission menu: go to the main menu"
+msgid "Main Menu"
+msgstr ""
+
+#: ../../../src/core/interface.py:2350
+msgctxt "dialog menu: go to action after the dialog"
+msgid "Proceed"
+msgstr ""
+
+#: ../../../src/core/interface.py:2357
+msgctxt "dialog menu: repeat the dialog"
+msgid "Repeat"
+msgstr ""
+
+#: ../../../src/core/interface.py:2410
+msgctxt "pause menu: resume play"
+msgid "Resume"
+msgstr ""
+
+#: ../../../src/core/interface.py:2420 ../../../src/core/interface.py:2486
+#: ../../../src/core/interface.py:2543
+msgctxt "pause menu: restart the mission"
+msgid "Restart"
+msgstr ""
+
+#: ../../../src/core/interface.py:2430
+msgctxt "pause menu: show player controls"
+msgid "Controls"
+msgstr ""
+
+#: ../../../src/core/interface.py:2440 ../../../src/core/interface.py:2495
+#: ../../../src/core/interface.py:2552
+msgctxt "pause menu: quit the mission"
+msgid "Quit"
+msgstr ""
+
+#: ../../../src/core/interface.py:2504
+msgctxt "pause menu: go to action after the mission"
+msgid "Proceed"
+msgstr ""
+
+#: ../../../src/core/interface.py:2588
+msgid "CONTROLS"
+msgstr ""
+
+#: ../../../src/core/interface.py:2597
+msgctxt "controls menu: go to the previous menu"
+msgid "Go Back"
+msgstr ""
+
+#: ../../../src/core/interface.py:2616
+msgctxt "column name"
+msgid "Binding"
+msgstr ""
+
+#: ../../../src/core/interface.py:2617
+msgctxt "column name"
+msgid "Description"
+msgstr ""
+
+#: ../../../src/core/interface.py:2659
+msgid "DEBRIEFING"
+msgstr ""
+
+#: ../../../src/core/interface.py:2671
+msgid "Mission objectives completed."
+msgstr ""
+
+#: ../../../src/core/interface.py:2673
+msgid "Mission failed."
+msgstr ""
+
+#: ../../../src/core/interface.py:2700
+msgid "Airplanes shot down:"
+msgstr ""
+
+#: ../../../src/core/interface.py:2701
+msgctxt "other airplane types"
+msgid "(other)"
+msgstr ""
+
+#: ../../../src/core/interface.py:2703
+msgid "Helicopters shot down:"
+msgstr ""
+
+#: ../../../src/core/interface.py:2704
+msgctxt "other helicopter types"
+msgid "(other)"
+msgstr ""
+
+#: ../../../src/core/interface.py:2706
+msgid "Vehicles knocked out:"
+msgstr ""
+
+#: ../../../src/core/interface.py:2707
+msgctxt "other vehicle types"
+msgid "(other)"
+msgstr ""
+
+#: ../../../src/core/interface.py:2709
+msgid "Ships sunk:"
+msgstr ""
+
+#: ../../../src/core/interface.py:2710
+msgctxt "other ship types"
+msgid "(other)"
+msgstr ""
+
+#: ../../../src/core/interface.py:2712
+msgid "Buildings destroyed:"
+msgstr ""
+
+#: ../../../src/core/interface.py:2713
+msgctxt "other building types"
+msgid "(other)"
+msgstr ""
+
+#: ../../../src/core/interface.py:2744
+#, python-format
+msgctxt "vehicle type and number"
+msgid "%(type)s (%(num)d)"
+msgstr ""
+
+#: ../../../src/core/interface.py:2746
+msgctxt "string for joining list elements"
+msgid ", "
+msgstr ""
+
+#: ../../../src/core/interface.py:2764
+msgctxt "debriefing menu: go to action after the debriefing"
+msgid "Proceed"
+msgstr ""
+
+#: ../../../src/core/jammer.py:116
+msgid "G/JAM"
+msgstr ""
+
+#: ../../../src/core/misc.py:129
+#, python-format
+msgid "DBG: %s\n"
+msgstr ""
+
+#: ../../../src/core/misc.py:137
+#, python-format
+msgid "%s\n"
+msgstr ""
+
+#: ../../../src/core/misc.py:139
+#, python-format
+msgid "INFO: %s\n"
+msgstr ""
+
+#: ../../../src/core/misc.py:146
+#, python-format
+msgid "WARN: %s\n"
+msgstr ""
+
+#: ../../../src/core/misc.py:153
+#, python-format
+msgid "ERROR: %s\n"
+msgstr ""
+
+#: ../../../src/core/mission.py:139
+msgid "Loading zone..."
+msgstr ""
+
+#: ../../../src/core/mission.py:143
+msgid "First entry into this zone, generating data may take several minutes."
+msgstr ""
+
+#: ../../../src/core/mission.py:145
+#, python-format
+msgid "Switching to zone: %s"
+msgstr ""
+
+#: ../../../src/core/mission.py:188
+msgid "Loading mission..."
+msgstr ""
+
+#: ../../../src/core/mission.py:191
+msgid "First start of this mission, generating data may take several minutes."
+msgstr ""
+
+#: ../../../src/core/player.py:1225
+msgid "Running away from the fight? Turn back!"
+msgstr ""
+
+#: ../../../src/core/player.py:1226
+msgid "The enemy is in the other direction!"
+msgstr ""
+
+#: ../../../src/core/player.py:1227
+msgid "Navigation system defunct? Check the compass!"
+msgstr ""
+
+#: ../../../src/core/podrocket.py:22
+msgid "G/PRCK"
+msgstr ""
+
+#: ../../../src/core/rocket.py:29
+msgid "G/RCK"
+msgstr ""
+
+#: ../../../src/core/shell.py:287
+msgid "G/CN"
+msgstr ""
+
+#: ../../../src/core/terrain.py:665
+msgid "Constructing terrain."
+msgstr ""
+
+#: ../../../src/core/world.py:1888
+msgid "Quitting game from pause."
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:534
+msgid "prison building"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:534
+msgid "PRSN"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:539
+msgid "prison wall front"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:539
+msgid "WALLF"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:543
+msgid "prison wall back"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:543
+msgid "WALLB"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:547
+msgid "prison wall left"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:547
+msgid "WALLL"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:551
+msgid "prison wall right"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:551
+msgid "WALLR"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:555
+msgid "watchtower 1"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:555
+msgid "WTOW1"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:559
+msgid "watchtower 2"
+msgstr ""
+
+#: ../../../src/blocks/buildings.py:559
+msgid "WTOW2"
+msgstr ""
+
+#: ../../../src/blocks/helis.py:90
+msgid "Hughes AH-64 Apache"
+msgstr ""
+
+#: ../../../src/blocks/helis.py:91
+msgid "AH-64"
+msgstr ""
+
+#: ../../../src/blocks/missiontools.py:403
+msgid "Oops."
+msgstr ""
+
+#: ../../../src/blocks/missiontools.py:541
+#, python-format
+msgid "%s is shotdown."
+msgstr ""
+
+#: ../../../src/blocks/missiontools.py:587
+msgid "You abandoned the mission."
+msgstr ""
+
+#: ../../../src/blocks/missiontools.py:679
+msgid "Mission complete!"
+msgstr ""
+
+#: ../../../src/blocks/missiontools.py:692
+msgid "Mission failed..."
+msgstr ""
+
+#: ../../../src/blocks/planes.py:153
+msgid "Mikoyan-Gurevich MiG-29"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:154
+msgid "MiG-29"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:321
+msgid "Mikoyan-Gurevich MiG-29FD"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:322
+msgid "MiG-29FD"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:395
+msgid "Mikoyan-Gurevich MiG-25"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:396
+msgid "MiG-25"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:535
+msgid "Mikoyan-Gurevich MiG-31"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:536
+msgid "MiG-31"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:683
+msgid "Mikoyan-Gurevich MiG-21"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:684
+msgid "MiG-21"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:814
+msgid "Sukhoi Su-27"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:815
+msgid "Su-27"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:969
+msgid "General Dynamics F-16 Fighting Falcon"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:970
+msgid "F-16"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1122
+msgid "McDonnell-Douglas F-15 Eagle"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1123
+msgid "F-15"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1277
+msgid "McDonnell-Douglas F/A-18 Hornet"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1278
+msgid "F/A-18"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1425
+msgid "Lockheed-Martin F-22 Raptor"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1426
+msgid "F-22"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1569
+msgid "Lockheed-Martin F-35 Lightning II"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1570
+msgid "F-35B"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1698
+msgid "Grumman F-14 Tomcat"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1699
+msgid "F-14"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1846
+msgid "McDonnell-Douglas F-4 Phantom II"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1847
+msgid "F-4"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1987
+msgid "Northrop F-5E"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:1988
+msgid "F-5E"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2140
+msgid "Fairchild-Republic A-10 Thunderbolt II"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2141
+msgid "A-10"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2295
+msgid "Dassault Mirage 2000"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2296
+msgid "Mirage 2000"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2437
+msgid "Lockheed F-117 Nighthawk"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2438
+msgid "F-117"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2556
+msgid "Grumman EA-6B Prowler"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2557
+msgid "EA-6B"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2689
+msgid "Rockwell B-1B Lancer"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2690
+msgid "B-1B"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2750 ../../../src/blocks/planes.py:3193
+#: ../../../src/blocks/planes.py:3563 ../../../src/blocks/planes.py:3862
+#: ../../../src/blocks/planes.py:4179 ../../../src/blocks/planes.py:4480
+#: ../../../src/blocks/planes.py:4798 ../../../src/blocks/planes.py:5206
+#: ../../../src/blocks/planes.py:5731 ../../../src/blocks/vehicles.py:485
+msgid "hull"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2750 ../../../src/blocks/planes.py:3193
+#: ../../../src/blocks/planes.py:3563 ../../../src/blocks/planes.py:3862
+#: ../../../src/blocks/planes.py:4179 ../../../src/blocks/planes.py:4480
+#: ../../../src/blocks/planes.py:4798 ../../../src/blocks/planes.py:5206
+#: ../../../src/blocks/planes.py:5731 ../../../src/blocks/vehicles.py:485
+msgid "HULL"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2754
+msgid "right engine"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2754
+msgid "RENG"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2758
+msgid "left engine"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2758
+msgid "LENG"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2764 ../../../src/blocks/planes.py:3223
+#: ../../../src/blocks/planes.py:3586 ../../../src/blocks/planes.py:3885
+#: ../../../src/blocks/planes.py:4204 ../../../src/blocks/planes.py:4503
+#: ../../../src/blocks/planes.py:4831 ../../../src/blocks/planes.py:5229
+#: ../../../src/blocks/planes.py:5758
+msgid "right wing"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2764 ../../../src/blocks/planes.py:3223
+#: ../../../src/blocks/planes.py:3586 ../../../src/blocks/planes.py:3885
+#: ../../../src/blocks/planes.py:4204 ../../../src/blocks/planes.py:4503
+#: ../../../src/blocks/planes.py:4831 ../../../src/blocks/planes.py:5229
+#: ../../../src/blocks/planes.py:5758
+msgid "RWNG"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2770 ../../../src/blocks/planes.py:3229
+#: ../../../src/blocks/planes.py:3593 ../../../src/blocks/planes.py:3892
+#: ../../../src/blocks/planes.py:4213 ../../../src/blocks/planes.py:4510
+#: ../../../src/blocks/planes.py:4840 ../../../src/blocks/planes.py:5236
+#: ../../../src/blocks/planes.py:5769
+msgid "left wing"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2770 ../../../src/blocks/planes.py:3229
+#: ../../../src/blocks/planes.py:3593 ../../../src/blocks/planes.py:3892
+#: ../../../src/blocks/planes.py:4213 ../../../src/blocks/planes.py:4510
+#: ../../../src/blocks/planes.py:4840 ../../../src/blocks/planes.py:5236
+#: ../../../src/blocks/planes.py:5769
+msgid "LWNG"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2774
+msgid "tail"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:2774
+msgid "TAIL"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3095
+msgid "Boeing B-52F Stratofortress"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3096
+msgid "B-52F"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3197 ../../../src/blocks/planes.py:3567
+#: ../../../src/blocks/planes.py:3866 ../../../src/blocks/planes.py:4183
+#: ../../../src/blocks/planes.py:4484 ../../../src/blocks/planes.py:4802
+#: ../../../src/blocks/planes.py:5210 ../../../src/blocks/planes.py:5735
+msgid "right engine 1"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3197 ../../../src/blocks/planes.py:3567
+#: ../../../src/blocks/planes.py:3866 ../../../src/blocks/planes.py:4183
+#: ../../../src/blocks/planes.py:4484 ../../../src/blocks/planes.py:4802
+#: ../../../src/blocks/planes.py:5210 ../../../src/blocks/planes.py:5735
+msgid "RENG1"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3201 ../../../src/blocks/planes.py:3571
+#: ../../../src/blocks/planes.py:3870 ../../../src/blocks/planes.py:4187
+#: ../../../src/blocks/planes.py:4488 ../../../src/blocks/planes.py:4806
+#: ../../../src/blocks/planes.py:5214 ../../../src/blocks/planes.py:5739
+msgid "left engine 1"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3201 ../../../src/blocks/planes.py:3571
+#: ../../../src/blocks/planes.py:3870 ../../../src/blocks/planes.py:4187
+#: ../../../src/blocks/planes.py:4488 ../../../src/blocks/planes.py:4806
+#: ../../../src/blocks/planes.py:5214 ../../../src/blocks/planes.py:5739
+msgid "LENG1"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3205 ../../../src/blocks/planes.py:3575
+#: ../../../src/blocks/planes.py:3874 ../../../src/blocks/planes.py:4191
+#: ../../../src/blocks/planes.py:4492 ../../../src/blocks/planes.py:4810
+#: ../../../src/blocks/planes.py:5218 ../../../src/blocks/planes.py:5743
+msgid "right engine 2"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3205 ../../../src/blocks/planes.py:3575
+#: ../../../src/blocks/planes.py:3874 ../../../src/blocks/planes.py:4191
+#: ../../../src/blocks/planes.py:4492 ../../../src/blocks/planes.py:4810
+#: ../../../src/blocks/planes.py:5218 ../../../src/blocks/planes.py:5743
+msgid "RENG2"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3209 ../../../src/blocks/planes.py:3579
+#: ../../../src/blocks/planes.py:3878 ../../../src/blocks/planes.py:4195
+#: ../../../src/blocks/planes.py:4496 ../../../src/blocks/planes.py:4814
+#: ../../../src/blocks/planes.py:5222 ../../../src/blocks/planes.py:5747
+msgid "left engine 2"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3209 ../../../src/blocks/planes.py:3579
+#: ../../../src/blocks/planes.py:3878 ../../../src/blocks/planes.py:4195
+#: ../../../src/blocks/planes.py:4496 ../../../src/blocks/planes.py:4814
+#: ../../../src/blocks/planes.py:5222 ../../../src/blocks/planes.py:5747
+msgid "LENG2"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3213 ../../../src/blocks/planes.py:4818
+msgid "right tank"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3213 ../../../src/blocks/planes.py:4818
+msgid "RTNK"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3217 ../../../src/blocks/planes.py:4822
+msgid "left tank"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3217 ../../../src/blocks/planes.py:4822
+msgid "LTNK"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3505
+msgid "Boeing E-3 Sentry"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3506
+msgid "E-3B"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3597
+msgid "radar dome"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3597
+msgid "RADO"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3806
+msgid "Ilyushin Il-76"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:3807
+msgid "Il-76"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:4120
+msgid "Antonov An-124"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:4121
+msgid "An-124"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:4417
+msgid "Antonov An-12"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:4418
+msgid "An-12"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:4737
+msgid "Lockheed C-130 Hercules"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:4738
+msgid "C-130"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:5148
+msgid "Boeing KC-135 Stratotanker"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:5149
+msgid "KC-135"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:5497
+msgid "Yakovlev Yak-40"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:5498
+msgid "Yak-40"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:5654
+msgid "Boeing 747-400"
+msgstr ""
+
+#: ../../../src/blocks/planes.py:5655
+msgid "B-747/4"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:19 ../../../src/blocks/ships.py:20
+msgid "Ticonderoga"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:54 ../../../src/blocks/ships.py:55
+msgid "Atlantis"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:89 ../../../src/blocks/ships.py:90
+msgid "Gun Boat"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:122 ../../../src/blocks/ships.py:123
+#: ../../../src/blocks/ships.py:423 ../../../src/blocks/ships.py:424
+msgid "Oil Platform"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:138 ../../../src/blocks/ships.py:438
+msgid "platform"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:138 ../../../src/blocks/ships.py:438
+msgid "PLAT"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:142 ../../../src/blocks/ships.py:458
+msgid "helipad"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:142 ../../../src/blocks/ships.py:458
+msgid "HPAD"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:147 ../../../src/blocks/ships.py:463
+msgid "construction1"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:147 ../../../src/blocks/ships.py:463
+msgid "CNS1"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:151 ../../../src/blocks/ships.py:473
+msgid "installation1"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:151 ../../../src/blocks/ships.py:473
+msgid "INS1"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:155 ../../../src/blocks/ships.py:477
+msgid "installation2"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:155 ../../../src/blocks/ships.py:477
+msgid "INS2"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:159 ../../../src/blocks/ships.py:481
+msgid "installation3"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:159 ../../../src/blocks/ships.py:481
+msgid "INS3"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:163
+msgid "installation4"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:163
+msgid "INS4"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:168
+msgid "installation5"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:168
+msgid "INS5"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:195
+msgid "sam1"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:195
+msgid "SAM1"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:201
+msgid "sam2"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:201
+msgid "SAM2"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:442
+msgid "leg1"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:442
+msgid "LEG1"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:446
+msgid "leg2"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:446
+msgid "LEG2"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:450
+msgid "leg3"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:450
+msgid "LEG3"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:454
+msgid "leg4"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:454
+msgid "LEG4"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:468
+msgid "construction2"
+msgstr ""
+
+#: ../../../src/blocks/ships.py:468
+msgid "CNS2"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:19 ../../../src/blocks/vehicles.py:20
+msgid "Ural-375"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:65 ../../../src/blocks/vehicles.py:66
+msgid "UAZ-469"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:114
+msgid "UAZ-469 modified"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:115
+msgid "UAZ-469(m)"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:164 ../../../src/blocks/vehicles.py:165
+msgid "T-80"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:204
+msgid "9K22 Tunguska"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:205
+msgid "9K22"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:268 ../../../src/blocks/vehicles.py:269
+msgid "BTR-80"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:307
+msgid "M1 Abrams"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:308
+msgid "M1"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:348
+msgid "M2 Bradley"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:349
+msgid "M2"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:386
+msgid "M2(AA)"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:387
+msgid "M2 Bradley Anti-Aircraft"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:424
+msgid "M1126 Stryker"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:425
+msgid "M1126"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:461 ../../../src/blocks/vehicles.py:462
+msgid "TK-1"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:489
+msgid "rhull"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:489
+msgid "RHULL"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:494
+msgid "turret main"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:494
+msgid "TURM"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:498
+msgid "turret side left"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:498
+msgid "TURSL"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:502
+msgid "turret side right"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:502
+msgid "TURSR"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:506
+msgid "turret anti air 1"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:506
+msgid "TURAA1"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:510
+msgid "turret anti air 5"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:510
+msgid "TURAA5"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:514
+msgid "turret anti air 6"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:514
+msgid "TURAA6"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:519
+msgid "wheel 1"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:519
+msgid "WHEEL1"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:523
+msgid "wheel 2"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:523
+msgid "WHEEL2"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:527
+msgid "wheel 3"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:527
+msgid "WHEEL3"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:531
+msgid "wheel 4"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:531
+msgid "WHEEL4"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:535
+msgid "wheel 5"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:535
+msgid "WHEEL5"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:539
+msgid "wheel 6"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:539
+msgid "WHEEL6"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:543
+msgid "wheel 7"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:543
+msgid "WHEEL7"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:547
+msgid "wheel 8"
+msgstr ""
+
+#: ../../../src/blocks/vehicles.py:547
+msgid "WHEEL8"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:30
+msgid "7.62×54 mm R"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:31
+msgid "7.62 mm"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:51
+msgid "12.7×99 mm NATO"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:52
+msgid "12.7 mm"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:72
+msgid "20×102 mm"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:73
+msgid "20 mm"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:93
+msgid "23×115 mm"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:94
+msgid "23 mm"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:114
+msgid "30×165 mm"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:115
+msgid "30 mm"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:135
+msgid "30×173 mm DU"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:136
+msgid "30 mm DU"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:156
+msgid "40×364 mm R"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:157
+msgid "40 mm"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:176
+msgid "Kalashnikov PKM"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:177
+msgid "PKM"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:198
+msgid "Browning M3"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:199
+msgid "M3"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:220
+msgid "Gryazev-Shipunov GSh-23"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:221
+msgid "GSh-23"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:242
+msgid "Gryazev-Shipunov GSh-301"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:243
+msgid "GSh-301"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:265
+msgid "Gryazev-Shipunov GSh-6-23"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:266
+msgid "GSh-6-23"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:287
+msgid "Nudelman-Rikhter NR-23"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:288
+msgid "NR-23"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:309
+msgid "Tulmashzavod 2A38M"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:310
+msgid "2A38M"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:331
+msgid "General Dynamics M61 Vulcan"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:332
+msgid "M61"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:353
+msgid "Hughes M230"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:354
+msgid "M230"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:375
+msgid "Dassault Aviation DEFA 554"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:376
+msgid "DEFA 554"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:397
+msgid "Pontiac M39"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:398
+msgid "M39"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:419
+msgid "General Electric GAU-8/A Avenger"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:420
+msgid "GAU-8/A"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:441
+msgid "Bofors L/70"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:442
+msgid "L/70"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:464
+msgid "Vympel R-13"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:465
+msgid "R-13"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:525
+msgid "Vympel R-60"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:526
+msgid "R-60"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:587
+msgid "Vympel R-73"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:588
+msgid "R-73"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:650
+msgid "Vympel R-27"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:651
+msgid "R-27"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:713
+msgid "Vympel R-77"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:714
+msgid "R-77"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:776
+msgid "Zvezda Kh-25"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:777 ../../../src/blocks/weapons.py:778
+msgid "Kh-25"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:840
+msgid "Raduga Kh-59"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:841
+msgid "Kh-59"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:903
+msgid "Almaz S-200 Dubna"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:904
+msgid "S-200"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:965
+msgid "Kolomna Igla"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:966
+msgid "Igla"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1026
+msgid "Raytheon FIM-92 Stinger"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1027
+msgid "FIM-92"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1087
+msgid "Raytheon AIM-7 Sparrow"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1088
+msgid "AIM-7"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1149
+msgid "Raytheon AIM-9 Sidewinder"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1150
+msgid "AIM-9"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1211
+msgid "Raytheon AIM-120 AMRAAM"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1212
+msgid "AIM-120"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1273
+msgid "Raytheon RIM-156 Standard SM-2ER"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1274
+msgid "RIM-156"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1335
+msgid "Raytheon AGM-65 Maverick"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1336
+msgid "AGM-65"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1397
+msgid "Raytheon BGM-109 Tomahawk"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1398
+msgid "BGM-109"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1459 ../../../src/blocks/weapons.py:1460
+msgid "S-8"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1511 ../../../src/blocks/weapons.py:1512
+msgid "RPG-7"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1680 ../../../src/blocks/weapons.py:1681
+msgid "FAB-500"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1705
+msgid "Mark 84 Hammer"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1706
+msgid "Mk 84"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1729
+msgid "EDO Corporation AN/ALQ-99"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1730
+msgid "ALQ-99"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1747 ../../../src/blocks/weapons.py:1748
+msgid "PTB-1150"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1763 ../../../src/blocks/weapons.py:1764
+msgid "PTB-1500"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1779
+msgid "USAF 370 gal"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1780
+msgid "US-370"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1795
+msgid "USAF 600 gal"
+msgstr ""
+
+#: ../../../src/blocks/weapons.py:1796
+msgid "US-600"
+msgstr ""

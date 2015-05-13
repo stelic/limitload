@@ -5,10 +5,10 @@
 *.pyd
 *.lib
 *.mo
-limload
-limload.exe
-cache
-save
-log
-util/build_setup
-config/*.ini
+/limload
+/limload.exe
+/cache
+/save
+/log
+/util/build_setup
+/config/*.ini
