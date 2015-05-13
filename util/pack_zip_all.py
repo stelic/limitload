@@ -2,7 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 from argparse import ArgumentParser
-from glob import fnmatch
+from glob import fnmatch, glob
 import os
 import sys
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -89,6 +89,9 @@ def pack_zip_winmsvc (pkg_dir_path, pkg_name,
     root_rename = [
         #("foo", "bar"),
     ]
+    root_rename.extend(
+        (fp, fp.replace(".rst", ".txt")) for fp in glob("README-*.rst")
+    )
     abs_pkg_dir_path = os.path.abspath(pkg_dir_path)
     abs_root_dir_path = os.path.abspath(root_dir_path)
     if abs_pkg_dir_path.startswith(abs_root_dir_path + os.path.sep):
