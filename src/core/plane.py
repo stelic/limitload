@@ -1522,7 +1522,7 @@ class Plane (Body):
         self._wait_damage_recovery = self.dmgtime
 
         if self.failure_level >= self.max_failure_level:
-            self.set_shotdown(3.5)
+            self.set_shotdown(3.0)
             self.target = None
 
             d100 = randrange(100)

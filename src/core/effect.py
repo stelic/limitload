@@ -40,7 +40,7 @@ def fire_n_smoke (parent, store=None,
         s2scl1 = 0.020 #0.028
         s2scl2 = 0.108 #0.054
     else:
-        fscl1 = 0.013#0.013
+        fscl1 = 0.014#0.013
         fscl2 = 0.028#0.020
         s2scl1 = 0.020 #0.028
         s2scl2 = 0.108 #0.054
