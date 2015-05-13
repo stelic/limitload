@@ -79,6 +79,7 @@ def pack_zip_winmsvc (pkg_dir_path, pkg_name,
         os.path.join("save", "*"),
         os.path.join("cache", "*"),
         os.path.join("log", "*"),
+        os.path.join("README.rst"),
     ]
     root_unix2dos_glob = [
         "README*.rst",
