@@ -3002,21 +3002,8 @@ class B1b (Plane):
             self._failure_full = True
         if self._hbx_tail.hitpoints <= 0 and not self._hbx_tail.out:
             self.explode_minor(offset=self._hbx_tail.center)
-            d100 = randrange(100)
-            if d100 < 50:
-                breakupdata = [breakup_small_right("stabilator_right")]
-                remove_subnodes(self._shotdown_modelnode, ("stabilator_right"))
-            else:
-                breakupdata = [breakup_small_left("stabilator_left")]
-                remove_subnodes(self._shotdown_modelnode, ("stabilator_left"))
-            breakupdata.extend([
-                breakup_small_left("rudder_upper"),
-                breakup_small_back("rudder_middle"),
-                breakup_small_right("rudder_lower")
-                ])
             remove_subnodes(self._shotdown_modelnode, ("turret_doors", "tail_misc"))
             remove_subnodes(self.modelnode, ("turret_door_up", "turret_door_down"))
-            Breakup(self, breakupdata)
             self.turrets[0].destroy()
             self._hbx_tail.out = True
 
