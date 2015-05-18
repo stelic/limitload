@@ -103,7 +103,7 @@ def zone_zero_loop (zc, mc, gc):
     waves = 4
     while True:
         if waves > 0 and all(ac.shotdown for ac in zc.enemyplanegroup) and zc.player and zc.player.ac.alive:
-            pos = pos_from_horiz(zc.player.ac, Point3(choice([-2000, 0, 2000]), choice([-10000, -5000, 4000, 5000, 10000]), randrange(4000, 7000)), absz=True)
+            pos = pos_from_horiz(zc.player.ac, Point3(choice([-4000, 2000, 0, 2000, 4000]), choice([-10000, -7000, 7000, 10000]), randrange(4000, 7000)), absz=True)
             hpr = hpr_from_horiz(zc.player.ac, Vec3(choice([0, 180]), 0, 0))
             d3 = choice([0, 1, 2])
             if d3 == 0:
@@ -142,8 +142,8 @@ def zone_zero_loop (zc, mc, gc):
                               speed=200,
                               lnammo=[(None, 4), (Aim9, 2), (None, 2)])
                 zc.enemyplanegroup.append(enemyac)
-                d2 = choice([0, 1])
-                if d2 == 1:
+                d100 = randrange(100)
+                if d100 > 80:
                     enemyac1 = F14(world=zc.world, name="blue1", side="usaf",
                                    texture="models/aircraft/f14/f14_tex.png",
                                    fuelfill=0.50,
