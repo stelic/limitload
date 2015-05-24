@@ -2385,8 +2385,8 @@ class Plane (Body):
                 contact = min(contacts_selected)[1]
                 return contact.body, 5
 
-        # Collect attackable contacts by family
-        # and sort by increasing distance within each family.
+        # Find first family with an attackabe contact,
+        # and sort by increasing distance within that family.
         contacts_by_family = self.sensorpack.contacts_by_family()
         contacts_selected = []
         for family in families:
@@ -2396,6 +2396,8 @@ class Plane (Body):
                 if contact.side not in allied_sides and contact.pos is not None:
                     condist = (self.pos() - contact.pos).length()
                     contacts_selected.append((condist, contact))
+            if contacts_selected:
+                break
         if contacts_selected:
             contact = min(contacts_selected)[1]
             return contact.body, 0
