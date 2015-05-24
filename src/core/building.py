@@ -40,6 +40,7 @@ class Building (Body):
     modelscale = 1.0
     modeloffset = Point3()
     modelrot = Vec3()
+    castshadow = True
     shdmodelpath = None
     glowmap = rgba(0,0,0, 0.1)
     glossmap = None
@@ -70,11 +71,15 @@ class Building (Body):
             z1 = pos[2]
         pos1 = Point3(pos[0], pos[1], z1)
 
-        if isinstance(self.modelpath, basestring):
-            shdmodind = 0
-        elif self.modelpath:
-            shdmodind = min(len(self.modelpath) - 1, 1)
+        if self.castshadow:
+            if isinstance(self.modelpath, basestring) and self.castshadow:
+                shdmodind = 0
+            elif self.modelpath:
+                shdmodind = min(len(self.modelpath) - 1, 1)
+            else:
+                shdmodind = None
         else:
+            self.shdmodelpath = None
             shdmodind = None
 
         Body.__init__(self,
@@ -251,7 +256,8 @@ class CustomBuilding (Building):
                   pos=None, hpr=None, sink=None,
                   damage=None, burns=True,
                   destfirepos=None, destoffparts=[], desttexture=None,
-                  distraise=[], longdes=None, shortdes=None):
+                  distraise=[], castshadow=True, shdmodelpath=None,
+                  longdes=None, shortdes=None):
 
         self.strength = strength
         self.minhitdmg = minhitdmg
@@ -264,6 +270,8 @@ class CustomBuilding (Building):
         self.destfirepos = destfirepos
         self.destoffparts = destoffparts
         self.distraise = distraise
+        self.castshadow = castshadow
+        self.shdmodelpath = shdmodelpath
         self.longdes = longdes
         self.shortdes = shortdes
         if desttexture:
