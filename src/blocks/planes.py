@@ -193,9 +193,9 @@ class Mig29 (Plane):
     maxlandrollangle = radians(20.0)
     reldragwheelbrake = 20.0
     reldragwheel = 1.0
-    groundcontact = [Point3(0.0, 3.0, -1.5),
-                     Point3(1.5, -0.5, -1.5),
-                     Point3(-1.5, -0.5, -1.5)]
+    groundcontact = [Point3(0.0, 3.0, -1.7),
+                     Point3(1.5, -0.5, -1.7),
+                     Point3(-1.5, -0.5, -1.7)]
 
     strength = 8.0
     minhitdmg = 0.0
