@@ -1395,7 +1395,7 @@ class PlaneDynamics (object):
         l_cn = p_n.length()
         l_cm = p_m.length()
         l_mn = (p_m - p_n).length()
-        l_s = (l_cn + l_cm + l_mn) / 3
+        l_s = (l_cn + l_cm + l_mn) / 2
         S = sqrt(l_s * (l_s - l_cn) * (l_s - l_cm) * (l_s - l_mn))
         h_mn = 2.0 * S / l_mn
         lghn = h_mn
