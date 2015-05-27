@@ -1283,7 +1283,7 @@ class F18 (Plane):
     wingaspect = 3.5
     wingspeff = 0.80
     zlaoa = radians(-2.0)
-    maxaoa = radians(26.0)
+    maxaoa = radians(22.0)
     maxthrust = 49e3 * 2
     maxthrustab = 79e3 * 2
     thrustincab = 1.3
