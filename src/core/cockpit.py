@@ -1105,6 +1105,8 @@ class Cockpit (object):
         self._instr_night_light_on = False
         self.light_on_off(on=self._instr_night_light_on, auto=True)
 
+        self._sounds_inited = False
+
         self.active = False
         self._prev_active = None
         self.node.hide()
@@ -1158,6 +1160,9 @@ class Cockpit (object):
             self._update_aimzoom(dt)
             for upf in self._instr_update_fs:
                 upf(dt)
+
+        # Always on, must track state.
+        self._update_sounds(dt)
 
         self._prev_player_control_level = self.world.player_control_level
 
@@ -1511,6 +1516,70 @@ class Cockpit (object):
             self._view_force_fov_off = self._view_aim_fov_off
         else:
             self._view_force_fov_off = None
+
+
+    def _init_sounds (self):
+
+        self._airbrake_flow_sound = Sound2D(
+            path="audio/sounds/cockpit-mig29-airbrake-flow.ogg",
+            world=self.world, pnode=self.node,
+            volume=0.2, loop=True)
+        self._prev_airbrake_active = self.player.ac.dynstate.fld
+
+        self._lgear_up_sound = Sound2D(
+            path="audio/sounds/cockpit-mig29-gearsup.ogg",
+            world=self.world, pnode=self.node,
+            volume=0.5, loop=False)
+        self._lgear_down_sound = Sound2D(
+            path="audio/sounds/cockpit-mig29-gearsdn.ogg",
+            world=self.world, pnode=self.node,
+            volume=0.5, loop=False)
+        self._lgear_flow_sound = Sound2D(
+            path="audio/sounds/cockpit-mig29-airbrake-flow.ogg",
+            world=self.world, pnode=self.node,
+            volume=0.1, loop=True)
+        self._prev_lgear_active = self.player.ac.dynstate.lg
+
+        self._flarechaff_launch_sound = Sound2D(
+            path="audio/sounds/cockpit-flare.ogg",
+            world=self.world, pnode=self.node,
+            volume=0.5, loop=False)
+        self._prev_flarechaff_count = self.player.ac.flarechaff
+
+
+    def _update_sounds (self, dt):
+
+        if not self._sounds_inited:
+            # This has to happen here instead of in the constructor
+            # in order that ac.dynstate is available.
+            self._init_sounds()
+            self._sounds_inited = True
+
+        airbrake_active = self.player.ac.dynstate.brd
+        if self._prev_airbrake_active != airbrake_active:
+            self._prev_airbrake_active = airbrake_active
+            if airbrake_active:
+                self._airbrake_flow_sound.play(fadetime=1.0)
+            else:
+                self._airbrake_flow_sound.stop(fadetime=1.0)
+
+        lgear_active = self.player.ac.dynstate.lg
+        if self._prev_lgear_active != lgear_active:
+            self._prev_lgear_active = lgear_active
+            if lgear_active:
+                self._lgear_up_sound.stop()
+                self._lgear_down_sound.play(fadetime=0.1)
+                self._lgear_flow_sound.play(fadetime=1.0)
+            else:
+                self._lgear_down_sound.stop()
+                self._lgear_up_sound.play(fadetime=0.1)
+                self._lgear_flow_sound.stop(fadetime=1.0)
+
+        flarechaff_count = self.player.ac.flarechaff
+        if self._prev_flarechaff_count > flarechaff_count:
+            self._prev_flarechaff_count = flarechaff_count
+            self._flarechaff_launch_sound.stop(fadetime=0.05)
+            self._flarechaff_launch_sound.play(fadetime=0.05)
 
 
     def light_on_off (self, on=None, auto=False):
