@@ -881,6 +881,9 @@ class Tv (Sensor):
             sizefac = sqrt(refsize / Tv._refprojarea)
         detrange *= sizefac
 
+        # Correct for maximum range.
+        detrange = min(detrange, self._ref_range * 3.0)
+
         # Correct for ground clutter and blending.
         if detrange > 0.0:
             gcbfac = (self._ref_range / detrange)**0.5
