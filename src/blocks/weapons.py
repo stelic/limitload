@@ -492,10 +492,11 @@ class R13 (Rocket):
     normalmap = "models/weapons/missile_r13_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.41, 0.0),
@@ -554,10 +555,11 @@ class R60 (Rocket):
     normalmap = "models/weapons/missile_r60_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.04, 0.0),
@@ -616,11 +618,12 @@ class R73 (Rocket):
     normalmap = "models/weapons/missile_r73_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.46, 0.0),
@@ -679,11 +682,12 @@ class R27 (Rocket):
     normalmap = "models/weapons/missile_r27_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -2.04, 0.0),
@@ -742,11 +746,12 @@ class R77 (Rocket):
     normalmap = "models/weapons/missile_r77_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.75, 0.0),
@@ -806,11 +811,12 @@ class Kh25 (Rocket):
     normalmap = "models/weapons/missile_kh25_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.85, 0.0),
@@ -869,11 +875,12 @@ class Kh59 (Rocket):
     normalmap = "models/weapons/missile_kh59_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -2.80, 0.0),
@@ -931,11 +938,12 @@ class S200 (Rocket):
     normalmap = "models/weapons/missile_s200_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -5.10, 0.0),
@@ -993,10 +1001,11 @@ class Igla (Rocket):
     normalmap = "models/weapons/missile_igla_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -0.8, 0.0),
@@ -1054,10 +1063,11 @@ class Stinger (Rocket):
     normalmap = "models/weapons/missile_stinger_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -0.75, 0.0),
@@ -1115,11 +1125,12 @@ class Aim7 (Rocket):
     normalmap = "models/weapons/missile_aim7_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.83, 0.0),
@@ -1177,11 +1188,12 @@ class Aim9 (Rocket):
     normalmap = "models/weapons/missile_aim9_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.48, 0.0),
@@ -1239,11 +1251,12 @@ class Aim120 (Rocket):
     normalmap = "models/weapons/missile_aim120_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.91, 0.0),
@@ -1301,11 +1314,12 @@ class Rim156 (Rocket):
     normalmap = "models/weapons/missile_rim156_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -3.3, 0.0),
@@ -1363,11 +1377,12 @@ class Agm65 (Rocket):
     normalmap = "models/weapons/missile_agm65_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.20, 0.0),
@@ -1425,11 +1440,12 @@ class Bgm109 (Rocket):
     normalmap = "models/weapons/missile_bgm109_nm.png"
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None):
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
 
         r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
-                        pos=pos, hpr=hpr, speed=speed,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -2.80, 0.0),

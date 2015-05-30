@@ -73,7 +73,8 @@ class Rocket (Body):
     _flightmodes_all = set(("transfer", "intercept", "inertial"))
 
     def __init__ (self, world, name, side,
-                  pos=None, hpr=None, speed=None, target=None, offset=None,
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None,
                   extvis=True):
 
         if pos is None:
@@ -95,6 +96,11 @@ class Rocket (Body):
                     "Unknown flight mode '%s' for '%s'." %
                     (unknown.pop(), self.species))
 
+        if dropvel is not None:
+            vel = hprtovec(hpr) * speed + dropvel
+        else:
+            vel = speed
+
         Body.__init__(self,
             world=world,
             family=self.family, species=self.species,
@@ -108,7 +114,7 @@ class Rocket (Body):
             amblit=True, dirlit=True, pntlit=1, fogblend=True,
             ltrefl=(self.glossmap is not None),
             name=name, side=side,
-            pos=pos, hpr=hpr, vel=speed)
+            pos=pos, hpr=hpr, vel=vel)
 
         self.ming = -self.maxg
 
@@ -1095,11 +1101,13 @@ class Launcher (object):
             smodel.removeNode()
             if self._store_model_report_removal:
                 self._store_model_report_removal(smodel)
+            dropvel = None
             missile = self.mtype(world=self.world,
                                  name=("from-%s" % self.parent.name),
                                  side=self.parent.side,
                                  pos=wpos, hpr=whpr,
                                  speed=self.parent.speed(),
+                                 dropvel=dropvel,
                                  target=target,
                                  offset=offset)
             missile.initiator = self.parent
