@@ -621,7 +621,6 @@ class R73 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -685,7 +684,6 @@ class R27 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -749,7 +747,6 @@ class R77 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -814,7 +811,6 @@ class Kh25 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -878,7 +874,6 @@ class Kh59 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -941,7 +936,6 @@ class S200 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -1128,7 +1122,6 @@ class Aim7 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -1191,7 +1184,6 @@ class Aim9 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -1254,7 +1246,6 @@ class Aim120 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -1317,7 +1308,6 @@ class Rim156 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -1380,7 +1370,6 @@ class Agm65 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -1443,7 +1432,6 @@ class Bgm109 (Rocket):
                   pos=None, hpr=None, speed=None, dropvel=None,
                   target=None, offset=None):
 
-        r = radians
         Rocket.__init__(self, world=world, name=name, side=side,
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
@@ -1549,7 +1537,6 @@ class Rpg7 (PodRocket):
     # def __init__ (self, world, name, side,
                   # pos=None, hpr=None, speed=None, target=None, offset=None):
 
-        # r = radians
         # Rocket.__init__(self, world=world, name=name, side=side,
                         # pos=pos, hpr=hpr, speed=speed,
                         # target=target, offset=offset)
