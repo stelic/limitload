@@ -198,8 +198,10 @@ class World (object):
         self._shdinp_fog_first = True
         self._updwait_shdinp_sky = 0.0
         self._updperiod_shdinp_sky = 0.877
-        self._updwait_shdinp_fog = 0.0
-        self._updperiod_shdinp_fog = 0.913
+        self._updwait_shdinp_fog_color = 0.0
+        self._updperiod_shdinp_fog_color = 0.913
+        self._updwait_shdinp_fog_dist = 0.0
+        self._updperiod_shdinp_fog_dist = 0.137
         self._updwait_shdinp_sunblind = 0.0
         self._updperiod_shdinp_sunblind = 0.0
         if base.with_world_shadows:
@@ -586,11 +588,21 @@ class World (object):
                 self._sunbcolspc.setColor(self.sky.sun_bright_color)
         if not self._shdinp_fog_first and self.sky.fog:
             if self.frame < 3:
-                self._updwait_shdinp_fog = 0.0
-            self._updwait_shdinp_fog -= self.dt * self.day_time_factor
-            if self._updwait_shdinp_fog <= 0.0:
-                self._updwait_shdinp_fog += self._updperiod_shdinp_fog
+                self._updwait_shdinp_fog_color = 0.0
+                self._updwait_shdinp_fog_dist = 0.0
+            self._updwait_shdinp_fog_color -= self.dt * self.day_time_factor
+            if self._updwait_shdinp_fog_color <= 0.0:
+                self._updwait_shdinp_fog_color += self._updperiod_shdinp_fog_color
                 self._fogspc.setColor(self.sky.fog.color)
+            self._updwait_shdinp_fog_dist -= self.dt * self.day_time_factor
+            if self._updwait_shdinp_fog_dist <= 0.0:
+                self._updwait_shdinp_fog_dist += self._updperiod_shdinp_fog_dist
+                fog = self.sky.fog
+                if fog.falloff is None and fog.altvardist is not None:
+                    cpos = self.camera.getPos(self.node)
+                    onsetdist, opaquedist = fog.dist_for_alt(cpos[2])
+                    fogvis = Vec4(0.5, onsetdist, opaquedist, 0.0)
+                    self._fogspc.setSpecularColor(fogvis)
         if not self._shdinp_sky_first and self.sky.sun:
             if self.frame < 3:
                 self._updwait_shdinp_sunblind = 0.0

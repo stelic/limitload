@@ -24,6 +24,7 @@ from src.core.misc import set_texture, make_quad
 from src.core.misc import get_cache_key_section, key_to_hex
 from src.core.misc import hprtovec
 from src.core.misc import Random
+from src.core.misc import intl01vr
 from src.core.shader import printsh, make_shader, make_shdfunc_sunbln
 from src.core.shader import make_frag_outputs
 
@@ -753,7 +754,8 @@ void main ()
 class Fog (object):
 
     def __init__ (self, world, onsetdist=None, opaquedist=None,
-                  falloff=None, color=None):
+                  falloff=None, color=None,
+                  onsetdistgnd=None, opaquedistgnd=None, altvardist=None):
 
         self.world = world
 
@@ -761,6 +763,9 @@ class Fog (object):
         self.falloff = falloff
         self.onsetdist = onsetdist
         self.opaquedist = opaquedist
+        self.onsetdistgnd = onsetdistgnd
+        self.opaquedistgnd = opaquedistgnd
+        self.altvardist = altvardist
 
 
     def set_color (self, color):
@@ -771,6 +776,19 @@ class Fog (object):
     def destroy (self):
 
         pass
+
+
+    def dist_for_alt (self, alt):
+
+        if self.altvardist is not None:
+            onsetdist = intl01vr(alt, 0.0, self.altvardist,
+                                 self.onsetdistgnd, self.onsetdist)
+            opaquedist = intl01vr(alt, 0.0, self.altvardist,
+                                  self.opaquedistgnd, self.opaquedist)
+        else:
+            onsetdist = self.onsetdist
+            opaquedist = self.opaquedist
+        return onsetdist, opaquedist
 
 
 class Sun (object):

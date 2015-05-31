@@ -1216,7 +1216,9 @@ def create_sky_1 (world, skytype, latitude, longitude, visradius, sunblend):
     # fog = None
     fog = Fog(
         world=world,
-        onsetdist=(visradius * 0.5), opaquedist=(visradius * 0.95))
+        onsetdist=(visradius * 0.5), opaquedist=(visradius * 0.95),
+        onsetdistgnd=(visradius * 0.10), opaquedistgnd=(visradius * 0.20),
+        altvardist=4000.0)
     # fog = Fog(world=world, falloff=0.000025)
     # fog = Fog(world=world, falloff=0.000015)
     # fog = Fog(world=world, falloff=0.00002)
