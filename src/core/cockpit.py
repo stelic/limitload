@@ -1523,27 +1523,27 @@ class Cockpit (object):
         self._airbrake_flow_sound = Sound2D(
             path="audio/sounds/cockpit-mig29-airbrake-flow.ogg",
             world=self.world, pnode=self.node,
-            volume=0.2, loop=True)
+            volume=0.8, loop=True)
         self._prev_airbrake_active = self.player.ac.dynstate.fld
 
         self._lgear_up_sound = Sound2D(
             path="audio/sounds/cockpit-mig29-gearsup.ogg",
             world=self.world, pnode=self.node,
-            volume=0.5, loop=False)
+            volume=0.8, loop=False)
         self._lgear_down_sound = Sound2D(
             path="audio/sounds/cockpit-mig29-gearsdn.ogg",
             world=self.world, pnode=self.node,
-            volume=0.5, loop=False)
+            volume=0.8, loop=False)
         self._lgear_flow_sound = Sound2D(
             path="audio/sounds/cockpit-mig29-airbrake-flow.ogg",
             world=self.world, pnode=self.node,
-            volume=0.1, loop=True)
+            volume=0.6, loop=True)
         self._prev_lgear_active = self.player.ac.dynstate.lg
 
         self._flarechaff_launch_sound = Sound2D(
             path="audio/sounds/cockpit-flare.ogg",
             world=self.world, pnode=self.node,
-            volume=0.5, loop=False)
+            volume=0.7, loop=False)
         self._prev_flarechaff_count = self.player.ac.flarechaff
 
 
@@ -1559,9 +1559,9 @@ class Cockpit (object):
         if self._prev_airbrake_active != airbrake_active:
             self._prev_airbrake_active = airbrake_active
             if airbrake_active:
-                self._airbrake_flow_sound.play(fadetime=1.0)
+                self._airbrake_flow_sound.play(fadetime=2.0)
             else:
-                self._airbrake_flow_sound.stop(fadetime=1.0)
+                self._airbrake_flow_sound.stop(fadetime=2.0)
 
         lgear_active = self.player.ac.dynstate.lg
         if self._prev_lgear_active != lgear_active:
