@@ -1523,7 +1523,10 @@ class Cockpit (object):
         self._airbrake_flow_sound = Sound2D(
             path="audio/sounds/cockpit-mig29-airbrake-flow.ogg",
             world=self.world, pnode=self.node,
-            volume=0.8, loop=True)
+            loop=True)
+        self._airbrake_flow_min_speed = 50.0
+        self._airbrake_flow_max_speed = 150.0
+        self._airbrake_flow_max_volume = 0.8
         self._prev_airbrake_active = self.player.ac.dynstate.fld
 
         self._lgear_up_sound = Sound2D(
@@ -1562,6 +1565,14 @@ class Cockpit (object):
                 self._airbrake_flow_sound.play(fadetime=2.0)
             else:
                 self._airbrake_flow_sound.stop(fadetime=2.0)
+        if airbrake_active:
+            speed = self.player.ac.dynstate.v
+            vol = intl01vr(speed,
+                           self._airbrake_flow_min_speed,
+                           self._airbrake_flow_max_speed,
+                           0.0,
+                           self._airbrake_flow_max_volume)
+            self._airbrake_flow_sound.set_volume(vol)
 
         lgear_active = self.player.ac.dynstate.lg
         if self._prev_lgear_active != lgear_active:
