@@ -4539,13 +4539,13 @@ class An12 (Plane):
                        ammo=(trammo[0] // 2), viseach=5)
         turret.add_cannon(cannon2)
 
-        self._hbx_hull.hitpoints = 190
-        self._hbx_reng1.hitpoints = 50
-        self._hbx_leng1.hitpoints = 50
-        self._hbx_reng2.hitpoints = 50
-        self._hbx_leng2.hitpoints = 50
-        self._hbx_rwng.hitpoints = 110
-        self._hbx_lwng.hitpoints = 110
+        self._hbx_hull.hitpoints = 170
+        self._hbx_reng1.hitpoints = 30
+        self._hbx_leng1.hitpoints = 30
+        self._hbx_reng2.hitpoints = 30
+        self._hbx_leng2.hitpoints = 30
+        self._hbx_rwng.hitpoints = 85
+        self._hbx_lwng.hitpoints = 85
 
         self._hbx_hull.minhitdmg = 0
         self._hbx_reng1.minhitdmg = 0
@@ -4555,13 +4555,13 @@ class An12 (Plane):
         self._hbx_rwng.minhitdmg = 0
         self._hbx_lwng.minhitdmg = 0
 
-        self._hbx_hull.maxhitdmg = 120
-        self._hbx_reng1.maxhitdmg = 25
-        self._hbx_leng1.maxhitdmg = 25
-        self._hbx_reng2.maxhitdmg = 25
-        self._hbx_leng2.maxhitdmg = 25
-        self._hbx_rwng.maxhitdmg = 60
-        self._hbx_lwng.maxhitdmg = 60
+        self._hbx_hull.maxhitdmg = 90
+        self._hbx_reng1.maxhitdmg = 20
+        self._hbx_leng1.maxhitdmg = 20
+        self._hbx_reng2.maxhitdmg = 20
+        self._hbx_leng2.maxhitdmg = 20
+        self._hbx_rwng.maxhitdmg = 40
+        self._hbx_lwng.maxhitdmg = 40
 
         self._hbx_hull.out = False
         self._hbx_reng1.out = False
@@ -4846,15 +4846,15 @@ class C130 (Plane):
                        fuelfill=fuelfill, pos=pos, hpr=hpr, speed=speed,
                        damage=damage, faillvl=faillvl)
 
-        self._hbx_hull.hitpoints = 180
-        self._hbx_reng1.hitpoints = 40
-        self._hbx_leng1.hitpoints = 40
-        self._hbx_reng2.hitpoints = 40
-        self._hbx_leng2.hitpoints = 40
-        self._hbx_rtnk.hitpoints = 25
-        self._hbx_ltnk.hitpoints = 25
-        self._hbx_rwng.hitpoints = 100
-        self._hbx_lwng.hitpoints = 100
+        self._hbx_hull.hitpoints = 160
+        self._hbx_reng1.hitpoints = 30
+        self._hbx_leng1.hitpoints = 30
+        self._hbx_reng2.hitpoints = 30
+        self._hbx_leng2.hitpoints = 30
+        self._hbx_rtnk.hitpoints = 20
+        self._hbx_ltnk.hitpoints = 20
+        self._hbx_rwng.hitpoints = 80
+        self._hbx_lwng.hitpoints = 80
 
         self._hbx_hull.minhitdmg = 0
         self._hbx_reng1.minhitdmg = 0
@@ -4866,15 +4866,15 @@ class C130 (Plane):
         self._hbx_rwng.minhitdmg = 0
         self._hbx_lwng.minhitdmg = 0
 
-        self._hbx_hull.maxhitdmg = 100
-        self._hbx_reng1.maxhitdmg = 25
-        self._hbx_leng1.maxhitdmg = 25
-        self._hbx_reng2.maxhitdmg = 25
-        self._hbx_leng2.maxhitdmg = 25
+        self._hbx_hull.maxhitdmg = 90
+        self._hbx_reng1.maxhitdmg = 20
+        self._hbx_leng1.maxhitdmg = 20
+        self._hbx_reng2.maxhitdmg = 20
+        self._hbx_leng2.maxhitdmg = 20
         self._hbx_rtnk.maxhitdmg = 5
         self._hbx_ltnk.maxhitdmg = 5
-        self._hbx_rwng.maxhitdmg = 60
-        self._hbx_lwng.maxhitdmg = 60
+        self._hbx_rwng.maxhitdmg = 40
+        self._hbx_lwng.maxhitdmg = 40
 
         self._hbx_hull.out = False
         self._hbx_reng1.out = False
@@ -4885,6 +4885,11 @@ class C130 (Plane):
         self._hbx_ltnk.out = False
         self._hbx_rwng.out = False
         self._hbx_lwng.out = False
+
+        self._hbx_reng1.removed = False
+        self._hbx_leng1.removed = False
+        self._hbx_reng2.removed = False
+        self._hbx_leng2.removed = False
 
         self._failure_full = False
 
@@ -5278,6 +5283,11 @@ class Kc135 (Plane):
         self._hbx_leng2.out = False
         self._hbx_rwng.out = False
         self._hbx_lwng.out = False
+
+        self._hbx_reng1.removed = False
+        self._hbx_leng1.removed = False
+        self._hbx_reng2.removed = False
+        self._hbx_leng2.removed = False
 
         self._failure_full = False
 
