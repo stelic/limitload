@@ -1105,7 +1105,7 @@ class Cockpit (object):
         self._instr_night_light_on = False
         self.light_on_off(on=self._instr_night_light_on, auto=True)
 
-        self._sounds_inited = False
+        self._init_sounds()
 
         self.active = False
         self._prev_active = None
@@ -1520,14 +1520,16 @@ class Cockpit (object):
 
     def _init_sounds (self):
 
-        self._airbrake_flow_sound = Sound2D(
+        self._movables_flow_sound = Sound2D(
             path="audio/sounds/cockpit-mig29-airbrake-flow.ogg",
             world=self.world, pnode=self.node,
-            loop=True)
+            volume=0.0, loop=True)
+        self._movables_flow_active = False
+
         self._airbrake_flow_min_speed = 50.0
         self._airbrake_flow_max_speed = 150.0
         self._airbrake_flow_max_volume = 0.8
-        self._prev_airbrake_active = self.player.ac.dynstate.fld
+        self._prev_airbrake_active = None
 
         self._lgear_up_sound = Sound2D(
             path="audio/sounds/cockpit-mig29-gearsup.ogg",
@@ -1537,11 +1539,10 @@ class Cockpit (object):
             path="audio/sounds/cockpit-mig29-gearsdn.ogg",
             world=self.world, pnode=self.node,
             volume=0.8, loop=False)
-        self._lgear_flow_sound = Sound2D(
-            path="audio/sounds/cockpit-mig29-airbrake-flow.ogg",
-            world=self.world, pnode=self.node,
-            volume=0.6, loop=True)
-        self._prev_lgear_active = self.player.ac.dynstate.lg
+        self._lgear_flow_min_speed = 40.0
+        self._lgear_flow_max_speed = 100.0
+        self._lgear_flow_max_volume = 0.6
+        self._prev_lgear_active = None
 
         self._flarechaff_launch_sound = Sound2D(
             path="audio/sounds/cockpit-flare.ogg",
@@ -1552,39 +1553,50 @@ class Cockpit (object):
 
     def _update_sounds (self, dt):
 
-        if not self._sounds_inited:
-            # This has to happen here instead of in the constructor
-            # in order that ac.dynstate is available.
-            self._init_sounds()
-            self._sounds_inited = True
+        movables_flow_vol = 0.0
 
         airbrake_active = self.player.ac.dynstate.brd
         if self._prev_airbrake_active != airbrake_active:
             self._prev_airbrake_active = airbrake_active
             if airbrake_active:
-                self._airbrake_flow_sound.play(fadetime=2.0)
+                pass
             else:
-                self._airbrake_flow_sound.stop(fadetime=2.0)
+                pass
         if airbrake_active:
             speed = self.player.ac.dynstate.v
-            vol = intl01vr(speed,
-                           self._airbrake_flow_min_speed,
-                           self._airbrake_flow_max_speed,
-                           0.0,
-                           self._airbrake_flow_max_volume)
-            self._airbrake_flow_sound.set_volume(vol)
+            airbrake_vol = intl01vr(
+                speed,
+                self._airbrake_flow_min_speed, self._airbrake_flow_max_speed,
+                0.0, self._airbrake_flow_max_volume)
+            movables_flow_vol = max(movables_flow_vol, airbrake_vol)
 
         lgear_active = self.player.ac.dynstate.lg
         if self._prev_lgear_active != lgear_active:
             self._prev_lgear_active = lgear_active
             if lgear_active:
-                self._lgear_up_sound.stop()
-                self._lgear_down_sound.play(fadetime=0.1)
-                self._lgear_flow_sound.play(fadetime=1.0)
+                if self.world.frame > 5:
+                    self._lgear_up_sound.stop()
+                    self._lgear_down_sound.play(fadetime=0.1)
             else:
-                self._lgear_down_sound.stop()
-                self._lgear_up_sound.play(fadetime=0.1)
-                self._lgear_flow_sound.stop(fadetime=1.0)
+                if self.world.frame > 5:
+                    self._lgear_down_sound.stop()
+                    self._lgear_up_sound.play(fadetime=0.1)
+        if lgear_active:
+            speed = self.player.ac.dynstate.v
+            lgear_vol = intl01vr(
+                speed,
+                self._lgear_flow_min_speed, self._lgear_flow_max_speed,
+                0.0, self._lgear_flow_max_volume)
+            movables_flow_vol = max(movables_flow_vol, lgear_vol)
+
+        if movables_flow_vol > 0.0:
+            if not self._movables_flow_active:
+                self._movables_flow_active = True
+                self._movables_flow_sound.play()
+            self._movables_flow_sound.set_volume(movables_flow_vol)
+        elif self._movables_flow_active:
+            self._movables_flow_active = False
+            self._movables_flow_sound.stop()
 
         flarechaff_count = self.player.ac.flarechaff
         if self._prev_flarechaff_count > flarechaff_count:
