@@ -507,10 +507,11 @@ BraidStrand::~BraidStrand ()
 INITIALIZE_TYPE_HANDLE(PolyBraidGeom)
 
 PolyBraidGeom::PolyBraidGeom (
-    double segperiod,
+    double segperiod, const LVector3 &partvel,
     const LPoint3 &apos, const LQuaternion& aquat)
 : _strands()
 , _segperiod(segperiod)
+, _partvel(partvel)
 , _prev_apos(apos)
 , _prev_aquat(aquat)
 , _start_point(0.0, 0.0, 0.0)
@@ -613,9 +614,10 @@ void PolyBraidGeom::update (
     LPoint3 apos = apos_;
     LQuaternion aquat = aquat_;
     if (havepq) {
-        if (apos != _prev_apos) {
-            LVector3 dpos = apos - _prev_apos;
-            double maxctang = dpos.length();
+        LPoint3 prev_apos_pv = _prev_apos + _partvel * adt;
+        LVector3 dpos = apos - prev_apos_pv;
+        double maxctang = dpos.length();
+        if (maxctang > 0.0) {
             LVector3 tdir = unitv(dpos);
             LVector3 aup = aquat.get_up();
             LVector3 art = aquat.get_right();
@@ -630,7 +632,7 @@ void PolyBraidGeom::update (
                     if (ctang < 0.0) { // can happen due to base offset
                         continue;
                     }
-                    LPoint3 appos = _prev_apos + tdir * ctang;
+                    LPoint3 appos = prev_apos_pv + tdir * ctang;
                     double dang = strand.dang0;
                     if (strand.randang) {
                         dang = fx_uniform2(0.0, 2 * M_PI);
@@ -745,6 +747,7 @@ void PolyBraidGeom::update (
                     maxreach = fmax(maxreach, pos.length());
                 }
                 spart.ctime += adt;
+                spart.apos += _partvel * adt;
                 ++i;
             } else {
                 --numparts;

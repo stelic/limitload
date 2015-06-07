@@ -125,7 +125,7 @@ class EXPORT PolyBraidGeom : public TypedObject
 PUBLISHED:
 
     PolyBraidGeom (
-        double segperiod,
+        double segperiod, const LVector3 &partvel,
         const LPoint3 &apos, const LQuaternion& aquat);
     ~PolyBraidGeom ();
 
@@ -160,6 +160,7 @@ private:
 
     std::deque<BraidStrand*> _strands;
     double _segperiod;
+    LVector3 _partvel;
     LPoint3 _prev_apos;
     LQuaternion _prev_aquat;
     LPoint3 _start_point;

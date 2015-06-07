@@ -1184,7 +1184,7 @@ class PolyBraid (object):
                   texsplit=None, numframes=None,
                   dbin=0, loddistout=None, loddistalpha=None,
                   loddirang=None, loddirspcfac=10.0,
-                  delay=0.0):
+                  delay=0.0, partvel=Vec3(0, 0, 0)):
 
         if isinstance(parent, tuple):
             self.parent = None
@@ -1275,7 +1275,7 @@ class PolyBraid (object):
                 assert False
             self._braids = []
             for npoly, segp in pspec:
-                braid = PolyBraidGeom(segp, apos, aquat)
+                braid = PolyBraidGeom(segp, partvel, apos, aquat)
                 for i in range(numstrands):
                     snode = braid.add_strand(
                         gv(thickness, i),
@@ -1482,11 +1482,12 @@ class PolyBraid (object):
 # :also-compiled:
 class PolyBraidGeom (object):
 
-    def __init__ (self, segperiod, apos, aquat):
+    def __init__ (self, segperiod, partvel, apos, aquat):
 
         self._strands = []
         self._segs = []
         self._segperiod = segperiod
+        self._partvel = partvel
         self._prev_apos = apos
         self._prev_aquat = aquat
 
@@ -1542,9 +1543,11 @@ class PolyBraidGeom (object):
 
         ddtang0 = 0.0
         if havepq:
-            if apos != self._prev_apos:
-                ddtang0 = (apos - self._prev_apos).length()
-                bseg = SimpleProps(ctime=0.0, apos0=apos, apos1=self._prev_apos)
+            prev_apos_pv = self._prev_apos + self._partvel * adt
+            dpos = apos - prev_apos_pv
+            ddtang0 = dpos.length()
+            if ddtang0 > 0.0:
+                bseg = SimpleProps(ctime=0.0, apos0=apos, apos1=prev_apos_pv)
                 self._segs.insert(0, bseg)
                 self._prev_apos = apos
                 self._prev_aquat = aquat
@@ -1635,6 +1638,8 @@ class PolyBraidGeom (object):
                         needpoly += dnp * 2
                     strand.numpart = np1
                 bseg.ctime += adt
+                bseg.apos0 += self._partvel * adt
+                bseg.apos1 += self._partvel * adt
                 clen += dlen
                 maxreach = max(maxreach, p1.length())
                 i += 1
