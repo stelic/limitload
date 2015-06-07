@@ -486,5 +486,3 @@ def fire_n_smoke_4 (parent, store=None,
     return trails
 
 
-if pycv(py=False, c=True):
-    from trail_c import *
