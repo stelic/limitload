@@ -132,7 +132,7 @@ PUBLISHED:
     NodePath add_strand (
         double thickness, double endthickness, double spacing,
         double offang, double offrad, double offtang,
-        double randang, double randrad,
+        bool randang, bool randrad,
         const LVector4 &color, const LVector4 &endcolor,
         double tcol, double alphaexp,
         int texsplit, int numframes,
