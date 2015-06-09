@@ -126,6 +126,7 @@ PUBLISHED:
 
     PolyBraidGeom (
         double segperiod, const LVector3 &partvel,
+        const LVector3 &emittang, const LVector3 &emitnorm,
         const LPoint3 &apos, const LQuaternion& aquat);
     ~PolyBraidGeom ();
 
@@ -161,6 +162,9 @@ private:
     std::deque<BraidStrand*> _strands;
     double _segperiod;
     LVector3 _partvel;
+    LVector3 _emittang;
+    LVector3 _emitnorm;
+    LVector3 _emitbnrm;
     LPoint3 _prev_apos;
     LQuaternion _prev_aquat;
     LPoint3 _start_point;

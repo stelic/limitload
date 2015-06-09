@@ -508,6 +508,7 @@ INITIALIZE_TYPE_HANDLE(PolyBraidGeom)
 
 PolyBraidGeom::PolyBraidGeom (
     double segperiod, const LVector3 &partvel,
+    const LVector3 &emittang, const LVector3 &emitnorm,
     const LPoint3 &apos, const LQuaternion& aquat)
 : _strands()
 , _segperiod(segperiod)
@@ -518,6 +519,10 @@ PolyBraidGeom::PolyBraidGeom (
 , _end_point(0.0, 0.0, 0.0)
 , _any_visible(false)
 {
+    _emittang = unitv(emittang);
+    _emitnorm = unitv(emitnorm);
+    _emitnorm = unitv(_emitnorm - _emittang * _emitnorm.dot(_emittang));
+    _emitbnrm = unitv(_emittang.cross(_emitnorm));
 }
 
 PolyBraidGeom::~PolyBraidGeom ()
@@ -619,8 +624,8 @@ void PolyBraidGeom::update (
         double maxctang = dpos.length();
         if (maxctang > 0.0) {
             LVector3 tdir = unitv(dpos);
-            LVector3 aup = aquat.get_up();
-            LVector3 art = aquat.get_right();
+            LVector3 abnrm = unitv(aquat.xform(_emitbnrm));
+            LVector3 anorm = unitv(aquat.xform(_emitnorm));
             for (BraidStrandsIter it = _strands.begin(); it != _strands.end(); ++it) {
                 BraidStrand &strand = **it;
                 double ctang = strand.ctang;
@@ -641,7 +646,7 @@ void PolyBraidGeom::update (
                     if (strand.randrad) {
                         drad = fx_uniform2(0.0, strand.drad0);
                     }
-                    appos += vrot(art, aup, drad, dang);
+                    appos += vrot(anorm, abnrm, drad, dang);
                     strand.parts.push_front(new StrandParticle());
                     strand.numparts += 1;
                     StrandParticle &spart = *strand.parts.front();

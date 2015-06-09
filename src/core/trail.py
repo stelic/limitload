@@ -1184,7 +1184,8 @@ class PolyBraid (object):
                   texsplit=None, numframes=None,
                   dbin=0, loddistout=None, loddistalpha=None,
                   loddirang=None, loddirspcfac=10.0,
-                  delay=0.0, partvel=Vec3(0, 0, 0)):
+                  delay=0.0, partvel=Vec3(0, 0, 0),
+                  emittang=Vec3(0, -1, 0), emitnorm=Vec3(1, 0, 0)):
 
         if isinstance(parent, tuple):
             self.parent = None
@@ -1275,7 +1276,8 @@ class PolyBraid (object):
                 assert False
             self._braids = []
             for npoly, segp in pspec:
-                braid = PolyBraidGeom(segp, partvel, apos, aquat)
+                braid = PolyBraidGeom(segp, partvel, emittang, emitnorm,
+                                      apos, aquat)
                 for i in range(numstrands):
                     snode = braid.add_strand(
                         gv(thickness, i),
@@ -1482,7 +1484,7 @@ class PolyBraid (object):
 # :also-compiled:
 class PolyBraidGeom (object):
 
-    def __init__ (self, segperiod, partvel, apos, aquat):
+    def __init__ (self, segperiod, partvel, emittang, emitnorm, apos, aquat):
 
         self._strands = []
         self._segs = []
@@ -1490,6 +1492,11 @@ class PolyBraidGeom (object):
         self._partvel = partvel
         self._prev_apos = apos
         self._prev_aquat = aquat
+
+        self._emittang = unitv(emittang)
+        self._emitnorm = unitv(emitnorm)
+        self._emitnorm = unitv(self._emitnorm - self._emittang * self._emitnorm.dot(self._emittang))
+        self._emitbnrm = unitv(self._emittang.cross(self._emitnorm))
 
 
     def add_strand (self, thickness, endthickness, spacing,
@@ -1583,9 +1590,9 @@ class PolyBraidGeom (object):
                 strand.color0[3] *= lodalfac
                 strand.color1[3] *= lodalfac
         i = 0
-        afw = aquat.getForward()
-        aup = aquat.getUp()
-        art = aquat.getRight()
+        atang = unitv(Vec3(aquat.xform(self._emittang)))
+        anorm = unitv(Vec3(aquat.xform(self._emitnorm)))
+        abnrm = unitv(Vec3(aquat.xform(self._emitbnrm)))
         numsegs = len(self._segs)
         needpoly = 0
         clen = 0.0
@@ -1606,8 +1613,8 @@ class PolyBraidGeom (object):
                         sseg = strand.segs[i]
                         da0, da1 = sseg.dang, sseg.prev_dang
                         dr0, dr1 = sseg.drad, sseg.prev_drad
-                        p0l = p0 + art * (dr0 * cos(da0)) + afw * ds + aup * (dr0 * sin(da0))
-                        p1l = p1 + art * (dr1 * cos(da1)) + afw * ds + aup * (dr1 * sin(da1))
+                        p0l = p0 + anorm * (dr0 * cos(da0)) - atang * ds + abnrm * (dr0 * sin(da0))
+                        p1l = p1 + anorm * (dr1 * cos(da1)) - atang * ds + abnrm * (dr1 * sin(da1))
                         ro0 = (0.0 + np0 * spc - clen) / dlen
                         dpl = p1l - p0l
                         p0l1 = p0l + dpl * ro0
