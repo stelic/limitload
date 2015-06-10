@@ -1188,12 +1188,19 @@ class PolyBraid (object):
                   emittang=Vec3(0, -1, 0), emitnorm=Vec3(1, 0, 0)):
 
         if isinstance(parent, tuple):
-            self.parent = None
-            self.pnode, self.world = parent
+            self.pnode, other = parent
+            if hasattr(other, "world"):
+                # FIXME: The question is actually isinstance(other, Body),
+                # but not possible to import Body due to order of imports.
+                self.parent = other
+                self.world = self.parent.world
+            else:
+                self.parent = None
+                self.world = other
         else:
             self.world = parent.world
             self.parent = parent
-            self.pnode = None
+            self.pnode = parent.node
 
         self.node = self.world.node.attachNewNode("polybraid-root")
         self.node.setAntialias(AntialiasAttrib.MNone)
@@ -1264,16 +1271,9 @@ class PolyBraid (object):
                 pspec = ((farmaxpoly, farsegperiod), (maxpoly, segperiod))
             else:
                 pspec = ((maxpoly, segperiod),)
-            if self.parent:
-                self.node.setPos(self.parent.pos())
-                apos = self.parent.pos(refbody=self.node, offset=self._pos)
-                aquat = self.parent.quat()
-            elif self.pnode is not None:
-                self.node.setPos(self.pnode.getPos(self.world.node))
-                apos = self.node.getRelativePoint(self.pnode, self._pos)
-                aquat = self.pnode.getQuat(self.world.node)
-            else:
-                assert False
+            self.node.setPos(self.pnode.getPos(self.world.node))
+            apos = self.node.getRelativePoint(self.pnode, self._pos)
+            aquat = self.pnode.getQuat(self.world.node)
             self._braids = []
             for npoly, segp in pspec:
                 braid = PolyBraidGeom(segp, partvel, emittang, emitnorm,
@@ -1359,8 +1359,7 @@ class PolyBraid (object):
         if self._wait_delay is not None:
             self._wait_delay -= dt
             if self._wait_delay <= 0.0:
-                if ((self.parent and not self.parent.alive) or
-                    (self.pnode is not None and not self.pnode.isEmpty())):
+                if self.pnode.isEmpty():
                     self.destroy()
                     return task.done
                 self._start()
@@ -1371,11 +1370,7 @@ class PolyBraid (object):
         apos = Point3()
         aquat = Quat()
         havepq = False
-        if self.parent and self.parent.alive:
-            apos = self.parent.pos(refbody=self.node, offset=self._pos)
-            aquat = self.parent.quat()
-            havepq = True
-        elif self.pnode is not None and not self.pnode.isEmpty():
+        if not self.pnode.isEmpty():
             apos = self.node.getRelativePoint(self.pnode, self._pos)
             aquat = self.pnode.getQuat(self.world.node)
             havepq = True
