@@ -662,7 +662,7 @@ class PolyTrailGeom (object):
                 drad = self._prev_drad
                 if self._randcircle > 0.0:
                     dang = fx_uniform(0.0, 2 * pi)
-                    drad = fx_uniform(0.0, self._randcircle)
+                    drad = sqrt(fx_randunit()) * self._randcircle
                 self._segs.insert(0, [0.0,
                                       apos, self._prev_apos,
                                       dang, self._prev_dang,
@@ -1098,7 +1098,7 @@ class PolyExhaustGeom (object):
                     ang = fx_uniform(0.0, 2 * pi)
                     q = Quat()
                     q.setFromAxisAngleRad(ang, pdir)
-                    rad = fx_uniform(0.0, emradius)
+                    rad = sqrt(fx_randunit()) * emradius
                     pos0 += Vec3(q.xform(ndir)) * rad
                 self._emskip_count += 1
                 if self._emskip_count >= emskip:
@@ -1564,7 +1564,7 @@ class PolyBraidGeom (object):
                         dang = fx_uniform(0.0, 2 * pi)
                     drad = strand.prev_drad
                     if strand.randrad:
-                        drad = fx_uniform(0.0, strand.drad0)
+                        drad = sqrt(fx_randunit()) * strand.drad0
                     sseg = SimpleProps(dang=dang, prev_dang=strand.prev_dang,
                                        drad=drad, prev_drad=strand.prev_drad)
                     strand.segs.insert(0, sseg)

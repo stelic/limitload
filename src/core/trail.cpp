@@ -121,7 +121,7 @@ void PolyTrailGeom::update (
                 LVector3 aup = aquat.get_up();
                 LVector3 art = aquat.get_right();
                 double dang = fx_uniform2(0.0, 2 * M_PI);
-                double drad = fx_uniform2(0.0, _randcircle);
+                double drad = sqrt(fx_randunit()) * _randcircle;
                 ap += vrot(art, aup, drad, dang);
             }
             _points.push_front(new TrailPoint());
@@ -368,7 +368,7 @@ bool PolyExhaustGeom::update (
                 double ang = fx_uniform2(0.0, 2 * M_PI);
                 LQuaternion q;
                 q.set_from_axis_angle_rad(ang, pdir);
-                double rad = fx_uniform2(0.0, emradius);
+                double rad = sqrt(fx_randunit()) * emradius;
                 pos0 += LVector3(q.xform(ndir)) * rad;
             }
             ++_emskip_count;
@@ -644,7 +644,7 @@ void PolyBraidGeom::update (
                     }
                     double drad = strand.drad0;
                     if (strand.randrad) {
-                        drad = fx_uniform2(0.0, strand.drad0);
+                        drad = sqrt(fx_randunit()) * strand.drad0;
                     }
                     appos += vrot(anorm, abnrm, drad, dang);
                     strand.parts.push_front(new StrandParticle());
