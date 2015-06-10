@@ -1243,7 +1243,8 @@ class World (object):
             ebody = Body(world=self, family="effect", species="explosion",
                          hitforce=force, name="", side="", pos=pos,
                          hitinto=False)
-            ebody.initiator = ref.initiator
+            if isinstance(ref, Body):
+                ebody.initiator = ref.initiator
 
         # Add damage to collided hitboxes.
         for hbx, dist in dist_by_hbx.items():
