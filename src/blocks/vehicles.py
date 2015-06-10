@@ -6,7 +6,7 @@ from pandac.PandaModules import Vec3, Point3
 
 from src.blocks.weapons import TurretPkm, N2a38m
 from src.core.body import Body, HitboxData
-from src.core.effect import fire_n_smoke
+from src.core.effect import fire_n_smoke_2
 from src.core.misc import rgba, remove_subnodes, texture_subnodes
 from src.core.transl import *
 from src.core.turret import CustomTurret
@@ -830,163 +830,115 @@ class TankCruiser (Vehicle):
         if self._hbx_turm.hitpoints <= 0 and not self._hbx_turm.out:
             self.explode(offset=self._hbx_turm.center)
             remove_subnodes(self.node, ["main_turret",])
-            fire_n_smoke(
+            fire_n_smoke_2(
                 parent=self, store=self.damage_trails,
-                fcolor=rgba(255, 255, 255, 1.0),
-                fcolorend=rgba(250, 200, 170, 1.0),
-                fpos=self._hbx_turm.center + Point3(0,0,-1),
-                spos=self._hbx_turm.center,
-                spos2=None,
-                ftcol=0.6,
-                stcol=0.4,
-                fforce=6.0,
-                sforce=6.0,
-                flifespan=0.8,
-                slifespan=2.2,
-                sclfact=1.8,
-                psfact=0.4,
-                pdir=Vec3(0, 0, 1),
-                fphpr=Vec3(0,0,0),
-                sphpr=Vec3(0,0,0),
-                emradfact=4.0,
-                emampfact=0.0,
-                absolute=True,
-                fdelay=2.0)
+                sclfact = 4.2,
+                emradfact = 6.0,
+                zvelfact = 9.0,
+                fcolor = rgba(255, 255, 255, 1.0),
+                fcolorend = rgba(246, 112, 27, 1.0),
+                ftcol = 0.6,
+                flifespan = 2.2,
+                fpos = self._hbx_turm.center + Point3(0,0,-8),
+                fdelay = 2.0,
+                spos = self._hbx_turm.center + Point3(0,0,-7),
+                stcol = 0.4,
+                slifespan = 5.0)
             self._hbx_turm.out = True
             self._failure_full = True
         if self._hbx_tursl.hitpoints <= 0 and not self._hbx_tursl.out:
-            remove_subnodes(self.node, ["sideleft_turret",])
+            remove_subnodes(self.node, ["sideleft_turret_elev","sideleft_turret_azim",])
             self.explode_minor(offset=self._hbx_tursl.center)
-            fire_n_smoke(
+            fire_n_smoke_2(
                 parent=self, store=self.damage_trails,
-                fcolor=None,
-                fcolorend=None,
-                fpos=None,
-                spos=self._hbx_tursl.center,
-                spos2=None,
-                ftcol=None,
-                stcol=0.3,
-                fforce=None,
-                sforce=0.0,
-                flifespan=None,
-                slifespan=2.4,
-                sclfact=1.2,
-                psfact=0.3,
-                pdir=Vec3(0, 0, 1),
-                fphpr=None,
-                sphpr=Vec3(0,0,0),
-                emradfact=0.5,
-                emampfact=0.4,
-                absolute=True,
-                fdelay=None)
+                sclfact = 2.8,
+                emradfact = 1.1,
+                zvelfact = 8.0,
+                fcolor = None,
+                fcolorend = None,
+                ftcol = None,
+                flifespan = None,
+                fpos = None,
+                fdelay = None,
+                spos = self._hbx_tursl.center + Point3(0,0,-2),
+                stcol = 0.4,
+                slifespan = 5.0)
             self._hbx_tursl.out = True
         if self._hbx_tursr.hitpoints <= 0 and not self._hbx_tursr.out:
-            remove_subnodes(self.node, ["sideright_turret",])
+            remove_subnodes(self.node, ["sideright_turret_elev","sideright_turret_azim",])
             self.explode_minor(offset=self._hbx_tursr.center)
-            fire_n_smoke(
+            fire_n_smoke_2(
                 parent=self, store=self.damage_trails,
-                fcolor=None,
-                fcolorend=None,
-                fpos=None,
-                spos=self._hbx_tursr.center,
-                spos2=None,
-                ftcol=None,
-                stcol=0.3,
-                fforce=None,
-                sforce=0.0,
-                flifespan=None,
-                slifespan=2.4,
-                sclfact=1.2,
-                psfact=0.3,
-                pdir=Vec3(0, 0, 1),
-                fphpr=None,
-                sphpr=Vec3(0,0,0),
-                emradfact=0.5,
-                emampfact=0.4,
-                absolute=True,
-                fdelay=None)
+                sclfact = 2.8,
+                emradfact = 1.1,
+                zvelfact = 8.0,
+                fcolor = None,
+                fcolorend = None,
+                ftcol = None,
+                flifespan = None,
+                fpos = None,
+                fdelay = None,
+                spos = self._hbx_tursr.center + Point3(0,0,-2),
+                stcol = 0.4,
+                slifespan = 5.0)
             self._hbx_tursr.out = True
         if self._hbx_turaa1.hitpoints <= 0 and not self._hbx_turaa1.out:
             self.explode_minor(offset=self._hbx_turaa1.center)
             remove_subnodes(self.node, ["aa1_turret_elev",])
-            fire_n_smoke(
+            fire_n_smoke_2(
                 parent=self, store=self.damage_trails,
-                fcolor=None,
-                fcolorend=None,
-                fpos=None,
-                spos=self._hbx_turaa1.center,
-                spos2=None,
-                ftcol=None,
-                stcol=0.5,
-                fforce=None,
-                sforce=0.0,
-                flifespan=None,
-                slifespan=1.8,
-                sclfact=0.6,
-                psfact=0.3,
-                pdir=Vec3(0, 0, 1),
-                fphpr=None,
-                sphpr=Vec3(0,0,0),
-                emradfact=0.5,
-                emampfact=0.4,
-                absolute=True,
-                fdelay=None)
+                sclfact = 1.4,
+                emradfact = 1.1,
+                zvelfact = 7.0,
+                fcolor = None,
+                fcolorend = None,
+                ftcol = None,
+                flifespan = None,
+                fpos = None,
+                fdelay = None,
+                spos = self._hbx_turaa1.center,
+                stcol = 0.5,
+                slifespan = 4.0)
             self._turretaa1.destroy()
             self.turrets.remove(self._turretaa1)
             self._hbx_turaa1.out = True
         if self._hbx_turaa5.hitpoints <= 0 and not self._hbx_turaa5.out:
             self.explode_minor(offset=self._hbx_turaa5.center)
             remove_subnodes(self.node, ["aa5_turret_elev",])
-            fire_n_smoke(
+            fire_n_smoke_2(
                 parent=self, store=self.damage_trails,
-                fcolor=None,
-                fcolorend=None,
-                fpos=None,
-                spos=self._hbx_turaa5.center,
-                spos2=None,
-                ftcol=None,
-                stcol=0.5,
-                fforce=None,
-                sforce=0.0,
-                flifespan=None,
-                slifespan=1.8,
-                sclfact=0.6,
-                psfact=0.3,
-                pdir=Vec3(0, 0, 1),
-                fphpr=None,
-                sphpr=Vec3(0,0,0),
-                emradfact=0.5,
-                emampfact=0.4,
-                absolute=True,
-                fdelay=None)
+                sclfact = 1.4,
+                emradfact = 1.1,
+                zvelfact = 7.0,
+                fcolor = None,
+                fcolorend = None,
+                ftcol = None,
+                flifespan = None,
+                fpos = None,
+                fdelay = None,
+                spos = self._hbx_turaa5.center,
+                stcol = 0.5,
+                slifespan = 4.0)
             self._turretaa5.destroy()
             self.turrets.remove(self._turretaa5)
             self._hbx_turaa5.out = True
         if self._hbx_turaa6.hitpoints <= 0 and not self._hbx_turaa6.out:
             self.explode_minor(offset=self._hbx_turaa6.center)
             remove_subnodes(self.node, ["aa6_turret_elev",])
-            fire_n_smoke(
+            fire_n_smoke_2(
                 parent=self, store=self.damage_trails,
-                fcolor=None,
-                fcolorend=None,
-                fpos=None,
-                spos=self._hbx_turaa6.center,
-                spos2=None,
-                ftcol=None,
-                stcol=0.5,
-                fforce=None,
-                sforce=0.0,
-                flifespan=None,
-                slifespan=1.8,
-                sclfact=0.6,
-                psfact=0.3,
-                pdir=Vec3(0, 0, 1),
-                fphpr=None,
-                sphpr=Vec3(0,0,0),
-                emradfact=0.5,
-                emampfact=0.4,
-                absolute=True,
-                fdelay=None)
+                sclfact = 1.4,
+                emradfact = 1.1,
+                zvelfact = 7.0,
+                fcolor = None,
+                fcolorend = None,
+                ftcol = None,
+                flifespan = None,
+                fpos = None,
+                fdelay = None,
+                spos = self._hbx_turaa6.center,
+                stcol = 0.5,
+                slifespan = 4.0)
             self._turretaa6.destroy()
             self.turrets.remove(self._turretaa6)
             self._hbx_turaa6.out = True

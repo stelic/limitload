@@ -8,7 +8,7 @@ from pandac.PandaModules import NodePath, AmbientLight
 from src import pycv
 from src.core.body import Body
 from src.core.curve import Segment, Arc
-from src.core.effect import fire_n_smoke
+from src.core.effect import fire_n_smoke_2
 from src.core.fire import Explosion, PolyExplosion
 from src.core.misc import AutoProps, rgba, norm_ang_delta, to_navhead
 from src.core.misc import sign, unitv, clamp, vtod, vtof, ptod, ptof
@@ -272,28 +272,20 @@ class Vehicle (Body):
             if d100 < 66:
                 self.explode_minor()
 
-            fire_n_smoke(
+            fire_n_smoke_2(
                 parent=self, store=None,
-                fcolor=rgba(255, 255, 255, 1.0),
-                fcolorend=rgba(250, 184, 91, 1.0),
-                fpos=Vec3(0.0, 0.0, 0.8),
-                spos=Vec3(0.0, 0.0, 1.8),
-                spos2=None,
-                ftcol=0.6,
-                stcol=0.5,
-                fforce=0.0,
-                sforce=0.0,
-                flifespan=0.7,
-                slifespan=2.0,
-                sclfact=fx_uniform(0.4, 0.6),
-                psfact=0.5,
-                pdir=Vec3(0, 0, 1),
-                fphpr=Vec3(0,0,0),
-                sphpr=Vec3(0,0,0),
-                emradfact=fx_uniform(0.15, 0.3) * self._size_xy,
-                emampfact=0.5,
-                absolute=True,
-                fdelay=fx_uniform(0.1, 3.0))
+                sclfact = fx_uniform(0.5, 0.6) * self._size_xy,
+                emradfact = fx_uniform(0.5, 0.7) * self._size_xy,
+                zvelfact = 6.0,
+                fcolor = rgba(255, 255, 255, 1.0),
+                fcolorend = rgba(246, 112, 27, 1.0),
+                ftcol = 0.5,
+                flifespan = 0.8,
+                fpos = Vec3(0.0, 0.0, 1.0),
+                fdelay = fx_uniform(0.1, 3.0),
+                spos = Vec3(0.0, 0.0, 1.0),
+                stcol = 0.4,
+                slifespan = 4.0)
 
             for turret in self.turrets:
                 turret.set_ap()

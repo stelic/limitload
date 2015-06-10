@@ -9,7 +9,7 @@ from src.blocks.weapons import TurretM61
 from src.core.body import Body, HitboxData
 from src.core.debris import BreakupData, Breakup
 from src.core.droptank import DropTank
-from src.core.effect import fire_n_smoke, fire_n_smoke_1
+from src.core.effect import fire_n_smoke_1
 from src.core.misc import rgba, hprtovec, remove_subnodes, set_texture, intl01vr
 from src.core.misc import randrange
 from src.core.misc import fx_uniform

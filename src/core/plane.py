@@ -17,7 +17,7 @@ from src.core.curve import Segment, Arc, HelixZ, ArcedHelixZ
 from src.core.decoy import FlareChaff
 from src.core.debris import Breakup
 from src.core.droptank import DropTank, Tanker
-from src.core.effect import fire_n_smoke, fire_n_smoke_1, fire_n_smoke_4
+from src.core.effect import fire_n_smoke_1, fire_n_smoke_4
 from src.core.fire import Explosion, Splash, PolyExplosion
 from src.core.jammer import Jammer, JammingPod, JammingCarpet
 from src.core.misc import AutoProps, SimpleProps, rgba
