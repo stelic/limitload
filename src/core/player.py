@@ -956,7 +956,7 @@ class Player (DirectObject):
 
         dq = self.ac.dynstate
         mass, alt, speed = dq.m, dq.h, dq.v
-        pos, aoa, throttle = dq.p, dq.a, dq.tl
+        pos, aoa, throttle, airbrake = dq.p, dq.a, dq.tl, dq.brd
         minaoa, zliftaoa, maxaoa, groundaoa = dq.amin, dq.a0, dq.amax, dq.ag
         nminaoa, nmaxaoa = dq.anmin, dq.anmax
         tmaxaoa = dq.atmaxab
@@ -965,6 +965,7 @@ class Player (DirectObject):
         rollrate, maxrollacc = dq.ro, dq.rsmax
         if self.ac.onground:
             steerrate = dq.gso
+        airbrakerate = dq.brdvmax
 
         # Flight.
 
@@ -1040,6 +1041,11 @@ class Player (DirectObject):
         droll = rollrate1 * dt
         #print "--ac-inputs-61", degrees(maxrollrate), degrees(rollrate)
 
+        # - air brake
+        airbrake1 = self.input_air_brake
+        tdairbrake = airbrake1 - airbrake
+        dairbrake = update_towards(tdairbrake, 0.0, airbrakerate, dt)
+
         # - wheel steering
         if self.ac.onground:
             smooth_steer = self.input_steer
@@ -1070,14 +1076,13 @@ class Player (DirectObject):
             dsteer = 0.0
 
         # - extensions
-        airbrake = self.input_air_brake
         flaps = self.input_flaps
         landgear = self.input_landing_gear
         wheelbrake = self.input_wheel_brake
 
         # - input
         self.ac.set_cntl(daoa=daoa, droll=droll, dthrottle=dthrottle,
-                         airbrake=airbrake, flaps=flaps,
+                         dairbrake=dairbrake, flaps=flaps,
                          landgear=landgear, dsteer=dsteer,
                          wheelbrake=wheelbrake)
 

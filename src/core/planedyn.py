@@ -23,6 +23,11 @@ fudge = AutoProps(
     sfcabzfac=0.5,
 )
 
+AIRBRAKE = SimpleProps(
+    RETRACTED=0.0,
+    EXTENDED=1.0,
+)
+
 FLAPS = SimpleProps(
     RETRACTED=0,
     LANDING=1,
@@ -1525,7 +1530,7 @@ class PlaneDynamics (object):
         nit = 0
         tmaxref = tmaxab
         a = a0
-        brd = False
+        brd = AIRBRAKE.RETRACTED
         fld = FLAPS.RETRACTED
         while True:
             nit += 1
@@ -1543,7 +1548,7 @@ class PlaneDynamics (object):
             if abs(a - ap) < radians(0.01):
                 a = ap
                 break
-        # TODO: If t < 0, try with air brake (brd = True).
+        # TODO: If t < 0, try with air brake (brd = AIRBRAKE.EXTENDED).
         tl = ff.restlth(t, tmax, tmaxab) or 0.0
         c = (t * (1.0 - 0.5 * a**2) - d - w * stht) / m
         b = xit * c
@@ -1705,7 +1710,7 @@ class PlaneDynamics (object):
         s = Vec3D()
 
         gc = True
-        brd = False
+        brd = AIRBRAKE.RETRACTED
         brw = False
         gso = 0.0
         gsp = 0.0
@@ -1720,7 +1725,7 @@ class PlaneDynamics (object):
 
     MINSPEED = 1e-5
 
-    def update_fstep (self, dq, da, dr, dtl, dgso, dtm, hg, ng, tg,
+    def update_fstep (self, dq, da, dr, dtl, dbrd, dgso, dtm, hg, ng, tg,
                       eps=radians(0.001), maxit=5, extraq=False):
 
         ff, ad, pd = self, self, self
@@ -1753,7 +1758,7 @@ class PlaneDynamics (object):
                       sd0cr, sd0sp, sd0spab, v, ma))
         sd0 = ff.ressd0fl(fld, sd0cr, sd0)
         if brd:
-            sd0 += dsd0br
+            sd0 += dsd0br * brd
         if lg:
             sd0 += dsd0lg
         ks = pd.ks
@@ -1772,6 +1777,8 @@ class PlaneDynamics (object):
             raise StandardError("Throttle out of range.")
         sfc_n = ff.ressfc(h, vsnd, vsd0sp, vsd0spab, sfcz, sfcabz, v, tl_n)[0]
         rot = QuatD()
+
+        brd_n = clamp(brd + dbrd, 0.0, 1.0)
 
         ez = Vec3D(0.0, 0.0, 1.0)
         xit = unitv(u)
@@ -1977,15 +1984,15 @@ class PlaneDynamics (object):
 
         if dqce >= eps:
             debug(1, "fstep-end:  it=%d  "
-                  "da=%+8.4f[deg]  dr=%+8.4f[deg]  dtl=%+7.4f" %
-                  (it, da, dr, dtl))
+                  "da=%+8.4f[deg]  dr=%+8.4f[deg]  dtl=%+7.4f  dbrd=%+7.4f" %
+                  (it, da, dr, dtl, dbrd))
             #debug(1, "fstep-end2:  "
                   #"xit=(% .4f, % .4f, % .4f)  xin=(% .4f, % .4f, % .4f)" %
                   #(xit_n[0], xit_n[1], xit_n[2],
                    #xin_n[0], xin_n[1], xin_n[2]))
 
         dq.p, dq.u, dq.b, dq.o, dq.s, dq.gc = p_n, u_n, b_n, o_n, s_n, gc_n
-        dq.m, dq.an, dq.phi, dq.tl = m_n, an_n, phi_n, tl_n
+        dq.m, dq.an, dq.phi, dq.tl, dq.brd = m_n, an_n, phi_n, tl_n, brd_n
         dq.ag, dq.gso, dq.gsp, dq.gsr = ag_n, gso_n, gsp_n, gsr_n
         dq.tg, dq.grh = tg, grh
 
@@ -1995,6 +2002,8 @@ class PlaneDynamics (object):
             da = a_n - a
             dr = ab.signedAngleRad(ab_n, xit_n)
             dtl = tl_n - tl
+
+            dbrd = brd_n - brd
 
             #tr0, rr0 = dq.tr or 0.0, dq.rr or 0.0
             tr, rr = 0.0, 0.0
@@ -2013,6 +2022,7 @@ class PlaneDynamics (object):
             a, phi, fn = a_n, phi_n, fn_n
             xit, xib, xin, at, an, ab = xit_n, xib_n, xin_n, at_n, an_n, ab_n
             q, l, sl, d, sd, t, tl = q_n, l_n, sl_n, d_n, sd_n, t_n, tl_n
+            brd = brd_n
             ag = ag_n
             sfc = sfc_n
             drxit = drxit_n
@@ -2130,7 +2140,7 @@ class PlaneDynamics (object):
 
             vias_freeze = lambda: ff.resvias(h, pr, q)[1]
 
-            dq.da, dq.dr, dq.dtl = da, dr, dtl
+            dq.da, dq.dr, dq.dtl, dq.dbrd = da, dr, dtl, dq.dbrd
             dq.g, dq.rho, dq.pr, dq.vsnd = g, rho, pr, vsnd
             dq.gb = ez * -g
             dq.nmin, dq.nmax = nmin, nmax
@@ -2150,6 +2160,7 @@ class PlaneDynamics (object):
             dq.pomax, dq.psmax = pomax, psmax
             dq.romax, dq.rsmax = romax, rsmax
             dq.tlvmax, dq.tlcmax = 1.0, 10.0
+            dq.brdvmax = 0.5
             dq.ao, dq.ro, dq.tlv = ao, ro, tlv
             dq.xito = xito
             dq.amin, dq.a1m, dq.a0, dq.a1, dq.amax = amin, a1m, a0, a1, amax
@@ -2175,6 +2186,7 @@ class PlaneDynamics (object):
         rn_t, v_t, ct_t = rnt, vt, ctt
 
         m, p, u, b, an, tl, phi = dq.m, dq.p, dq.u, dq.b, dq.an, dq.tl, dq.phi
+        brd = dq.brd
 
         h = p[2]
         v = u.length()
@@ -2232,7 +2244,8 @@ class PlaneDynamics (object):
             da = a_t - a
             dr = ab.signedAngleRad(ab_t, xit)
             dtl = tl_t - tl
-            brd = False
+            brd_t = AIRBRAKE.RETRACTED
+            dbrd = brd_t - brd
             fld = FLAPS.RETRACTED
             inv = False
             if nmininv is not None:
@@ -2263,17 +2276,17 @@ class PlaneDynamics (object):
                        degrees(phi), degrees(phi_t),
                        tl, tl_t, inv))
         else:
-            # TODO: Try with air brake (brd = True, sd0 + dsd0br).
+            # TODO: Try with air brake (brd = AIRBRAKE.EXTENDED, sd0 + dsd0br * brd).
             da = None
             dr = None
             dtl = None
-            brd = None
+            dbrd = None
             fld = None
             inv = None
             if mon:
                 debug(1, "diff-to-path-tnr:  none")
 
-        return da, dr, dtl, brd, fld, phi_t, inv
+        return da, dr, dtl, dbrd, fld, phi_t, inv
 
 
     def diff_to_path_tnra (self, dq, att, ant, rnt, vt, ctt,
@@ -2286,6 +2299,7 @@ class PlaneDynamics (object):
         rn_t, v_t, ct_t = rnt, vt, ctt
 
         m, p, u, b, an, tl, phi = dq.m, dq.p, dq.u, dq.b, dq.an, dq.tl, dq.phi
+        brd = dq.brd
 
         h = p[2]
         v = u.length()
@@ -2340,7 +2354,8 @@ class PlaneDynamics (object):
             da = a_t - a
             dr = ab.signedAngleRad(ab_t, xit)
             dtl = tl_t - tl
-            brd = False
+            brd_t = AIRBRAKE.RETRACTED
+            dbrd = brd_t - brd
             fld = FLAPS.RETRACTED
             inv = False
             if nmininv is not None:
@@ -2364,17 +2379,17 @@ class PlaneDynamics (object):
                        degrees(phi), degrees(phi_t),
                        tl, tl_t, inv))
         else:
-            # TODO: Try with air brake (brd = True, sd0 + dsd0br).
+            # TODO: Try with air brake (brd = AIRBRAKE.EXTENDED, sd0 + dsd0br * brd).
             da = None
             dr = None
             dtl = None
-            brd = None
+            dbrd = None
             fld = None
             inv = None
             if mon:
                 debug(1, "diff-to-path-tnra:  none")
 
-        return da, dr, dtl, brd, fld, phi_t, inv
+        return da, dr, dtl, dbrd, fld, phi_t, inv
 
 
     def diff_to_path_gatk (self, cq, dq, tm, dtm, gh,
@@ -2387,6 +2402,7 @@ class PlaneDynamics (object):
         ff, ad, pd = self, self, self
 
         m, p, u, b, an, tl, phi = dq.m, dq.p, dq.u, dq.b, dq.an, dq.tl, dq.phi
+        brd = dq.brd
 
         h = p[2]
         v = u.length()
@@ -2413,6 +2429,7 @@ class PlaneDynamics (object):
         ao, ro, tlv = dq.ao, dq.ro, dq.tlv
         pomax, romax, tlvmax = dq.pomax, dq.romax, dq.tlvmax
         psmax, rsmax, tlcmax = dq.psmax, dq.rsmax, dq.tlcmax
+        brdvmax = dq.brdvmax
 
         if not cq.inited:
             cq.inited = True
@@ -2733,7 +2750,7 @@ class PlaneDynamics (object):
             # giving preference to current unless too high negative load
             # (and possibly some other finer criteria).
             # NOTE: m, v change slowly, so keep at current.
-            da_i_s, dr_i_s, dtl_i_s, brd_i_s = None, None, None, False
+            da_i_s, dr_i_s, dtl_i_s, dbrd_i_s = None, None, None, None
             n_i_s, dalc_i_s, dtmsr_i_s = None, None, None
             for i_sg, sginv_i in enumerate((1, -1)):
                 if mon:
@@ -2830,7 +2847,9 @@ class PlaneDynamics (object):
                 n_i = (l_i + t_i * a_i) / w
                 tl_i = ff.restlth(t_i, tmax, tmaxab)
                 dtl_i = tl_i - tl
-                brd_i = False
+
+                brd_i = AIRBRAKE.RETRACTED
+                dbrd_i = brd_i - brd
 
                 tctlv_i = 0.0
 
@@ -2843,9 +2862,9 @@ class PlaneDynamics (object):
                            degrees(dr_ib), roff, dpi_ati_xit, degrees(dr_sig),
                            degrees(dr_is), brn_ib, brn_roff))
                     debug(1, "gatk:  da_i=%.2f[deg]  dr_i=%.2f[deg]  "
-                          "dtl_i=%.2f[deg] brd_i=%s  "
+                          "dtl_i=%.2f[deg] dbrd_i=%.2f  "
                           "tcao_i=%.2f[deg/s]  tcro_i=%.2f[deg/s]  tctlv_i=%.2f[1/s]" %
-                          (degrees(da_i), degrees(dr_i), dtl_i, brd_i,
+                          (degrees(da_i), degrees(dr_i), dtl_i, dbrd_i,
                            degrees(tcao_i), degrees(tcro_i), tctlv_i))
 
                 # Compute input program for control time criterion.
@@ -2866,7 +2885,7 @@ class PlaneDynamics (object):
                     #and abs(dr_i) < abs(dr_i_s)
                     and dtmsr_i < dtmsr_i_s
                     )):
-                    da_i_s, dr_i_s, dtl_i_s, brd_i_s = da_i, dr_i, dtl_i, brd_i
+                    da_i_s, dr_i_s, dtl_i_s, dbrd_i_s = da_i, dr_i, dtl_i, dbrd_i
                     tcao_i_s, tcro_i_s, tctlv_i_s = tcao_i, tcro_i, tctlv_i
                     n_i_s, dalc_i_s, dtmsr_i_s = n_i, dalc_i, dtmsr_i
                 if mon:
@@ -2874,7 +2893,7 @@ class PlaneDynamics (object):
                           "dtmsr_i=%.2f[s]" %
                           (n_i, nmin_i_rc, degrees(dalc_i), dtmsr_i))
 
-            da, dr, dtl, brd = da_i_s, dr_i_s, dtl_i_s, brd_i_s
+            da, dr, dtl, dbrd = da_i_s, dr_i_s, dtl_i_s, dbrd_i_s
             tcao, tcro, tctlv = tcao_i_s, tcro_i_s, tctlv_i_s
             # skill: non-perfect da_i, dr_i, dtl_i?
 
@@ -3074,9 +3093,9 @@ class PlaneDynamics (object):
                                         v_hc, ct_hc, tmaxref=tmaxref,
                                         nmininv=nmin_hc, facedir=fdir_hc,
                                         bleedv=True, bleedr=True)
-            da_hc, dr_hc, dtl_hc, brd_hc = ret[:4]
+            da_hc, dr_hc, dtl_hc, dbrd_hc = ret[:4]
             if da_hc is None:
-                da_hc, dr_hc, dtl_hc, brd_hc = 0.0, 0.0, 0.0, False
+                da_hc, dr_hc, dtl_hc, dbrd_hc = 0.0, 0.0, 0.0, 0.0
                 if mon:
                     debug(1, "gatk:  cannot resolve turn")
             if mon:
@@ -3094,7 +3113,7 @@ class PlaneDynamics (object):
                       (cr, cr_hc, degrees(tr_hc),
                        vf(xit_hc), vf(xin_hc), fdir_hc))
 
-            da, dr, dtl, brd = da_hc, dr_hc, dtl_hc, brd_hc
+            da, dr, dtl, dbrd = da_hc, dr_hc, dtl_hc, dbrd_hc
             tcao, tcro, tctlv = 0.0, 0.0, 0.0
             # skill: non-perfect da_hc, dr_hc, dtl_hc?
 
@@ -3102,9 +3121,9 @@ class PlaneDynamics (object):
 
         if mon:
             debug(1, "gatk:  inintc=%s  "
-                  "da=%.2f[deg]  dr=%.2f[deg]  dtl=%.2f  brd=%s  "
+                  "da=%.2f[deg]  dr=%.2f[deg]  dtl=%.2f  dbrd=%.2f  "
                   "tcao=%.2f[deg/s]  tcro=%.2f[deg/s]  tctlv=%.2f[1/s]" %
-                  (cq.inintc, degrees(da), degrees(dr), dtl, brd,
+                  (cq.inintc, degrees(da), degrees(dr), dtl, dbrd,
                    degrees(tcao), degrees(tcro), tctlv))
 
         pomax1 = pomax
@@ -3121,10 +3140,13 @@ class PlaneDynamics (object):
         #tlcmax1 = min(tlvmax / (dtmu * 2.0), tlcmax)
         tlcmax1 = tlcmax
 
+        brdvmax1 = brdvmax
+
         ret = self.input_program(cq,
                                  da, cao, tcao, pomax1, psmax1,
                                  dr, cro, tcro, romax1, rsmax1,
                                  dtl, ctlv, tctlv, tlvmax1, tlcmax1,
+                                 dbrd, brdvmax,
                                  dtmumin, dtmumax, rfacdtmu, dtmeps,
                                  mon=mon)
 
@@ -3133,7 +3155,7 @@ class PlaneDynamics (object):
         if mon:
             debug(1, "gatk ==================== end")
 
-        return ret + (brd, sig_ati, release)
+        return ret + (sig_ati, release)
 
 
     def diff_to_path_gtrk (self, cq, dq, tm, dtm, gh,
@@ -3149,6 +3171,7 @@ class PlaneDynamics (object):
         ff, ad, pd = self, self, self
 
         m, p, u, b, an, tl, phi = dq.m, dq.p, dq.u, dq.b, dq.an, dq.tl, dq.phi
+        brd = dq.brd
 
         ez = vec(0.0, 0.0, 1.0)
 
@@ -3172,6 +3195,7 @@ class PlaneDynamics (object):
         nmin, nmax = ff.resnmax(mref, nmaxref, m)
         pomax, romax, tlvmax = dq.pomax, dq.romax, dq.tlvmax
         psmax, rsmax, tlcmax = dq.psmax, dq.rsmax, dq.tlcmax
+        brdvmax = dq.brdvmax
 
         a = dq.a
         at, an, ab, ant = dq.at, dq.an, dq.ab, dq.ant
@@ -3370,7 +3394,8 @@ class PlaneDynamics (object):
                   (v, v_i, ct_i, dtl_i))
 
         # Air brake.
-        brd = False
+        brd_i = AIRBRAKE.RETRACTED
+        dbrd = brd_i - brd
 
         #xib1 = unitv(ad.cross(txin))
         ##xit1 = unitv(xit - xib1 * xit.dot(xib1))
@@ -3389,22 +3414,23 @@ class PlaneDynamics (object):
                                     #v1, ct1, tmaxref=tmaxref,
                                     #nmininv=nmin1, facedir=fdir1,
                                     #bleedv=True, bleedr=True)
-        #da, dr, dtl, brd = ret[:4]
+        #da, dr, dtl, dbrd = ret[:4]
         #if da is None:
-            #da, dr, dtl, brd = 0.0, 0.0, 0.0, False
+            #da, dr, dtl, dbrd = 0.0, 0.0, 0.0, 0.0
             #if mon:
                 #debug(1, "gtrk:  noturn")
 
         if mon:
             debug(1, "gtrk:  "
-                  "da=%.2f[deg]  dr=%.2f[deg]  dtl=%.2f  brd=%s" %
-                  (degrees(da), degrees(dr), dtl, brd))
+                  "da=%.2f[deg]  dr=%.2f[deg]  dtl=%.2f  dbrd=%.2f" %
+                  (degrees(da), degrees(dr), dtl, dbrd))
 
         tcao, tcro, tctlv = 0.0, 0.0, 0.0
 
         pomax1 = pomax; psmax1 = psmax
         romax1 = romax; rsmax1 = rsmax
         tlvmax1 = tlvmax; tlcmax1 = tlcmax
+        brdvmax1 = brdvmax
 
         #dtmumin, dtmumax = 0.5, 1.0
         dtmumin, dtmumax = 0.2, 0.4
@@ -3416,6 +3442,7 @@ class PlaneDynamics (object):
                                  da, cao, tcao, pomax1, psmax1,
                                  dr, cro, tcro, romax1, rsmax1,
                                  dtl, ctlv, tctlv, tlvmax1, tlcmax1,
+                                 dbrd, brdvmax,
                                  dtmumin, dtmumax, rfacdtmu, dtmeps,
                                  mon=mon)
 
@@ -3424,7 +3451,7 @@ class PlaneDynamics (object):
         if mon:
             debug(1, "gtrk ==================== end")
 
-        return ret + (brd, sig_adi, release)
+        return ret + (sig_adi, release)
 
 
     def diff_to_path_mevd (self, cq, dq, tm, dtm, gh,
@@ -3462,6 +3489,7 @@ class PlaneDynamics (object):
         nmin, nmax = ff.resnmax(mref, nmaxref, m)
         pomax, romax, tlvmax = dq.pomax, dq.romax, dq.tlvmax
         psmax, rsmax, tlcmax = dq.psmax, dq.rsmax, dq.tlcmax
+        brdvmax = dq.brdvmax
 
         at, an, ab = dq.at, dq.an, dq.ab
         xit, xin, xib = dq.xit, dq.xin, dq.xib
@@ -3557,16 +3585,16 @@ class PlaneDynamics (object):
                                     tmaxref=tmaxref,
                                     nmininv=nmin1, facedir=fdir1,
                                     bleedv=True, bleedr=True)
-        da, dr, dtl, brd = ret[:4]
+        da, dr, dtl, dbrd = ret[:4]
         if da is None:
-            da, dr, dtl, brd = 0.0, 0.0, 0.0, False
+            da, dr, dtl, dbrd = 0.0, 0.0, 0.0, 0.0
             if mon:
                 debug(1, "mevd:  noturn")
 
         if mon:
             debug(1, "mevd:  "
-                  "da=%.2f[deg]  dr=%.2f[deg]  dtl=%.2f  brd=%s" %
-                  (degrees(da), degrees(dr), dtl, brd))
+                  "da=%.2f[deg]  dr=%.2f[deg]  dtl=%.2f  dbrd=%.2f" %
+                  (degrees(da), degrees(dr), dtl, dbrd))
 
         tcao, tcro, tctlv = 0.0, 0.0, 0.0
 
@@ -3574,6 +3602,7 @@ class PlaneDynamics (object):
         pomax1 = pomax; psmax1 = psmax
         romax1 = romax; rsmax1 = rsmax
         tlvmax1 = tlvmax; tlcmax1 = tlcmax
+        brdvmax1 = brdvmax
 
         rfacdtmu = 0.9
         dtmeps = dtm * 1e-2
@@ -3582,6 +3611,7 @@ class PlaneDynamics (object):
                                  da, cao, tcao, pomax1, psmax1,
                                  dr, cro, tcro, romax1, rsmax1,
                                  dtl, ctlv, tctlv, tlvmax1, tlcmax1,
+                                 dbrd, brdvmax,
                                  dtmumin, dtmumax, rfacdtmu, dtmeps,
                                  mon=mon)
 
@@ -3590,7 +3620,7 @@ class PlaneDynamics (object):
         if mon:
             debug(1, "mevd ==================== end")
 
-        return ret + (brd,)
+        return ret
 
 
     @staticmethod
@@ -3598,6 +3628,7 @@ class PlaneDynamics (object):
                        da, cao, tcao, pomax, psmax,
                        dr, cro, tcro, romax, rsmax,
                        dtl, ctlv, tctlv, tlvmax, tlcmax,
+                       dbrd, brdvmax,
                        dtmumin, dtmumax, rfacdtmu, dtmeps,
                        mon=False):
 
@@ -3613,6 +3644,10 @@ class PlaneDynamics (object):
             return cq.dtmctl, cq.dtlc, cq.tlv
         def setctl (dtmctl, dtlc, tlv):
             cq.dtmctl, cq.dtlc, cq.tlv = dtmctl, dtlc, tlv
+        def getcbrd ():
+            return cq.dtmcbrd, cq.dbrdc
+        def setcbrd (dtmcbrd, dbrdc):
+            cq.dtmcbrd, cq.dbrdc = dtmcbrd, dbrdc
 
         tcls = PlaneDynamics
 
@@ -3650,12 +3685,16 @@ class PlaneDynamics (object):
                                            dtmsu, getctl, setctl)
             inpftl, dtmdtl, dtmstl = ret
 
+        ret = tcls.input_program_constv(dbrd, brdvmax,
+                                        getcbrd, setcbrd)
+        inpfbrd, dtmbrd = ret
+
         if mon:
             debug(1, "inpprg:  dtmu=%.2f[s]  "
                   "dtmsa_mt=%.2f[s]  dtmsr_mt=%.2f[s]  dtmstl_mt=%.2f[s]" %
                   (dtmu, dtmsa_mt, dtmsr_mt, dtmstl_mt))
 
-        return dtmu, inpfa, inpfr, inpftl
+        return dtmu, inpfa, inpfr, inpftl, inpfbrd
 
 
     @staticmethod
@@ -3865,6 +3904,33 @@ class PlaneDynamics (object):
                 return None, None, None
             else:
                 return None, None
+
+
+    @staticmethod
+    def input_program_constv (dit, v,
+                              getc=None, setc=None, mon=False):
+
+        if mon:
+            debug(1, "inpprgcv40 %s %s" % (degrees(dit), degrees(v)))
+
+        dtms = abs(dit / v)
+        kv = sign(dit)
+
+        if getc and setc:
+            setc(0.0, 0.0)
+            def inpf (dq, dtm, mon=False):
+                dtmc, dic = getc()
+                di = 0.0
+                dtm1 = min(dtm, dtms - dtmc)
+                if 0.0 < dtm1:
+                    di += (v * kv) * dtm1
+                    dtmc += dtm1
+                dic += di
+                setc(dtmc, dic)
+                return di
+            return inpf, dtms
+        else:
+            return dtms
 
 
     @staticmethod

@@ -1555,7 +1555,7 @@ class Cockpit (object):
 
         movables_flow_vol = 0.0
 
-        airbrake_active = self.player.ac.dynstate.brd
+        airbrake_active = (self.player.ac.dynstate.brd > 0.0)
         if self._prev_airbrake_active != airbrake_active:
             self._prev_airbrake_active = airbrake_active
             if airbrake_active:
@@ -1568,6 +1568,7 @@ class Cockpit (object):
                 speed,
                 self._airbrake_flow_min_speed, self._airbrake_flow_max_speed,
                 0.0, self._airbrake_flow_max_volume)
+            airbrake_vol *= self.player.ac.dynstate.brd
             movables_flow_vol = max(movables_flow_vol, airbrake_vol)
 
         lgear_active = self.player.ac.dynstate.lg

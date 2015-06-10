@@ -31,7 +31,8 @@ from src.core.misc import to_navhead, make_text, update_text
 from src.core.misc import randunit, uniform, randrange, choice
 from src.core.misc import fx_uniform, fx_choice
 from src.core.misc import report, debug, dbgval
-from src.core.planedyn import GROUND, FLAPS, PlaneDynamics, PlaneSkill
+from src.core.planedyn import GROUND, AIRBRAKE, FLAPS
+from src.core.planedyn import PlaneDynamics, PlaneSkill
 from src.core.podrocket import RocketPod, PodLauncher
 from src.core.rocket import Rocket, Launcher
 from src.core.sensor import SIZEREF, SensorPack
@@ -937,7 +938,7 @@ class Plane (Body):
                 hg, ng, tg = None, None, None
             self.dyn.resolve_stat(dq, self.mass, ptod(pos), vtod(vel),
                                   hg, ng, tg)
-            self.dyn.update_fstep(dq, 0.0, 0.0, 0.0, 0.0, 0.0,
+            self.dyn.update_fstep(dq, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                                   hg, ng, tg,
                                   extraq=True) # to derive quantities
             mon = False
@@ -1093,26 +1094,27 @@ class Plane (Body):
 
 
     def set_cntl (self, daoa=None, droll=None, dthrottle=None,
-                  airbrake=False, flaps=FLAPS.RETRACTED,
+                  dairbrake=None, flaps=FLAPS.RETRACTED,
                   landgear=False, dsteer=None, wheelbrake=False):
 
         self._daoa = daoa or 0.0
         self._droll = droll or 0.0
         self._dthrottle = dthrottle or 0.0
-        self._airbrake = airbrake
+        self._dairbrake = dairbrake or 0.0
         self._flaps = flaps
         self._landgear = landgear if not self.onground else True
         self._dsteer = dsteer or 0.0
         self._wheelbrake = wheelbrake
 
 
-    def _set_cntl_with_spdacc (self, da, dr, dtl, brd, fld, dtmu):
+    def _set_cntl_with_spdacc (self, da, dr, dtl, dbrd, fld, dtmu):
 
         dq = self.dynstate
         cq = self._act_state
 
         pomax, romax, tlvmax = dq.pomax, dq.romax, dq.tlvmax
         psmax, rsmax, tlcmax = dq.psmax, dq.rsmax, dq.tlcmax
+        brdvmax = dq.brdvmax
 
         if not cq.inited:
             cq.ao, cq.ro, cq.tlv = dq.ao, dq.ro, dq.tlv
@@ -1132,6 +1134,10 @@ class Plane (Body):
             return cq.dtmctl, cq.dtlc, cq.tlv
         def setctl (dtmctl, dtlc, tlv):
             cq.dtmctl, cq.dtlc, cq.tlv = dtmctl, dtlc, tlv
+        def getcbrd ():
+            return cq.dtmcbrd, cq.dbrdc
+        def setcbrd (dtmcbrd, dbrdc):
+            cq.dtmcbrd, cq.dbrdc = dtmcbrd, dbrdc
 
         dtmeps = self.world.dt * 1e-2
 
@@ -1159,7 +1165,11 @@ class Plane (Body):
                                                getctl, setctl, dtmeps)
             inpftl = ret[0]
 
-        self.set_cntl(inpfa, inpfr, inpftl, brd, fld)
+        ret = self.dyn.input_program_constv(dbrd, brdvmax,
+                                            getcbrd, setcbrd)
+        inpfbrd = ret[0]
+
+        self.set_cntl(inpfa, inpfr, inpftl, inpfbrd, fld)
 
 
     def _loop (self, task):
@@ -1810,6 +1820,7 @@ class Plane (Body):
         dq = self.dynstate
 
         da, dr, dtl = self._daoa, self._droll, self._dthrottle
+        dbrd = self._dairbrake
         dgso = self._dsteer
         if callable(da):
             da = da(dq, dtm)
@@ -1817,6 +1828,8 @@ class Plane (Body):
             dr = dr(dq, dtm)
         if callable(dtl):
             dtl = dtl(dq, dtm)
+        if callable(dbrd):
+            dbrd = dbrd(dq, dtm)
         if callable(dgso):
             dgso = dgso(dq, dtm)
         if self.fuel <= 0.0:
@@ -1824,7 +1837,6 @@ class Plane (Body):
             dtl = clamp(tlv * dtm, -dq.tl, 0.0)
 
         dq.m = self.mass # may change by releasing stores, etc.
-        dq.brd = self._airbrake
         dq.fld = self._flaps
         dq.lg = self._landgear
         dq.brw = self._wheelbrake
@@ -1833,7 +1845,7 @@ class Plane (Body):
             hg, ng, tg = self._ground_data()
         else:
             hg, ng, tg = None, None, None
-        self.dyn.update_fstep(dq, da, dr, dtl, dgso, dtm,
+        self.dyn.update_fstep(dq, da, dr, dtl, dbrd, dgso, dtm,
                               hg, ng, tg,
                               extraq=True)
 
@@ -2815,10 +2827,10 @@ class Plane (Body):
                                         speed1, accel1, tmaxref=tmaxref,
                                         nmininv=minlfac, facedir=facedir,
                                         bleedv=True, bleedr=True)
-        da, dr, dtl, brd, fld, phit, invt = ret
+        da, dr, dtl, dbrd, fld, phit, invt = ret
         if da is None:
-            da, dr, dtl, brd, fld = 0.0, 0.0, 0.0, False, FLAPS.RETRACTED
-        self._set_cntl_with_spdacc(da, dr, dtl, brd, fld, adt * 0.8)
+            da, dr, dtl, dbrd, fld = 0.0, 0.0, 0.0, 0.0, FLAPS.RETRACTED
+        self._set_cntl_with_spdacc(da, dr, dtl, dbrd, fld, adt * 0.8)
 
         #print "========== ap-plane-nav-end"
         return adt
@@ -3002,10 +3014,10 @@ class Plane (Body):
                                         speed1, acc1, tmaxref=tmaxref,
                                         nmininv=minlfac, facedir=facedir,
                                         bleedv=True, bleedr=True)
-        da, dr, dtl, brd, fld, phit, invt = ret
+        da, dr, dtl, dbrd, fld, phit, invt = ret
         if da is None:
-            da, dr, dtl, brd, fld = 0.0, 0.0, 0.0, False, FLAPS.RETRACTED
-        self._set_cntl_with_spdacc(da, dr, dtl, brd, fld, adt * 0.5)
+            da, dr, dtl, dbrd, fld = 0.0, 0.0, 0.0, 0.0, FLAPS.RETRACTED
+        self._set_cntl_with_spdacc(da, dr, dtl, dbrd, fld, adt * 0.5)
 
         #print ("--  name=%s  formdist=%.1f[m]" % (self.name, fdist))
         #print "========== ap-plane-form-end"
@@ -3068,18 +3080,18 @@ class Plane (Body):
                                              tpos, tvel, tacc, tsize,
                                              shdist, shldf, freeab,
                                              skill=skill, mon=mon)
-            dtmu, inpfa, inpfr, inpftl, brd, sig, release = ret
+            dtmu, inpfa, inpfr, inpftl, inpfbrd, sig, release = ret
         elif atyp == 2:
             ret = self.dyn.diff_to_path_gtrk(cq, dq, atime, dt, elev,
                                              tpos, tvel, tacc, tant, tsize,
                                              shdist, shldf, freeab,
                                              skill=skill, mon=mon)
-            dtmu, inpfa, inpfr, inpftl, brd, sig, release = ret
+            dtmu, inpfa, inpfr, inpftl, inpfbrd, sig, release = ret
         else:
             assert False
 
         fld = FLAPS.RETRACTED
-        self.set_cntl(inpfa, inpfr, inpftl, brd, fld)
+        self.set_cntl(inpfa, inpfr, inpftl, inpfbrd, fld)
 
         if self.cannons:
             if self._wait_cannon_burst <= 0.0:
@@ -3170,10 +3182,10 @@ class Plane (Body):
         ret = self.dyn.diff_to_path_mevd(cq, dq, atime, dt, elev,
                                          mpos, mvel, macc, freeab,
                                          skill=skill, mon=mon)
-        dtmu, inpfa, inpfr, inpftl, brd = ret
+        dtmu, inpfa, inpfr, inpftl, inpfbrd = ret
 
         fld = FLAPS.RETRACTED
-        self.set_cntl(inpfa, inpfr, inpftl, brd, fld)
+        self.set_cntl(inpfa, inpfr, inpftl, inpfbrd, fld)
 
         return dtmu
 
@@ -3237,12 +3249,14 @@ class Plane (Body):
             throttle = dq.tl
             dthrottle = -throttle
 
-            airbrake = False
+            airbrake = dq.brd
+            dairbrake = -airbrake
+
             flaps = FLAPS.RETRACTED
             landgear = False
 
             self.set_cntl(daoa=daoa, droll=droll, dthrottle=dthrottle,
-                          airbrake=airbrake, flaps=flaps,
+                          dairbrake=dairbrake, flaps=flaps,
                           landgear=landgear)
 
         if self._wait_eject_trigger is not None:
@@ -3267,7 +3281,7 @@ class Plane (Body):
             hg, ng, tg = None, None, None
         self.dyn.resolve_stat(dq, self.mass, ptod(pos), vtod(vel),
                               hg, ng, tg)
-        self.dyn.update_fstep(dq, 0.0, 0.0, 0.0, 0.0, 0.0,
+        self.dyn.update_fstep(dq, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
                               hg, ng, tg,
                               extraq=True)
         set_hpr_vfu(self.node, vtof(dq.at), vtof(dq.an))
