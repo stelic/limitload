@@ -1027,7 +1027,10 @@ class Player (DirectObject):
             aoa1 = neutraoa - (limlwcaoa - neutraoa) * smooth_elevator
         aoa1 = clamp(aoa1, limlwaoa, limupaoa)
         tdaoa = aoa1 - aoa
-        pitchrate = maxpitchrate * clamp(abs(tdaoa) * 1.2, 0.0, 1.0)
+        if not self.ac.onground or tdaoa > 0.0:
+            pitchrate = maxpitchrate * clamp(abs(tdaoa) * 1.2, 0.0, 1.0)
+        else:
+            pitchrate = maxpitchrate * clamp(abs(tdaoa) * 2.0, 0.4, 1.0)
         daoa = update_towards(tdaoa, 0.0, pitchrate, dt)
         #print "--ac-inputs-51", degrees(dq.pomax), degrees(dq.po)
 

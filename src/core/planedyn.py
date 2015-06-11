@@ -1909,7 +1909,8 @@ class PlaneDynamics (object):
                     vmin = vminz
                 vrot = vmin * 0.8
                 da_in = da
-                da = intl01vr(v_n, vrot, vmin, 0.0, da)
+                if da > 0.0:
+                    da = intl01vr(v_n, vrot, vmin, 0.0, da)
                 a_n = a + da
                 a_n = max(ag_n, a_n)
                 sina_n = a_n
