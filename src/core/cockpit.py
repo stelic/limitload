@@ -2780,6 +2780,8 @@ class Cockpit (object):
         self._instr_update_fs.append(self._update_warnrec)
         self._instr_cleanup_fs.append(self._cleanup_warnrec)
 
+        self._warnrec_incoming_range = 8000.0 # keep equal to _imt_rocket_fardist?
+
         self._warnrec_update_period = 0.93
         self._warnrec_wait_update = 0.0
         self._warnrec_tracker_families = ("rocket",)
@@ -2842,7 +2844,7 @@ class Cockpit (object):
                         if not body.alive:
                             continue
                         if (body.target is acp and
-                            body.dist(acp) < acp.radarrange * 0.5):
+                            body.dist(acp) < self._warnrec_incoming_range):
                             trackers.append(body)
                             break # need only yes/no
                 if trackers:
