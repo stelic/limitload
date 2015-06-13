@@ -136,6 +136,7 @@ class Heli (Body):
                     normalmap=self._shotdown_normalmap,
                     glowmap=self._shotdown_glowmap,
                     glossmap=self._shotdown_glossmap,
+                    shadowmap=self.world.shadow_texture,
                     scale=self.modelscale,
                     pos=self.modeloffset, hpr=self.modelrot)
             lnode, models, fardists = ret[:3]
