@@ -736,7 +736,7 @@ class R77 (Rocket):
     flightmodes = ["transfer", "intercept"]
     maxoffbore = radians(30.0)
     locktime = 4.0
-    decoyresist = 0.8
+    decoyresist = 0.9
     rcs = 0.00012
     hitboxdata = [(Point3(0.0, 0.0, 0.0), 1.0)]
     modelpath = ["models/weapons/missile_r77.egg"]
@@ -987,7 +987,7 @@ class Igla (Rocket):
     flightmodes = ["intercept"]
     maxoffbore = radians(16.0)
     locktime = 4.0
-    decoyresist = 0.7
+    decoyresist = 0.3
     rcs = 0.00002
     hitboxdata = [(Point3(0.0, 0.0, 0.0), 1.0)]
     modelpath = ["models/weapons/missile_igla.egg"]
@@ -1049,7 +1049,7 @@ class Stinger (Rocket):
     flightmodes = ["intercept"]
     maxoffbore = radians(14.0)
     locktime = 4.0
-    decoyresist = 0.7
+    decoyresist = 0.2
     rcs = 0.00002
     hitboxdata = [(Point3(0.0, 0.0, 0.0), 1.0)]
     modelpath = ["models/weapons/missile_stinger.egg"]
@@ -1111,7 +1111,7 @@ class Aim7 (Rocket):
     flightmodes = ["transfer", "intercept"]
     maxoffbore = radians(12.0)
     locktime = 8.0
-    decoyresist = 0.6
+    decoyresist = 0.5
     rcs = 0.00012
     hitboxdata = [(Point3(0.0, 0.0, 0.0), 1.0)]
     modelpath = ["models/weapons/missile_aim7.egg"]
@@ -1297,7 +1297,7 @@ class Rim156 (Rocket):
     flightmodes = ["transfer", "intercept"]
     maxoffbore = radians(18.0)
     locktime = 5.0
-    decoyresist = 0.7
+    decoyresist = 0.8
     rcs = 0.00028
     hitboxdata = [(Point3(0.0, 0.0, 0.0), 1.6)]
     modelpath = ["models/weapons/missile_rim156.egg"]

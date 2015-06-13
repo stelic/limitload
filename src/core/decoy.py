@@ -78,7 +78,7 @@ class FlareChaff (Body):
                               radius0=0.6, radius1=1.2,
                               #radius0=0.4, radius1=0.8,
                               lifespan=(self._lifespan * 0.5),
-                              segperiod=0.010, farsegperiod=pycv(py=0.100, c=0.020),
+                              segperiod=0.010, farsegperiod=pycv(py=0.100, c=None),
                               maxpoly=pycv(py=100, c=200), farmaxpoly=pycv(py=100, c=200),
                               randcircle=pycv(py=0.8, c=0.5),
                               #color=rgba(255, 150, 63, 1.0), # Flare 2
@@ -95,7 +95,7 @@ class FlareChaff (Body):
                               radius0=0.8, radius1=1.6,
                               #radius0=0.5, radius1=1.0,
                               lifespan=(self._lifespan * 0.5),
-                              segperiod=0.010, farsegperiod=pycv(py=0.100, c=0.020),
+                              segperiod=0.010, farsegperiod=pycv(py=0.100, c=None),
                               maxpoly=pycv(py=100, c=200), farmaxpoly=pycv(py=100, c=200),
                               randcircle=pycv(py=0.9, c=0.6),
                               color=rgba(255, 166, 94, 1.0), # Flare 2
