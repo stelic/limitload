@@ -7,7 +7,7 @@ from src.blocks import *
 
 
 def setup_background (zc=None, mc=None, gc=None,
-                      terraintype="00-flat(0)", skytype="asia",
+                      terraintype="00-flat0", skytype="asia",
                       latitude=None, longitude=None,
                       cumulusdens=1.0, cirrusdens=2.0, stratusdens=0.0,
                       cloudseed=101,
