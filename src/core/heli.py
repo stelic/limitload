@@ -9,7 +9,7 @@ from src import pycv
 from src.core.body import Body
 from src.core.curve import Segment
 from src.core.debris import Breakup
-from src.core.effect import fire_n_smoke
+from src.core.effect import fire_n_smoke_1
 from src.core.fire import Explosion, PolyExplosion
 from src.core.misc import clamp, unitv, vtod, vtof, qtod, qtof, to_navhead
 from src.core.misc import AutoProps, rgba, remove_subnodes, set_texture
@@ -421,28 +421,21 @@ class Heli (Body):
             if self.engine_sound is not None:
                 self.engine_sound.stop()
 
-            fire_n_smoke(
-                parent=self, store=None,
+            fire_n_smoke_1(
+                parent=self, store=self.damage_trails,
+                sclfact=0.11 * self._size_xy * fx_uniform(0.9, 1.2),
+                emradfact=0.11 * self._size_xy * fx_uniform(0.9, 1.1),
                 fcolor=rgba(255, 255, 255, 1.0),
-                fcolorend=rgba(232, 134, 118, 1.0),
-                fpos=Vec3(0.0, 0.0, -1.0),
-                spos=Vec3(0.0, 0.0, 0.0),
-                spos2=None,
+                fcolorend=rgba(247, 203, 101, 1.0),
                 ftcol=0.6,
-                stcol=0.4,
-                fforce=0.0,
-                sforce=0.0,
-                flifespan=0.8,
-                slifespan=1.8,
-                sclfact=fx_uniform(0.6, 0.8),
-                psfact=1.0,
-                pdir=Vec3(0, 0, 1),
-                fphpr=Vec3(0,0,0),
-                sphpr=Vec3(0,0,0),
-                emradfact=fx_uniform(0.02, 0.04) * self._size_xy,
-                emampfact=fx_uniform(0.5, 1.0),
-                absolute=True,
-                fdelay=fx_choice([0.1, fx_uniform(0.5, 6.0)]))
+                fpos=Vec3(0.0, 0.0, 0.0),
+                fpoolsize=16,
+                flength=24.0,
+                fspeed=28,
+                fdelay=fx_choice([0.1, fx_uniform(0.5, 6.0)]),
+                spos=Vec3(0.0, 0.0, 0.0),
+                slifespan=2.0,
+                stcol=0.1)
 
             # Switch to shotdown model.
             if self._shotdown_modelnode is not None:

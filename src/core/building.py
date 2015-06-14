@@ -4,7 +4,7 @@ from pandac.PandaModules import VBase2, VBase2D, Vec3, Point2, Point3
 
 from src import pycv
 from src.core.body import Body
-from src.core.effect import fire_n_smoke_2p
+from src.core.effect import fire_n_smoke_3
 from src.core.fire import Explosion, PolyExplosion
 from src.core.misc import rgba, AutoProps, remove_subnodes, set_texture
 from src.core.misc import fx_uniform, fx_choice
@@ -193,7 +193,15 @@ class Building (Body):
                 # fdelay3=fx_uniform(1.0, 4.0),
                 # fdelay4=fx_uniform(1.0, 4.0))
             if self._burns:
-                fire_n_smoke_2p(
+                # fire_n_smoke_2p(
+                    # parent=self, store=self.damage_trails,
+                    # fpos1=self.destfirepos,
+                    # spos1=Vec3(0.0, 0.0, 0.0),
+                    # fdelay1=fx_uniform(0.0, 1.0),
+                    # fdelay2=fx_uniform(1.0, 4.0),
+                    # fdelay3=fx_uniform(1.0, 4.0),
+                    # fdelay4=fx_uniform(1.0, 4.0))
+                fire_n_smoke_3(
                     parent=self, store=self.damage_trails,
                     fpos1=self.destfirepos,
                     spos1=Vec3(0.0, 0.0, 0.0),
