@@ -169,9 +169,7 @@ class Building (Body):
                 self.models = []
             else:
                 remove_subnodes(self.node, self.destoffparts)
-            if not self.desttextures:
-                self.node.setColor(rgba(64, 64, 64, 1.0))
-            else:
+            if self.desttextures:
                 desttexture = fx_choice(self.desttextures)
                 for model in self.models:
                     set_texture(model, texture=desttexture)
