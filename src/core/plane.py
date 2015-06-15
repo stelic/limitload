@@ -18,7 +18,7 @@ from src.core.decoy import FlareChaff
 from src.core.debris import Breakup
 from src.core.droptank import DropTank, Tanker
 from src.core.effect import fire_n_smoke_1, fire_n_smoke_4
-from src.core.fire import Explosion, Splash, PolyExplosion
+from src.core.fire import Splash, PolyExplosion
 from src.core.jammer import Jammer, JammingPod, JammingCarpet
 from src.core.misc import AutoProps, SimpleProps, rgba
 from src.core.misc import remove_subnodes, set_texture
@@ -1679,13 +1679,6 @@ class Plane (Body):
             debrispitch = (10, 80)
         else:
             debrispitch = (-45, 45)
-        # exp = Explosion(
-            # world=self.world, pos=pos,
-            # firepart=3, smokepart=3,
-            # sizefac=0.4 * self._size_xy, timefac=1.2, amplfac=1.4,
-            # smgray=(5,15), debrispart=(4, 6),
-            # debrispitch=debrispitch,
-            # debristcol=0.2)
         exp = PolyExplosion(
             world=self.world, pos=pos,
             firepart=3, smokepart=3,
@@ -1709,10 +1702,6 @@ class Plane (Body):
 
     def explode_minor (self, offset=None):
 
-        # exp = Explosion(
-            # world=self.world, pos=self.pos(offset=offset),
-            # sizefac=1.0, timefac=0.5, amplfac=0.6,
-            # smgray=(10,20), smred=0)
         exp = PolyExplosion(
             world=self.world, pos=self.pos(offset=offset),
             sizefac=1.0, timefac=0.5, amplfac=0.6,

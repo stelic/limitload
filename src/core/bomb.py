@@ -6,7 +6,7 @@ from pandac.PandaModules import Vec3, Point3, QuatD
 
 from src import pycv
 from src.core.body import Body
-from src.core.fire import Explosion, PolyExplosion
+from src.core.fire import PolyExplosion
 from src.core.misc import AutoProps, print_each, load_model_lod_chain, rgba
 from src.core.misc import unitv, vtod, vtof, qtod, qtof
 from src.core.shader import make_stores_shader
@@ -49,7 +49,7 @@ class Bomb (Body):
         if hpr is None:
             hpr = Vec3()
         if speed is None:
-            maxspeed = self.limspeeds(pos[2])
+            maxspeed = Bomb.limspeeds_st(world, pos[2])
             speed = maxspeed
 
         Body.__init__(self,
@@ -139,10 +139,6 @@ class Bomb (Body):
                 debrispitch = (10, 80)
             else:
                 debrispitch = (-90, 90)
-            # exp = Explosion(world=self.world, pos=pos,
-                            # sizefac=4.0, timefac=0.8, amplfac=1.2,
-                            # smgray=(10,25), smred=0,
-                            # debrispitch=debrispitch)
             exp = PolyExplosion(world=self.world, pos=pos,
                                 sizefac=4.0, timefac=0.8, amplfac=1.2,
                                 smgray=pycv(py=(45,55), c=(220, 255)), smred=0,

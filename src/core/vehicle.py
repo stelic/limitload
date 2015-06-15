@@ -9,7 +9,7 @@ from src import pycv
 from src.core.body import Body
 from src.core.curve import Segment, Arc
 from src.core.effect import fire_n_smoke_2
-from src.core.fire import Explosion, PolyExplosion
+from src.core.fire import PolyExplosion
 from src.core.misc import AutoProps, rgba, norm_ang_delta, to_navhead
 from src.core.misc import sign, unitv, clamp, vtod, vtof, ptod, ptof
 from src.core.misc import make_text, update_text
@@ -301,13 +301,6 @@ class Vehicle (Body):
         if not self.alive:
             return
 
-        # exp = Explosion(
-            # world=self.world, pos=self.pos(offset=offset),
-            # firepart=3, smokepart=3,
-            # sizefac=6.0, timefac=1.0, amplfac=1.4,
-            # smgray=(5,15), debrispart=(3, 5),
-            # debrispitch=(10, 80),
-            # debristcol=0.1)
         exp = PolyExplosion(
             world=self.world, pos=self.pos(offset=offset),
             firepart=3, smokepart=3,
@@ -326,10 +319,6 @@ class Vehicle (Body):
 
     def explode_minor (self, offset=None):
 
-        # exp = Explosion(
-            # world=self.world, pos=self.pos(offset=offset),
-            # sizefac=1.0, timefac=0.4, amplfac=0.6,
-            # smgray=(10,20), smred=0)
         exp = PolyExplosion(
             world=self.world, pos=self.pos(offset=offset),
             sizefac=1.0, timefac=0.4, amplfac=0.6,

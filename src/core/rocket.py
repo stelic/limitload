@@ -8,7 +8,7 @@ from pandac.PandaModules import VBase2, Vec3, Vec3D, Point3, QuatD
 from src import pycv
 from src.core.body import Body, EnhancedVisual
 from src.core.curve import Segment, Arc
-from src.core.fire import Explosion, PolyExplosion
+from src.core.fire import PolyExplosion
 from src.core.misc import AutoProps, rgba, print_each, load_model_lod_chain
 from src.core.misc import hprtovec, hpr_to
 from src.core.misc import unitv, clamp, vtod, vtof, ptod, qtod, qtof, intl01v
@@ -345,12 +345,6 @@ class Rocket (Body):
             debrispitch = (10, 80)
         else:
             debrispitch = (-90, 90)
-        # exp = Explosion(
-            # world=self.world, pos=pos,
-            # sizefac=1.4, timefac=0.4, amplfac=0.8,
-            # smgray=(10,30), smred=0, firepeak=(0.5, 0.8),
-            # debrispart=(3, 6),
-            # debrispitch=debrispitch)
         exp = PolyExplosion(
             world=self.world, pos=pos,
             sizefac=1.4, timefac=0.4, amplfac=0.8,

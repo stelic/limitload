@@ -10,7 +10,7 @@ from src.core.body import Body
 from src.core.curve import Segment
 from src.core.debris import Breakup
 from src.core.effect import fire_n_smoke_1
-from src.core.fire import Explosion, PolyExplosion
+from src.core.fire import PolyExplosion
 from src.core.misc import clamp, unitv, vtod, vtof, qtod, qtof, to_navhead
 from src.core.misc import AutoProps, rgba, remove_subnodes, set_texture
 from src.core.misc import make_text, update_text, load_model_lod_chain
@@ -18,7 +18,7 @@ from src.core.misc import uniform, randrange, randunit
 from src.core.misc import fx_uniform, fx_choice
 from src.core.rocket import Rocket, Launcher
 from src.core.sound import Sound3D
-from src.core.trail import Trail
+from src.core.trail import PolyBraid
 
 
 class Heli (Body):
@@ -420,6 +420,9 @@ class Heli (Body):
 
             if self.engine_sound is not None:
                 self.engine_sound.stop()
+            for trail in self.damage_trails:
+                trail.destroy()
+            self.damage_trails = []
 
             fire_n_smoke_1(
                 parent=self, store=self.damage_trails,
@@ -506,12 +509,6 @@ class Heli (Body):
             debrispitch = (10, 80)
         else:
             debrispitch = (-45, 45)
-        # exp = Explosion(
-            # world=self.world, pos=pos,
-            # firepart=3, smokepart=3,
-            # sizefac=0.4 * self._size_xy, timefac=1.2, amplfac=1.2,
-            # smgray=(5,15), debrispart=(4, 6),
-            # debrispitch=debrispitch)
         exp = PolyExplosion(
             world=self.world, pos=pos,
             firepart=3, smokepart=3,
@@ -530,10 +527,6 @@ class Heli (Body):
 
     def explode_minor (self, offset=None):
 
-        # exp = Explosion(
-            # world=self.world, pos=self.pos(offset=offset),
-            # sizefac=1.0, timefac=0.5, amplfac=0.6,
-            # smgray=(10,20), smred=0)
         exp = PolyExplosion(
             world=self.world, pos=self.pos(offset=offset),
             sizefac=1.0, timefac=0.5, amplfac=0.6,
@@ -546,20 +539,66 @@ class Heli (Body):
 
     def _add_damage_trails (self, level):
 
+        dsclfact=self._size_xy * fx_uniform(0.8, 1.1)
+        demradfact=self._size_xy * fx_uniform(0.8, 1.0)
         if level == 1:
-            smoke = Trail(
-                parent=self, pos=Vec3(1.2, -1.2, 0),
-                scale1=0.008, scale2=0.02, lifespan=0.03, poolsize=16,
-                force=0.0, alpha=0.5, color=rgba(60, 60, 60, 1.0),
-                ptype="exhaust03", emradius=0.4, absolute=True)
-            self.damage_trails.append(smoke)
+            smk1 = PolyBraid(
+                parent=self,
+                pos=Vec3(0.0, 0.0, 0.0),
+                numstrands=1,
+                lifespan=0.2,
+                thickness=0.12 * dsclfact,
+                endthickness=0.6 * dsclfact,
+                spacing=1.0,
+                offang=None,
+                offrad=0.08 * demradfact,
+                offtang=0.0,
+                randang=True,
+                randrad=True,
+                texture="images/particles/smoke6-1.png",
+                glowmap=pycv(py=rgba(255, 255, 255, 1.0), c=rgba(0, 0, 0, 0.1)),
+                color=pycv(py=rgba(31, 29, 28, 0.2), c=rgba(255, 239, 230, 0.2)),
+                dirlit=pycv(py=False, c=True),
+                alphaexp=2.0,
+                segperiod=0.010,
+                farsegperiod=pycv(py=0.020, c=None),
+                maxpoly=pycv(py=500, c=1000),
+                farmaxpoly=1000,
+                dbin=3,
+                loddistout=1400 * dsclfact,
+                loddistalpha=1200 * dsclfact,
+                loddirang=5,
+                loddirspcfac=5)
+            self.damage_trails.append(smk1)
         elif level == 2:
-            smoke = Trail(
-                parent=self, pos=Vec3(-1.2, -1.2, 0),
-                scale1=0.008, scale2=0.02, lifespan=0.03, poolsize=16,
-                force=0.0, alpha=0.5, color=rgba(50, 50, 50, 1.0),
-                ptype="exhaust03", emradius=0.5, absolute=True)
-            self.damage_trails.append(smoke)
+            smk2 = PolyBraid(
+                parent=self,
+                pos=Vec3(0.0, 0.0, 0.0),
+                numstrands=1,
+                lifespan=0.34,
+                thickness=0.14 * dsclfact,
+                endthickness=0.6 * dsclfact,
+                spacing=1.0,
+                offang=None,
+                offrad=0.08 * demradfact,
+                offtang=0.0,
+                randang=True,
+                randrad=True,
+                texture="images/particles/smoke6-1.png",
+                glowmap=pycv(py=rgba(255, 255, 255, 1.0), c=rgba(0, 0, 0, 0.1)),
+                color=pycv(py=rgba(31, 29, 28, 0.4), c=rgba(255, 239, 230, 0.4)),
+                dirlit=pycv(py=False, c=True),
+                alphaexp=2.0,
+                segperiod=0.010,
+                farsegperiod=pycv(py=0.020, c=None),
+                maxpoly=pycv(py=500, c=1000),
+                farmaxpoly=1000,
+                dbin=3,
+                loddistout=1400 * dsclfact,
+                loddistalpha=1200 * dsclfact,
+                loddirang=5,
+                loddirspcfac=5)
+            self.damage_trails.append(smk2)
 
 
     def move (self, dt):

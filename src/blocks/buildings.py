@@ -5,7 +5,7 @@ from pandac.PandaModules import TransparencyAttrib
 
 from src.core.building import Building
 from src.core.body import Body, HitboxData
-from src.core.effect import fire_n_smoke_2p
+from src.core.effect import fire_n_smoke_3
 from src.core.misc import rgba, remove_subnodes, texture_subnodes
 from src.core.misc import fx_uniform
 from src.core.transl import *
@@ -632,17 +632,17 @@ class PrisonEastern1 (Building):
 
         if self._hbx_prsn.hitpoints <= 0 and not self._hbx_prsn.out:
             self.explode(offset=self._hbx_prsn.center)
-            fire_n_smoke_2p(parent=self, store=self.damage_trails,
-                            fpos1=Vec3(4.0, 18.0, 8.0),
-                            spos1=Vec3(0.0, 0.0, 0.0),
-                            sclfact=0.8,
-                            emradfact=0.7,
-                            flsfact=0.8,
-                            slsfact=0.8,
-                            fdelay1=fx_uniform(0.0, 1.0),
-                            fdelay2=fx_uniform(1.0, 4.0),
-                            fdelay3=fx_uniform(1.0, 4.0),
-                            fdelay4=fx_uniform(1.0, 4.0))
+            fire_n_smoke_3(parent=self, store=self.damage_trails,
+                           fpos1=Vec3(4.0, 18.0, 8.0),
+                           spos1=Vec3(0.0, 0.0, 0.0),
+                           sclfact=0.8,
+                           emradfact=0.7,
+                           flsfact=0.8,
+                           slsfact=0.8,
+                           fdelay1=fx_uniform(0.0, 1.0),
+                           fdelay2=fx_uniform(1.0, 4.0),
+                           fdelay3=fx_uniform(1.0, 4.0),
+                           fdelay4=fx_uniform(1.0, 4.0))
             texture_subnodes(self.node, ["prison", "prison_misc", "prison_doors", "prison_roof", "glass", "main_gate",
                                          "wt_base_1", "wt_floor_1", "wt_hut_1", "wt_door_1", "wt_base_2", "wt_floor_2",
                                          "wt_hut_2", "wt_door_2",],
@@ -659,15 +659,15 @@ class PrisonEastern1 (Building):
             (self._hbx_wallb.hitpoints <= 0 and not self._hbx_wallb.out) or
             (self._hbx_walll.hitpoints <= 0 and not self._hbx_walll.out) or
             (self._hbx_wallr.hitpoints <= 0 and not self._hbx_wallr.out)):
-            fire_n_smoke_2p(parent=self, store=self.damage_trails,
-                            fpos1=None,
-                            spos1=None,
-                            sclfact=0.7,
-                            emradfact=0.6,
-                            fdelay1=fx_uniform(0.0, 1.0),
-                            fdelay2=fx_uniform(1.0, 2.0),
-                            fdelay3=fx_uniform(1.0, 2.0),
-                            fdelay4=fx_uniform(1.0, 2.0))
+            fire_n_smoke_3(parent=self, store=self.damage_trails,
+                           fpos1=None,
+                           spos1=None,
+                           sclfact=0.7,
+                           emradfact=0.6,
+                           fdelay1=fx_uniform(0.0, 1.0),
+                           fdelay2=fx_uniform(1.0, 2.0),
+                           fdelay3=fx_uniform(1.0, 2.0),
+                           fdelay4=fx_uniform(1.0, 2.0))
             texture_subnodes(self.node, ["prison_wall", "prison_wire", "prison_wall_misc",],
                              texture="models/buildings/misc/prison_1_wall_burn.png",
                              clamp=False)
@@ -679,34 +679,34 @@ class PrisonEastern1 (Building):
             self._hbx_wallr.out = True
         if self._hbx_wtow1.hitpoints <= 0 and not self._hbx_wtow1.out:
             self.explode_minor(offset=self._hbx_wtow1.center)
-            fire_n_smoke_2p(parent=self, store=self.damage_trails,
-                            fpos1=None,
-                            spos1=Vec3(-30.4, -28.0, 0.0),
-                            sclfact=0.5,
-                            emradfact=0.3,
-                            flsfact=0.6,
-                            slsfact=0.6,
-                            fdelay1=fx_uniform(0.0, 1.0),
-                            fdelay2=fx_uniform(1.0, 2.0),
-                            fdelay3=fx_uniform(1.0, 2.0),
-                            fdelay4=fx_uniform(1.0, 2.0))
+            fire_n_smoke_3(parent=self, store=self.damage_trails,
+                           fpos1=None,
+                           spos1=Vec3(-30.4, -28.0, 0.0),
+                           sclfact=0.5,
+                           emradfact=0.3,
+                           flsfact=0.6,
+                           slsfact=0.6,
+                           fdelay1=fx_uniform(0.0, 1.0),
+                           fdelay2=fx_uniform(1.0, 2.0),
+                           fdelay3=fx_uniform(1.0, 2.0),
+                           fdelay4=fx_uniform(1.0, 2.0))
             texture_subnodes(self.node, ["wt_base_1", "wt_floor_1", "wt_hut_1", "wt_door_1",],
                              texture="models/buildings/misc/prison_1_burn.png")
             remove_subnodes(self.node, ["wt_hut_1", "wt_door_1",])
             self._hbx_wtow1.out = True
         if self._hbx_wtow2.hitpoints <= 0 and not self._hbx_wtow2.out:
             self.explode_minor(offset=self._hbx_wtow2.center)
-            fire_n_smoke_2p(parent=self, store=self.damage_trails,
-                            fpos1=None,
-                            spos1=Vec3(30.0, -28.0, 0.0),
-                            sclfact=0.5,
-                            emradfact=0.3,
-                            flsfact=0.6,
-                            slsfact=0.6,
-                            fdelay1=fx_uniform(0.0, 1.0),
-                            fdelay2=fx_uniform(1.0, 3.0),
-                            fdelay3=fx_uniform(1.0, 3.0),
-                            fdelay4=fx_uniform(1.0, 3.0))
+            fire_n_smoke_3(parent=self, store=self.damage_trails,
+                           fpos1=None,
+                           spos1=Vec3(30.0, -28.0, 0.0),
+                           sclfact=0.5,
+                           emradfact=0.3,
+                           flsfact=0.6,
+                           slsfact=0.6,
+                           fdelay1=fx_uniform(0.0, 1.0),
+                           fdelay2=fx_uniform(1.0, 3.0),
+                           fdelay3=fx_uniform(1.0, 3.0),
+                           fdelay4=fx_uniform(1.0, 3.0))
             texture_subnodes(self.node, ["wt_base_2", "wt_floor_2", "wt_hut_2", "wt_door_2",],
                              texture="models/buildings/misc/prison_1_burn.png")
             remove_subnodes(self.node, ["wt_hut_2", "wt_door_2", "wt_floor_2"])

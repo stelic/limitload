@@ -18,7 +18,6 @@ from src.core.misc import intl01v
 from src.core.misc import uniform, randunit
 from src.core.misc import dbgval
 from src.core.sound import Sound3D, Sound2D
-from src.core.trail import Trail
 from src.core.transl import *
 
 

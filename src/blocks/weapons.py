@@ -13,7 +13,7 @@ from src.core.misc import rgba, remove_subnodes
 from src.core.podrocket import PodRocket, RocketPod
 from src.core.rocket import Rocket
 from src.core.shell import Shell, Cannon
-from src.core.trail import Trail, PolyTrail, PolyExhaust
+from src.core.trail import PolyTrail, PolyExhaust
 from src.core.transl import *
 from src.core.turret import Turret
 

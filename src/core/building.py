@@ -5,7 +5,7 @@ from pandac.PandaModules import VBase2, VBase2D, Vec3, Point2, Point3
 from src import pycv
 from src.core.body import Body
 from src.core.effect import fire_n_smoke_3
-from src.core.fire import Explosion, PolyExplosion
+from src.core.fire import PolyExplosion
 from src.core.misc import rgba, AutoProps, remove_subnodes, set_texture
 from src.core.misc import fx_uniform, fx_choice
 from src.core.sound import Sound3D
@@ -176,31 +176,7 @@ class Building (Body):
                 for model in self.models:
                     set_texture(model, texture=desttexture)
 
-            # fire_n_smoke_2p(
-                # parent=self, store=self.damage_trails,
-                # fpos1=self.destfirepos,
-                # spos1=Vec3(0.0, 0.0, 0.0),
-                # fforfact=1.0,
-                # sforfact=1.0,
-                # flsfact=1.0,
-                # slsfact=1.0,
-                # sclfact=1.0, #0.013 * self._size_xy,
-                # psfact=1.0,
-                # emradfact=1.0,
-                # emampfact=1.0,
-                # fdelay1=fx_uniform(0.0, 1.0),
-                # fdelay2=fx_uniform(1.0, 4.0),
-                # fdelay3=fx_uniform(1.0, 4.0),
-                # fdelay4=fx_uniform(1.0, 4.0))
             if self._burns:
-                # fire_n_smoke_2p(
-                    # parent=self, store=self.damage_trails,
-                    # fpos1=self.destfirepos,
-                    # spos1=Vec3(0.0, 0.0, 0.0),
-                    # fdelay1=fx_uniform(0.0, 1.0),
-                    # fdelay2=fx_uniform(1.0, 4.0),
-                    # fdelay3=fx_uniform(1.0, 4.0),
-                    # fdelay4=fx_uniform(1.0, 4.0))
                 fire_n_smoke_3(
                     parent=self, store=self.damage_trails,
                     fpos1=self.destfirepos,
@@ -221,10 +197,6 @@ class Building (Body):
         if not self.alive:
             return
 
-        # exp = Explosion(world=self.world, pos=self.pos(offset=offset),
-                        # firepart=3, smokepart=3,
-                        # sizefac=6.0, timefac=1.2, amplfac=2.0,
-                        # smgray=(10,20), smred=0, firepeak=(0.3, 0.6))
         exp = PolyExplosion(world=self.world, pos=self.pos(offset=offset),
                             firepart=3, smokepart=3,
                             sizefac=6.0, timefac=1.2, amplfac=2.0,
@@ -240,9 +212,6 @@ class Building (Body):
 
     def explode_minor (self, offset=None):
 
-        # exp = Explosion(world=self.world, pos=self.pos(offset=offset),
-                        # sizefac=1.2, timefac=0.4, amplfac=0.6,
-                        # smgray=(10,30), smred=0, firepeak=(0.3, 0.6))
         exp = PolyExplosion(world=self.world, pos=self.pos(offset=offset),
                             sizefac=1.2, timefac=0.4, amplfac=0.6,
                             smgray=pycv(py=(60,90), c=(220, 255)), smred=0, firepeak=(0.3, 0.6))

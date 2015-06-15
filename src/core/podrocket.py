@@ -6,7 +6,7 @@ from pandac.PandaModules import Vec3, Vec4, Point3
 from pandac.PandaModules import NodePath, TransparencyAttrib, AmbientLight
 
 from src.core.body import Body, EnhancedVisual
-from src.core.fire import Explosion, Splash
+from src.core.fire import Splash
 from src.core.misc import AutoProps, load_model_lod_chain
 from src.core.misc import make_quad_lattice, set_texture
 from src.core.shader import make_stores_shader, make_shader
