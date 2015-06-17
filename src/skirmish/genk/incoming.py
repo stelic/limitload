@@ -43,6 +43,13 @@ def mission_start (gc):
     mc.player_mfd_mode = "targid"
 
     mission.switch_zone("zero")
+
+    mc.world_day_time = hrmin_to_sec(*choice(
+            [(6, 30)] * 3 +
+            [(12, 30)] * 10 +
+            [(17, 30)] * 3 +
+            [(23, 30)] * 1))
+
     return mission
 
 
@@ -69,13 +76,6 @@ def zone_zero_enter (zc, mc, gc):
                 cirrusdens=2.0,
                 playercntl=2,
                 shotdownmusic=None)
-    zc.world.day_time = hrmin_to_sec(*choice(
-            [(6, 30)] * 3 +
-            [(12, 30)] * 10 +
-            [(17, 30)] * 3 +
-            [(23, 30)] * 1))
-    # zc.world.day_time = hrmin_to_sec(12, 0)
-    # yield; yield; yield
 
     zc.player = create_player(mc=mc, world=zc.world,
                               pos=Point3(0, 0, 6000),
