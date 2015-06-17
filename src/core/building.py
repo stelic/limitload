@@ -197,7 +197,7 @@ class Building (Body):
 
         exp = PolyExplosion(world=self.world, pos=self.pos(offset=offset),
                             firepart=3, smokepart=3,
-                            sizefac=6.0, timefac=1.2, amplfac=2.0,
+                            sizefac=6.0, timefac=1.4, amplfac=1.8,
                             smgray=pycv(py=(30,60), c=(220, 255)), smred=0, firepeak=(0.3, 0.6))
         snd = Sound3D("audio/sounds/%s.ogg" % "explosion01",
                       parent=exp, volume=1.0, fadetime=0.1)

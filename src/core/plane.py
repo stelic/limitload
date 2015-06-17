@@ -43,7 +43,7 @@ from src.core.sensor import TransportVisualCollisionWarning
 from src.core.shader import make_shader
 from src.core.shell import Shell, Cannon
 from src.core.sound import Sound3D, Sound2D
-from src.core.trail import Trail, PolyBraid, PolyExhaust, PolyTrail
+from src.core.trail import PolyBraid, PolyExhaust, PolyTrail
 
 
 VISTYPE = SimpleProps(
@@ -1558,21 +1558,21 @@ class Plane (Body):
                 trail.destroy()
             self.damage_trails = []
 
-            fire_n_smoke_1(
-                parent=self, store=self.damage_trails,
-                sclfact=0.1 * self._size_xy * fx_uniform(0.9, 1.2),
-                emradfact=0.1 * self._size_xy * fx_uniform(0.9, 1.1),
-                fcolor=rgba(255, 255, 255, 1.0),
-                fcolorend=rgba(247, 203, 101, 1.0),
-                ftcol=0.6,
-                fpos=Vec3(0.0, 0.0, 0.0),
-                fpoolsize=24,
-                flength=36.0,
-                fspeed=42,
-                fdelay=firedelay,
-                spos=Vec3(0.0, 0.0, 0.0),
-                slifespan=3.0,
-                stcol=0.1)
+            # fire_n_smoke_1(
+                # parent=self, store=self.damage_trails,
+                # sclfact=0.1 * self._size_xy * fx_uniform(0.9, 1.2),
+                # emradfact=0.1 * self._size_xy * fx_uniform(0.9, 1.1),
+                # fcolor=rgba(255, 255, 255, 1.0),
+                # fcolorend=rgba(247, 203, 101, 1.0),
+                # ftcol=0.6,
+                # fpos=Vec3(0.0, 0.0, 0.0),
+                # fpoolsize=24,
+                # flength=36.0,
+                # fspeed=42,
+                # fdelay=firedelay,
+                # spos=Vec3(0.0, 0.0, 0.0),
+                # slifespan=3.0,
+                # stcol=0.1)
 
             # Switch to shotdown model.
             # Or set shotdown maps.
@@ -3782,19 +3782,27 @@ class Ejection (object):
 
             cs.smoketime = 0.10
             pos = cs.node.getPos(self._plane.node)
-            pos[2] -= 0.5
-            task.smoke = Trail(
+            pos[2] -= 0.0
+            task.smoke = PolyExhaust(
                 parent=self._plane, pos=pos,
-                scale1=0.002, scale2=0.005,
-                lifespan=(cs.smoketime * 1.0), poolsize=8,
-                force=1.0, alpha=1.0,
-                ptype="smoke1-1",
-                color=rgba(255, 110, 0, 1.0), colorend=rgba(34, 32, 31, 1.0),
-                pdir=Vec3(0.0, 0.0, 1.0), phpr=Vec3(),
-                emradius=1.0, emamp=1.0, emamps=0.5,
+                radius0=1.5, radius1=3.0,
+                length=(cs.smoketime * 1.0),
+                speed=(cs.smoketime * 2.0), poolsize=6,
+                color=rgba(255, 255, 255, 1.0),
+                colorend=rgba(128, 128, 128, 1.0),
+                tcol=0.6,
+                # subnode=None,
+                pdir=Vec3(0,0,1),
+                emradius=0.6,
+                texture="images/particles/smoke6-1.png",
+                glowmap=rgba(0, 0, 0, 0.1),
                 ltoff=False,
-                absolute=False,
-                fardist=1000)
+                frameskip=2,
+                dbin=0,
+                freezedist=800.0,
+                hidedist=1000.0,
+                loddirang=10,
+                loddirskip=4)
 
             task.stage = 1
 
@@ -3904,20 +3912,26 @@ class Ejection (object):
 
             ps.firetime = 0.20
             pos = ps.node.getPos(self._plane.node)
-            pos[2] -= 0.5
-            task.fire = Trail(
+            pos[2] -= 0.0
+            task.fire = PolyExhaust(
                 parent=self._plane, pos=pos,
-                scale1=0.005, scale2=0.010,
-                lifespan=(ps.firetime * 1.0), poolsize=16,
-                force=5.0, alpha=1.0,
-                ptype="explosion5-1",
-                color=rgba(255, 255, 255, 1.0), colorend=rgba(246, 112, 27, 1.0),
-                pdir=Vec3(0.0, 0.0, 1.0), phpr=Vec3(),
-                glowcolor=rgba(255, 255, 255, 1.0),
-                emradius=1.0, emamp=1.0, emamps=0.5,
+                radius0=0.8, radius1=1.6,
+                length=(ps.firetime * 1.0),
+                speed=(ps.firetime * 3.0), poolsize=8,
+                color=rgba(255, 255, 255, 1.0),
+                colorend=rgba(246, 222, 183, 1.0),
+                tcol=0.5,
+                pdir=Vec3(0,0,1),
+                emradius=0.5,
+                texture="images/particles/explosion6-1.png",
+                glowmap=rgba(255, 255, 255, 1.0),
                 ltoff=True,
-                absolute=False,
-                fardist=1000)
+                frameskip=2,
+                dbin=0,
+                freezedist=800.0,
+                hidedist=1000.0,
+                loddirang=10,
+                loddirskip=4)
 
             if self._want_ref_body and self._ref_body is None:
                 # Create dummy ejection body.
