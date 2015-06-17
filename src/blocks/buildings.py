@@ -345,6 +345,251 @@ class OutpostImperial2 (Building):
                           damage=damage)
 
 
+class OutpostImperial3 (Building):
+
+    species = "outpost-imperial-3"
+    basesink = 0.0
+    strength = 40000
+    minhitdmg = None
+    maxhitdmg = None
+    rcs = 0.0
+
+    hitboxdata = [
+        HitboxData(name="commp",
+                   colldata=[(Point3(-19.39,  16.88, 7.90), 18.00, 18.00, 7.90)],
+                   longdes=_("command post"), shortdes=_("COMMP"),
+                   selectable=True),
+        HitboxData(name="barrp",
+                   colldata=[(Point3( 14.19, -23.10, 6.42), 19.16, 14.87, 6.42)],
+                   longdes=_("barrack post"), shortdes=_("BARRP"),
+                   selectable=True),
+        HitboxData(name="ulnkp",
+                   colldata=[(Point3(-26.67, -28.11, 8.57), 10.88,  7.11, 8.57)],
+                   longdes=_("uplink post"), shortdes=_("ULNKP"),
+                   selectable=True),
+        HitboxData(name="wallf",
+                   colldata=[(Point3(-27.47, 57.79, 3.07), 25.75, 1.00, 3.22),
+                             (Point3( 37.35, 57.79, 3.07),  8.30, 1.00, 3.22),
+                             (Point3( 13.65, 57.71, 8.71), 28.33, 3.88, 2.40)],
+                   longdes=_("wall front"), shortdes=_("WALLF"),
+                   selectable=True),
+        HitboxData(name="wallb",
+                   colldata=[(Point3( -3.74, -52.21, 3.07), 49.25, 1.00, 3.22)],
+                   longdes=_("wall back"), shortdes=_("WALLB"),
+                   selectable=True),
+        HitboxData(name="walll",
+                   colldata=[(Point3(-51.75,  2.79, 3.07),  1.00, 56.08, 3.22)],
+                   longdes=_("wall left"), shortdes=_("WALLL"),
+                   selectable=True),
+        HitboxData(name="wallr",
+                   colldata=[(Point3( 44.27,  2.79, 3.07),  1.00, 56.08, 3.22)],
+                   longdes=_("wall right"), shortdes=_("WALLR"),
+                   selectable=True),
+        HitboxData(name="heli",
+                   colldata=[(Point3( 24.78, -20.88, 14.31), 2.0),
+                             (Point3( 21.91, -23.19, 14.31), 2.0)],
+                   longdes=_("apache"), shortdes=_("HELI"),
+                   selectable=True),
+    ]
+    modelpath = [("models/buildings/outpost/us_03.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
+                 ("models/buildings/outpost/us_03-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
+    #glowmap = "models/buildings/outpost/us_03_gw.png"
+    #glossmap = "models/buildings/outpost/us_03_gs.png"
+    #destoffparts=[]
+
+    def __init__ (self, world, name, side, texture=None, normalmap=None,
+                  pos=None, hpr=None, sink=None,
+                  damage=None):
+
+        Building.__init__(self, world=world, name=name, side=side,
+                          texture=texture, normalmap=normalmap, clamp=True,
+                          pos=pos, hpr=hpr, sink=sink,
+                          damage=damage)
+
+        texture_subnodes(self.node, ["wall_checkpoint", "wall_checkpoint_misc",],
+                         texture="models/buildings/outpost/us_03omega_wall_tex.png",
+                         normalmap="models/buildings/outpost/us_03_wall_nm.png",
+                         glowmap=None, glossmap=None, clamp=False, alpha=False)
+        texture_subnodes(self.node, ["fence",],
+                         texture="models/buildings/outpost/us_03omega_wall_tex.png",
+                         normalmap="models/buildings/outpost/us_03_wall_nm.png",
+                         clamp=False, alpha=True)
+        texture_subnodes(self.node, ["apache",],
+                         texture="models/aircraft/ah64/ah64_tex.png",
+                         normalmap="images/_normalmap_none.png",
+                         glowmap=None,
+                         glossmap="models/aircraft/ah64/ah64_gls.png",
+                         clamp=True, alpha=False)
+        texture_subnodes(self.node, ["abrams",],
+                         texture="models/vehicles/abrams/abramsblackpanther_tex.png",
+                         normalmap="models/vehicles/abrams/abrams_nm.png",
+                         glowmap=None,
+                         glossmap="models/vehicles/abrams/abrams_gls.png",
+                         clamp=True, alpha=False)
+
+        self._hbx_commp.hitpoints = 800
+        self._hbx_barrp.hitpoints = 600
+        self._hbx_ulnkp.hitpoints = 500
+        self._hbx_wallf.hitpoints = 500
+        self._hbx_wallb.hitpoints = 450
+        self._hbx_walll.hitpoints = 450
+        self._hbx_wallr.hitpoints = 450
+        self._hbx_heli.hitpoints = 30
+
+        self._hbx_commp.minhitdmg = 100
+        self._hbx_barrp.minhitdmg = 100
+        self._hbx_ulnkp.minhitdmg = 90
+        self._hbx_wallf.minhitdmg = 90
+        self._hbx_wallb.minhitdmg = 90
+        self._hbx_walll.minhitdmg = 90
+        self._hbx_wallr.minhitdmg = 90
+        self._hbx_heli.minhitdmg = 0
+
+        self._hbx_commp.maxhitdmg = 500
+        self._hbx_barrp.maxhitdmg = 400
+        self._hbx_ulnkp.maxhitdmg = 400
+        self._hbx_wallf.maxhitdmg = 300
+        self._hbx_wallb.maxhitdmg = 300
+        self._hbx_walll.maxhitdmg = 300
+        self._hbx_wallr.maxhitdmg = 300
+        self._hbx_heli.maxhitdmg = 20
+
+        self._hbx_commp.out = False
+        self._hbx_barrp.out = False
+        self._hbx_ulnkp.out = False
+        self._hbx_wallf.out = False
+        self._hbx_wallb.out = False
+        self._hbx_walll.out = False
+        self._hbx_wallr.out = False
+        self._hbx_heli.out = False
+
+        self.wall_down = False
+
+        self._failure_full = False
+
+    def collide (self, obody, chbx, cpos):
+
+        inert = Body.collide(self, obody, chbx, cpos)
+        if inert:
+            return True
+
+        if obody.hitforce > chbx.minhitdmg:
+            chbx.hitpoints -= obody.hitforce
+        if obody.hitforce > chbx.maxhitdmg and chbx.hitpoints > 0:
+            chbx.hitpoints = 0
+
+        if self._hbx_commp.hitpoints <= 0 and not self._hbx_commp.out:
+            self.explode(offset=self._hbx_commp.center)
+            fire_n_smoke_3(parent=self, store=self.damage_trails,
+                           fpos1=Vec3(-19.4, 16.9, 0.0),
+                           spos1=None,
+                           sclfact=1.2,
+                           emradfact=1.0,
+                           forcefact=1.0,
+                           flsfact=1.0,
+                           fdelay1=fx_uniform(0.0, 1.0),
+                           fdelay2=fx_uniform(1.0, 4.0),
+                           fdelay3=fx_uniform(1.0, 4.0),
+                           fdelay4=fx_uniform(1.0, 4.0))
+            texture_subnodes(self.node, ["command_post", "command_post_roof", "command_post_misc", "glass"],
+                             texture="models/buildings/outpost/us_03omega_burn.png",
+                             normalmap="models/buildings/outpost/us_03_nm.png")
+            remove_subnodes(self.node,
+                            ["command_post_misc", "command_post_roof",])
+            self._hbx_commp.out = True
+        if self._hbx_barrp.hitpoints <= 0 and not self._hbx_barrp.out:
+            self.explode(offset=self._hbx_barrp.center)
+            fire_n_smoke_3(parent=self, store=self.damage_trails,
+                           fpos1=Vec3(9.9, -19.7, 0.0),
+                           spos1=None,
+                           sclfact=1.0,
+                           emradfact=1.0,
+                           forcefact=1.0,
+                           flsfact=1.0,
+                           fdelay1=fx_uniform(0.0, 1.0),
+                           fdelay2=fx_uniform(1.0, 4.0),
+                           fdelay3=fx_uniform(1.0, 4.0),
+                           fdelay4=fx_uniform(1.0, 4.0))
+            texture_subnodes(self.node, ["barrack_post", "barrack_post_misc", "fence", "glass"],
+                             texture="models/buildings/outpost/us_03omega_burn.png",
+                             normalmap="models/buildings/outpost/us_03_nm.png")
+            remove_subnodes(self.node,
+                            ["barrack_post_misc", "fence",])
+            self._hbx_heli.hitpoints = 0
+            self._hbx_barrp.out = True
+        if self._hbx_ulnkp.hitpoints <= 0 and not self._hbx_ulnkp.out:
+            self.explode(offset=self._hbx_ulnkp.center)
+            fire_n_smoke_3(parent=self, store=self.damage_trails,
+                           fpos1=Vec3(-29.1, -33.8, 0.0),
+                           spos1=None,
+                           sclfact=1.1,
+                           emradfact=1.0,
+                           forcefact=1.0,
+                           flsfact=1.1,
+                           fdelay1=fx_uniform(0.0, 1.0),
+                           fdelay2=fx_uniform(1.0, 4.0),
+                           fdelay3=fx_uniform(1.0, 4.0),
+                           fdelay4=fx_uniform(1.0, 4.0))
+            texture_subnodes(self.node, ["uplink_post", "uplink_post_misc", "glass"],
+                             texture="models/buildings/outpost/us_03omega_burn.png",
+                             normalmap="models/buildings/outpost/us_03_nm.png")
+            remove_subnodes(self.node,
+                            ["uplink_post_misc",])
+            self._hbx_ulnkp.out = True
+        if ((self._hbx_wallf.hitpoints <= 0 and not self._hbx_wallf.out) or
+            (self._hbx_wallb.hitpoints <= 0 and not self._hbx_wallb.out) or
+            (self._hbx_walll.hitpoints <= 0 and not self._hbx_walll.out) or
+            (self._hbx_wallr.hitpoints <= 0 and not self._hbx_wallr.out)):
+            fire_n_smoke_3(parent=self, store=self.damage_trails,
+                           fpos1=None,
+                           spos1=None,
+                           sclfact=1.1,
+                           emradfact=1.0,
+                           fdelay1=fx_uniform(0.0, 1.0),
+                           fdelay2=fx_uniform(1.0, 2.0),
+                           fdelay3=fx_uniform(1.0, 2.0),
+                           fdelay4=fx_uniform(1.0, 2.0))
+            texture_subnodes(self.node, ["wall_checkpoint", "wall_checkpoint_misc",],
+                             texture="models/buildings/outpost/us_03omega_wall_burn.png",
+                             normalmap="models/buildings/outpost/us_03_wall_nm.png",
+                             clamp=False)
+            remove_subnodes(self.node, ["wall_checkpoint_misc",])
+            self.wall_down = True
+            self._hbx_wallf.out = True
+            self._hbx_wallb.out = True
+            self._hbx_walll.out = True
+            self._hbx_wallr.out = True
+        if self._hbx_heli.hitpoints <= 0 and not self._hbx_heli.out:
+            self.explode_minor(offset=self._hbx_heli.center)
+            remove_subnodes(self.node, ["apache",])
+            self._hbx_heli.out = True
+
+        if self._hbx_commp.out and self._hbx_barrp.out and self._hbx_ulnkp.out:
+            texture_subnodes(self.node, ["wall_checkpoint", "wall_checkpoint_misc",],
+                             texture="models/buildings/outpost/us_03omega_wall_burn.png",
+                             normalmap="models/buildings/outpost/us_03_wall_nm.png",
+                             clamp=False)
+            remove_subnodes(self.node,
+                            ["glass",])
+            fire_n_smoke_3(parent=self, store=self.damage_trails,
+                           fpos1=None,
+                           spos1=Vec3(0.0, 0.0, 0.0),
+                           sclfact=1.8,
+                           emradfact=1.1,
+                           forcefact=1.0,
+                           slsfact=1.0,
+                           fdelay1=fx_uniform(0.0, 1.0),
+                           fdelay2=fx_uniform(1.0, 4.0),
+                           fdelay3=fx_uniform(1.0, 4.0),
+                           fdelay4=fx_uniform(1.0, 4.0))
+            self._failure_full = True
+
+        if self._failure_full:
+            self.set_shotdown(3.0)
+
+        return False
+
+
 class PowgeneratorRussian1 (Building):
 
     species = "powgenerator-russian-1"
