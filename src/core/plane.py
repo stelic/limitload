@@ -1245,10 +1245,10 @@ class Plane (Body):
         ltcscale = lrsize**0.5
         drsize = 0.8 + (1.0 - 0.8) * lrsize
         for trail in self.exhaust_trails:
-            if isinstance(trail, Trail):
-                trail.force = trail.init_force * lrsize
-                trail.scale1 = trail.init_scale1 * drsize
-                trail.scale2 = trail.init_scale2 * drsize
+            if isinstance(trail, PolyExhaust):
+                trail.length = trail.init_length * lrsize
+                trail.radius0 = trail.init_radius0 * drsize
+                trail.radius1 = trail.init_radius1 * drsize
             elif isinstance(trail, PolyExhaust):
                 trail.length = trail.init_length * lrsize
                 trail.radius0 = trail.init_radius0 * drsize
@@ -1558,21 +1558,21 @@ class Plane (Body):
                 trail.destroy()
             self.damage_trails = []
 
-            # fire_n_smoke_1(
-                # parent=self, store=self.damage_trails,
-                # sclfact=0.1 * self._size_xy * fx_uniform(0.9, 1.2),
-                # emradfact=0.1 * self._size_xy * fx_uniform(0.9, 1.1),
-                # fcolor=rgba(255, 255, 255, 1.0),
-                # fcolorend=rgba(247, 203, 101, 1.0),
-                # ftcol=0.6,
-                # fpos=Vec3(0.0, 0.0, 0.0),
-                # fpoolsize=24,
-                # flength=36.0,
-                # fspeed=42,
-                # fdelay=firedelay,
-                # spos=Vec3(0.0, 0.0, 0.0),
-                # slifespan=3.0,
-                # stcol=0.1)
+            fire_n_smoke_1(
+                parent=self, store=self.damage_trails,
+                sclfact=0.1 * self._size_xy * fx_uniform(0.9, 1.2),
+                emradfact=0.1 * self._size_xy * fx_uniform(0.9, 1.1),
+                fcolor=rgba(255, 255, 255, 1.0),
+                fcolorend=rgba(247, 203, 101, 1.0),
+                ftcol=0.6,
+                fpos=Vec3(0.0, 0.0, 0.0),
+                fpoolsize=24,
+                flength=36.0,
+                fspeed=42,
+                fdelay=firedelay,
+                spos=Vec3(0.0, 0.0, 0.0),
+                slifespan=3.0,
+                stcol=0.1)
 
             # Switch to shotdown model.
             # Or set shotdown maps.
