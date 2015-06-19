@@ -1245,17 +1245,12 @@ class Plane (Body):
         ltcscale = lrsize**0.5
         drsize = 0.8 + (1.0 - 0.8) * lrsize
         for trail in self.exhaust_trails:
-            if isinstance(trail, PolyExhaust):
-                trail.length = trail.init_length * lrsize
-                trail.radius0 = trail.init_radius0 * drsize
-                trail.radius1 = trail.init_radius1 * drsize
-            elif isinstance(trail, PolyExhaust):
-                trail.length = trail.init_length * lrsize
-                trail.radius0 = trail.init_radius0 * drsize
-                trail.radius1 = trail.init_radius1 * drsize
-                alifac = (lrsize - lrsize0) / (1.0 - lrsize0)
-                alpha = alpha0 + (trail.init_color[3] - alpha0) * alifac
-                trail.color[3] = alpha
+            trail.length = trail.init_length * lrsize
+            trail.radius0 = trail.init_radius0 * drsize
+            trail.radius1 = trail.init_radius1 * drsize
+            alifac = (lrsize - lrsize0) / (1.0 - lrsize0)
+            alpha = alpha0 + (trail.init_color[3] - alpha0) * alifac
+            trail.color[3] = alpha
             trail.light_cscale = ltcscale
 
         # Set engine flame walls.
