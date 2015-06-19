@@ -782,11 +782,14 @@ class Heli (Body):
 
         vel = vtod(self.vel())
         speed = vel.length()
+        min_speed = 0.01
+        if speed < min_speed:
+            speed = min_speed
+            vel = vtod(self.quat().getForward()) * speed
         vel1 = vel + vtod(w.gravacc) * w.dt
-        vdir1 = Vec3D(vel1)
-        vdir1.normalize()
+        vdir1 = unitv(vel1)
         zdir = Vec3D(0.0, 0.0, 1.0)
-        ndir1 = vdir1.cross(zdir).cross(vdir1)
+        ndir1 = unitv(vdir1.cross(zdir).cross(vdir1))
         self.path = Segment(Vec3D(), vel1 * w.dt, ndir1)
         speed1 = vel1.length()
         self.dspeed = speed1 - speed
