@@ -150,10 +150,11 @@ class Heli (Body):
         # Detect rotors.
         self._rotors = {}
         max_mlevel_rot = 0
+        rotor_models = list(self.models)
         if base.with_world_shadows and self.shadow_node is not None:
-            rotor_models = self.models + [self.shadow_node]
-        else:
-            rotor_models = self.models
+            rotor_models += [self.shadow_node]
+        if self.sdmodelpath:
+            rotor_models += self._shotdown_models
         for rotname, rotrpm, rotaxid, rotdir in (
             ("rotor", self.mainrpm, 0, 1),
             ("rotor_counter", self.mainrpm, 0, -1),
@@ -164,7 +165,7 @@ class Heli (Body):
                 rotnd = model.find("**/%s" % rotname)
                 if not rotnd.isEmpty():
                     rotnds.append(rotnd)
-                    if mlevel < len(self.models): # due to shadow model
+                    if mlevel < len(self.models): # due to shadow/shotdown model
                         max_mlevel_rot = max(max_mlevel_rot, mlevel)
             if rotnds:
                 rs = AutoProps()

@@ -435,10 +435,11 @@ class Plane (Body):
         proprpmdacc = self.proprpm / propdacctime
         turndirr = self.proprtclkw and -1 or 1
         max_mlevel_prop = 0
+        prop_models = list(self.models)
         if base.with_world_shadows and self.shadow_node is not None:
-            prop_models = self.models + [self.shadow_node]
-        else:
-            prop_models = self.models
+            prop_models += [self.shadow_node]
+        if self.sdmodelpath:
+            prop_models += self._shotdown_models
         for sd, turndir in ("left", -turndirr), ("right", turndirr):
             ip = 1
             while True:
