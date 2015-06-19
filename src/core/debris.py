@@ -469,7 +469,9 @@ class BreakupPart (object):
             self.world = world
         else:
             self.world = body.world
-            models = body.models
+            models = list(body.models)
+            if base.with_world_shadows and body.shadow_node is not None:
+                models += [body.shadow_node]
 
         self.node = self.world.node.attachNewNode("breakup-part")
         shader = make_shader(ambln=self.world.shdinp.ambln,
@@ -486,9 +488,7 @@ class BreakupPart (object):
         offset = offpos
         pos = None
         quat = None
-        # TODO: Consider different lods.
-        ref_model = models[0]
-        for model in (ref_model,):
+        for model in models:
             if model is None:
                 continue
             for handle in handles:
@@ -521,8 +521,8 @@ class BreakupPart (object):
         if body is not None:
             odir = self.world.node.getRelativeVector(body.node, offdir)
             bvel = body.vel()
-        elif ref_model is not None:
-            odir = self.world.node.getRelativeVector(ref_model, offdir)
+        elif models[0] is not None:
+            odir = self.world.node.getRelativeVector(models[0], offdir)
             bvel = Vec3(0.0, 0.0, 0.0)
         else:
             odir = offdir
