@@ -51,6 +51,7 @@ class Mission (object):
         self._player_kills = []
         self._player_releases = []
         self._player_releases_by_family = {}
+        self._player_releases_by_species = {}
 
         self._end_state = (None, ())
 
@@ -434,10 +435,18 @@ class Mission (object):
             self._player_releases_by_family[release.family] = releases
         releases.append(release)
 
+        releases = self._player_releases_by_species.get(release.species)
+        if releases is None:
+            releases = []
+            self._player_releases_by_species[release.species] = releases
+        releases.append(release)
 
-    def player_releases (self, family=None):
 
-        if family is not None:
+    def player_releases (self, family=None, species=None):
+
+        if species is not None:
+            return self._player_releases_by_species.get(species, [])
+        elif family is not None:
             return self._player_releases_by_family.get(family, [])
         else:
             return self._player_releases
