@@ -114,7 +114,7 @@ class Game (object):
                         self._game_stage = "gameover-start"
                     elif self._current_mission_debriefing == MISSION_DEBRIEFING.EARLY:
                         self._game_stage = "debrief-start"
-                    elif self._current_mission_debriefing == MISSION_DEBRIEFING.LATE:
+                    elif self._current_mission_debriefing in (MISSION_DEBRIEFING.LATE, MISSION_DEBRIEFING.SKIP):
                         self._game_stage = "outconv-start"
                     elif self._current_mission_gameover:
                         self._game_stage = "gameover-start"
