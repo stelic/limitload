@@ -3219,7 +3219,7 @@ class Cockpit (object):
         self._compass_bar_node.setTransparency(TransparencyAttrib.MAlpha)
         set_texture(self._compass_bar_node,
             texture="images/cockpit/cockpit_mig29_compass_bar_tex.png",
-            clamp=2, filtr=False)
+            clamp=False, filtr=False)
 
         marker_height = 0.7
         marker_width = 0.03

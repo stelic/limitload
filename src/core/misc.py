@@ -372,12 +372,12 @@ def set_texture (node, texture=None, normalmap=None, glowmap=None,
                 texture = base.load_texture("data", texture)
             texture.setMinfilter(texfilter)
             texture.setMagfilter(texfilter)
-            if clamp == 2:
-                texture.setWrapU(Texture.WMRepeat)
-                texture.setWrapV(Texture.WMRepeat)
-            elif clamp:
+            if clamp:
                 texture.setWrapU(Texture.WMClamp)
                 texture.setWrapV(Texture.WMClamp)
+            else:
+                texture.setWrapU(Texture.WMRepeat)
+                texture.setWrapV(Texture.WMRepeat)
             node.setTexture(texstage_color, texture)
     if normalmap is not None:
         node.clearTexture(texstage_normal)
