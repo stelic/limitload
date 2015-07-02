@@ -201,13 +201,13 @@ class Shake (object):
                 at given translational/angular periods, and of at most
                 given translational/angular amplitude.
             - ("vertpert", trs_period, trs_amp, ang_period, ang_amp, off_vert):
-                Like "omnipert", but perturbations are limited in direction
+                Like "pert", but perturbations are limited in direction
                 to at most given angle off the vertical.
             - ("speed-pert", trs_period, trs_amp, ang_period, ang_amp,
                lim_speed, max_strength,
                exp_period, exp_amp, exp_ang_period, exp_ang_amp,
                max_period, max_ang_period):
-                Like "omnipert", but perturbations depend on chaser speed.
+                Like "pert", but perturbations depend on chaser speed.
                 This dependency is expressed through strength, which
                 scales linearly with speed up to given limit speed, at which
                 it is given maximum strength and does not increase any more.
@@ -219,14 +219,14 @@ class Shake (object):
                exp_period, exp_amp, exp_ang_period, exp_ang_amp, exp_off_vert,
                max_period, max_ang_period):
                 Like "vertpert", but perturbations depend on chaser speed,
-                in the same way as in "speedpert".
+                in the same way as in "speed-pert".
             - ("air", strength): Instance of "pert" with parameters chosen
                 to be suitable for chasers mounted on virtual aircraft.
                 Parameters can be multiplied with single strength value,
                 raised to an internally defined exponent for each parameter.
             - ("ground", strength): Like "air", but for vehicles.
             - ("sea", strength): Like "air", but for ships.
-            - ("speed-air", lim_speed, max_strength): Instance of "speedpert"
+            - ("speed-air", lim_speed, max_strength): Instance of "speed-pert"
                 with parameters chosen to be suitable for chasers mounted
                 on virtual aircraft. Unlike in "air" where parameters
                 can be multiplied with single fixed strength,
