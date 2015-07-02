@@ -727,13 +727,25 @@ class ActionMusic (object):
                 AutoProps(wait=0.0, fade1=0.0, fade2=0.0, pause1=False),
             ("attacked", "shotdown"):
                 AutoProps(wait=0.0, fade1=0.0, fade2=0.0, pause1=False),
+            ("victory", "shotdown"):
+                AutoProps(wait=0.0, fade1=0.0, fade2=0.0, pause1=False),
+            ("failure", "shotdown"):
+                AutoProps(wait=0.0, fade1=0.0, fade2=0.0, pause1=False),
             ("cruising", "victory"):
-                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
+                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=True, revctx=True),
             ("attacked", "victory"):
+                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=True, revctx=True),
+            ("victory", "cruising"):
+                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
+            ("victory", "attacked"):
                 AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
             ("cruising", "failure"):
-                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
+                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=True, revctx=True),
             ("attacked", "failure"):
+                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=True, revctx=True),
+            ("failure", "cruising"):
+                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
+            ("failure", "attacked"):
                 AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
         }
 
@@ -755,6 +767,9 @@ class ActionMusic (object):
         self._test_period = 0.47
         self._wait_delay_switch = None
         self._wait_delay_switch2 = None
+
+        self._wait_revert_context = None
+        self._revert_force_context = None
 
         self._wait_silence = 0.0
 
@@ -781,6 +796,13 @@ class ActionMusic (object):
             return task.done
 
         dt = self._world.dt
+
+        if self._wait_revert_context is not None:
+            self._wait_revert_context -= dt
+            if self._wait_revert_context <= 0.0:
+                self._wait_revert_context = None
+                self._force_context = self._revert_force_context
+                self._wait_test = 0.0 # prevent starting second loop
 
         self._wait_test -= dt
         if self._wait_test <= 0.0:
@@ -825,6 +847,10 @@ class ActionMusic (object):
                 mus2 = self._musics[ctx2]
                 if mus2 is not None:
                     mus2.play(fadetime=(swp.fade2 or 0.0))
+                    if swp.revctx:
+                        self._wait_revert_context = mus2.length()
+                        self._wait_revert_context -= 0.5 # due to buggy length
+                        self._revert_force_context = self._pending_switch[0]
 
         if self._wait_silence > 0.0:
             self._wait_silence -= dt
@@ -909,6 +935,6 @@ class ActionMusic (object):
                     "Trying to set unknown context '%s'." % context)
             self._force_context = context
         else:
-            self._force_context = None 
+            self._force_context = None
 
 
