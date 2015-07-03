@@ -803,6 +803,8 @@ class ActionMusic (object):
         self._wait_revert_context = None
         self._revert_force_context = None
 
+        self._current_music = None
+
         self._wait_silence = 0.0
 
         self.alive = True
@@ -867,6 +869,7 @@ class ActionMusic (object):
                         mus1.pause(fadetime=fade1)
                     else:
                         mus1.stop(fadetime=fade1)
+                    self._current_music = None
                 self._wait_delay_switch2 = fade1
 
         if self._wait_delay_switch2 is not None:
@@ -883,6 +886,9 @@ class ActionMusic (object):
                         self._wait_revert_context = mus2.length()
                         self._wait_revert_context -= 0.5 # due to buggy length
                         self._revert_force_context = self._pending_switch[0]
+                    self._current_music = mus2
+                else:
+                    self._current_music = None
 
         if self._wait_silence > 0.0:
             self._wait_silence -= dt
@@ -968,5 +974,12 @@ class ActionMusic (object):
             self._force_context = context
         else:
             self._force_context = None
+
+
+    def set_volume (self, volume, fadetime=1.0):
+
+        if self._current_music is not None:
+            fadetime = fadetime or 0.01
+            self._current_music.set_volume(volume=volume, fadetime=fadetime)
 
 
