@@ -689,7 +689,7 @@ class ActionMusic (object):
         self._musics = {}
         self._music_volumes = {}
         for context, muspath, vol, loop in (
-            ("", None, 0.0, False),
+            ("silence", None, 0.0, False),
             ("cruising", cruisingpath, cruisingvolume, True),
             ("attacked", attackedpath, attackedvolume, True),
             ("shotdown", shotdownpath, shotdownvolume, True),
@@ -707,31 +707,31 @@ class ActionMusic (object):
             self._music_volumes[context] = vol
 
         self._switchspec = {
-            ("", "cruising"):
+            ("silence", "cruising"):
                 AutoProps(wait=0.0, fade2=2.0),
-            ("", "attacked"):
+            ("silence", "attacked"):
                 AutoProps(wait=0.0, fade2=0.0),
-            ("", "shotdown"):
+            ("silence", "shotdown"):
                 AutoProps(wait=0.0, fade2=0.0),
-            ("", "victory"):
+            ("silence", "victory"):
                 AutoProps(wait=0.0, fade2=0.0),
-            ("", "failure"):
+            ("silence", "failure"):
                 AutoProps(wait=0.0, fade2=0.0),
-            ("", "boss"):
+            ("silence", "boss"):
                 AutoProps(wait=0.0, fade2=0.0),
-            ("", "shotdown"):
+            ("silence", "shotdown"):
                 AutoProps(wait=0.0, fade2=0.0),
-            ("cruising", ""):
+            ("cruising", "silence"):
                 AutoProps(wait=0.0, fade1=1.0, pause1=True),
-            ("attacked", ""):
+            ("attacked", "silence"):
                 AutoProps(wait=0.0, fade1=1.0),
-            ("boss", ""):
+            ("boss", "silence"):
                 AutoProps(wait=0.0, fade1=1.0),
-            ("victory", ""):
+            ("victory", "silence"):
                 AutoProps(wait=0.0, fade1=1.0),
-            ("failure", ""):
+            ("failure", "silence"):
                 AutoProps(wait=0.0, fade1=1.0),
-            ("boss", ""):
+            ("boss", "silence"):
                 AutoProps(wait=0.0, fade1=1.0),
             ("cruising", "attacked"):
                 AutoProps(wait=3.0, fade1=0.0, fade2=0.0, pause1=True),
@@ -789,8 +789,8 @@ class ActionMusic (object):
             "rocket",
         )
 
-        self._current_context = ""
-        self._pending_context = ""
+        self._current_context = "silence"
+        self._pending_context = "silence"
         self._pending_switch = None
         self._force_context = None
 
@@ -910,7 +910,7 @@ class ActionMusic (object):
             return "shotdown"
 
         if self._paused:
-            return ""
+            return "silence"
 
         if self._force_context is not None:
             return self._force_context
