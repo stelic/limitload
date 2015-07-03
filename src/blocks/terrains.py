@@ -20,6 +20,7 @@ def setup_world_1 (terraintype, skytype,
                    actionmusic=None, cruisingmusic=None, shotdownmusic=None,
                    victorymusic=None, victoryvolume=1.0,
                    failuremusic=None, failurevolume=1.0,
+                   bossmusic=None, bossvolume=1.0,
                    actmusvol=0.5, pauseactmus=False,
                    alliances=None, alliedall=None,
                    fixdt=None, randseed=None,
@@ -78,7 +79,11 @@ def setup_world_1 (terraintype, skytype,
         failurepath = "audio/music/%s" % failuremusic
     else:
         failurepath = None
-    if any((cruisingpath, attackedpath, shotdownpath, victorypath, failurepath)):
+    if bossmusic:
+        bosspath = "audio/music/%s" % bossmusic
+    else:
+        bosspath = None
+    if any((cruisingpath, attackedpath, shotdownpath, victorypath, failurepath, bosspath)):
         action_music = ActionMusic(
             world=world,
             volume=actmusvol,
@@ -86,7 +91,8 @@ def setup_world_1 (terraintype, skytype,
             attackedpath=attackedpath,
             shotdownpath=shotdownpath,
             victorypath=victorypath, victoryvolume=victoryvolume,
-            failurepath=failurepath, failurevolume=failurevolume)
+            failurepath=failurepath, failurevolume=failurevolume,
+            bosspath=bosspath, bossvolume=bossvolume)
         world.action_music = action_music
         if pauseactmus:
             action_music.pause()

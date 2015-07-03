@@ -668,6 +668,7 @@ class ActionMusic (object):
                   shotdownpath=None, shotdownvolume=None,
                   victorypath=None, victoryvolume=None,
                   failurepath=None, failurevolume=None,
+                  bosspath=None, bossvolume=None,
                   permattack=False, parent=None):
 
         self._world = world
@@ -694,6 +695,7 @@ class ActionMusic (object):
             ("shotdown", shotdownpath, shotdownvolume, True),
             ("victory", victorypath, victoryvolume, False),
             ("failure", failurepath, failurevolume, False),
+            ("boss", bosspath, bossvolume, True),
         ):
             if muspath is not None:
                 mus = Sound2D(path=muspath,
@@ -715,17 +717,35 @@ class ActionMusic (object):
                 AutoProps(wait=0.0, fade2=0.0),
             ("", "failure"):
                 AutoProps(wait=0.0, fade2=0.0),
+            ("", "boss"):
+                AutoProps(wait=0.0, fade2=0.0),
+            ("", "shotdown"):
+                AutoProps(wait=0.0, fade2=0.0),
             ("cruising", ""):
                 AutoProps(wait=0.0, fade1=1.0, pause1=True),
             ("attacked", ""):
+                AutoProps(wait=0.0, fade1=1.0),
+            ("boss", ""):
+                AutoProps(wait=0.0, fade1=1.0),
+            ("victory", ""):
+                AutoProps(wait=0.0, fade1=1.0),
+            ("failure", ""):
+                AutoProps(wait=0.0, fade1=1.0),
+            ("boss", ""):
                 AutoProps(wait=0.0, fade1=1.0),
             ("cruising", "attacked"):
                 AutoProps(wait=3.0, fade1=0.0, fade2=0.0, pause1=True),
             ("attacked", "cruising"):
                 AutoProps(wait=3.0, fade1=2.0, fade2=0.0, pause1=False),
+            ("cruising", "boss"):
+                AutoProps(wait=3.0, fade1=0.0, fade2=0.0, pause1=True),
+            ("boss", "cruising"):
+                AutoProps(wait=3.0, fade1=2.0, fade2=0.0, pause1=False),
             ("cruising", "shotdown"):
                 AutoProps(wait=0.0, fade1=0.0, fade2=0.0, pause1=False),
             ("attacked", "shotdown"):
+                AutoProps(wait=0.0, fade1=0.0, fade2=0.0, pause1=False),
+            ("boss", "shotdown"):
                 AutoProps(wait=0.0, fade1=0.0, fade2=0.0, pause1=False),
             ("victory", "shotdown"):
                 AutoProps(wait=0.0, fade1=0.0, fade2=0.0, pause1=False),
@@ -735,18 +755,30 @@ class ActionMusic (object):
                 AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=True, revctx=True),
             ("attacked", "victory"):
                 AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=True, revctx=True),
+            ("boss", "victory"):
+                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=True, revctx=True),
             ("victory", "cruising"):
                 AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
             ("victory", "attacked"):
+                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
+            ("victory", "boss"):
                 AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
             ("cruising", "failure"):
                 AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=True, revctx=True),
             ("attacked", "failure"):
                 AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=True, revctx=True),
+            ("boss", "failure"):
+                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=True, revctx=True),
             ("failure", "cruising"):
                 AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
             ("failure", "attacked"):
                 AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
+            ("failure", "boss"):
+                AutoProps(wait=0.0, fade1=0.1, fade2=0.0, pause1=False),
+            ("boss", "attacked"):
+                AutoProps(wait=0.0, fade1=0.5, fade2=0.5, pause1=False),
+            ("attacked", "boss"):
+                AutoProps(wait=0.0, fade1=0.5, fade2=0.5, pause1=False),
         }
 
         self._attacked_families = (
