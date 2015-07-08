@@ -677,8 +677,8 @@ def mission_completed (zc, mc, gc):
     if not (zc.player and zc.player.alive):
         return
     zc.player.show_message("notification", "left", _("Mission complete!"), duration=4.0)
-    if zc.action_music:
-        zc.action_music.set_context("victory")
+    if zc.world.action_music:
+        zc.world.action_music.set_context("victory")
     mc.mission_completed = True
 
 
@@ -688,8 +688,8 @@ def mission_failed (zc, mc, gc, reason="Objectives incomplete"):
         return
     zc.player.show_message("notification", "left", reason, duration=1.0)
     zc.player.show_message("notification", "left", _("Mission failed..."), duration=4.0)
-    if zc.action_music:
-        zc.action_music.set_context("failure")
+    if zc.world.action_music:
+        zc.world.action_music.set_context("failure")
     mc.mission_failed = True
 
 

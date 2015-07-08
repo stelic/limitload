@@ -96,7 +96,7 @@ def zone_zero_loop (zc, mc, gc):
     yield zc.world, 2.0
 
     zc.world.player_control_level = 0
-    zc.action_music.set_context("attacked")
+    zc.world.action_music.set_context("attacked")
 
     yield zc.world, 2.0
 
@@ -154,7 +154,7 @@ def zone_zero_loop (zc, mc, gc):
             for ac in zc.enemyplanegroup: ac.set_ap(target=zc.player.ac)
             waves = waves - 1
         elif waves <= 0 and all(ac.shotdown for ac in zc.enemyplanegroup) and zc.player and zc.player.ac.alive:
-            zc.action_music.set_context("cruising")
+            zc.world.action_music.set_context("cruising")
             break
         yield zc.world, 1.0
 
@@ -164,7 +164,7 @@ def zone_zero_loop (zc, mc, gc):
         mc.mission_bonus = True
 
     mc.mission_completed = True
-    zc.action_music.set_context("victory")
+    zc.world.action_music.set_context("victory")
     zc.player.show_message("notification", "left", _("All enemy planes destroyed."), duration=1.0)
     if mc.mission_bonus:
         zc.player.show_message("notification", "left", _("No missile was fired."), duration=1.0)
