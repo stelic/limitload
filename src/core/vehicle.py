@@ -831,7 +831,8 @@ class Vehicle (Body):
 
         Body.jump_to(self, pos, hpr, speed)
 
-        gfix = self._fix_to_ground(self.world, self._modgndcnts, self.sink,
+        gfix = self._fix_to_ground(self.world, self._gyro,
+                                   self._modgndcnts, self.sink,
                                    ptod(pos), vtod(hpr))
         pos1, hpr1 = gfix[:2]
         self.node.setPos(ptof(pos1))
