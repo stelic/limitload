@@ -25,6 +25,7 @@ static void _init_trail ()
     INITIALIZE_TYPE(PolyTrailGeom)
     INITIALIZE_TYPE(PolyExhaustGeom)
     INITIALIZE_TYPE(PolyBraidGeom)
+    INITIALIZE_TYPE(PolySmokeGeom)
 }
 DToolConfigure(config_limload_trail);
 DToolConfigureFn(config_limload_trail) { _init_trail(); }
@@ -447,13 +448,13 @@ LVector3 PolyExhaustGeom::chord (const LVector3 &pdir) const
 // ========================================
 // PolyBraidGeom
 
-class StrandParticle
+class BraidStrandParticle
 {
 public:
     LPoint3 apos;
     double ctime;
 };
-typedef std::deque<StrandParticle*>::iterator StrandParticlesIter;
+typedef std::deque<BraidStrandParticle*>::iterator BraidStrandParticlesIter;
 
 struct BraidStrand
 {
@@ -488,7 +489,7 @@ public:
     double dang0;
     double drad0;
 
-    std::deque<StrandParticle*> parts;
+    std::deque<BraidStrandParticle*> parts;
     int numparts;
 
     ~BraidStrand ();
@@ -498,7 +499,7 @@ typedef std::deque<BraidStrand*>::iterator BraidStrandsIter;
 BraidStrand::~BraidStrand ()
 {
     //printf("--polybraidgeom-braidstrand-dtr\n");
-    for (StrandParticlesIter it = parts.begin(); it != parts.end(); ++it) {
+    for (BraidStrandParticlesIter it = parts.begin(); it != parts.end(); ++it) {
         delete *it;
     }
     node.remove_node();
@@ -647,9 +648,9 @@ void PolyBraidGeom::update (
                         drad = sqrt(fx_randunit()) * strand.drad0;
                     }
                     appos += vrot(anorm, abnrm, drad, dang);
-                    strand.parts.push_front(new StrandParticle());
+                    strand.parts.push_front(new BraidStrandParticle());
                     strand.numparts += 1;
-                    StrandParticle &spart = *strand.parts.front();
+                    BraidStrandParticle &spart = *strand.parts.front();
                     spart.apos = appos;
                     spart.ctime = ctime;
                 }
@@ -704,7 +705,7 @@ void PolyBraidGeom::update (
         double maxreach = 0.0;
         int i = 0;
         while (i < numparts) {
-            StrandParticle &spart = *strand.parts[i];
+            BraidStrandParticle &spart = *strand.parts[i];
             if (spart.ctime < lifespan) {
                 double ifac = spart.ctime / lifespan;
                 if (clear_index + poly_per_part <= strand.maxpoly) {
@@ -802,7 +803,7 @@ void PolyBraidGeom::clear (
             }
         }
         strand.last_clear_index = 0;
-        for (StrandParticlesIter it2 = strand.parts.begin(); it2 != strand.parts.end(); ++it2) {
+        for (BraidStrandParticlesIter it2 = strand.parts.begin(); it2 != strand.parts.end(); ++it2) {
             delete *it2;
         }
         strand.parts.clear();
@@ -854,5 +855,344 @@ void PolyBraidGeom::multiply_init_dtang (double spfac)
         BraidStrand &strand = **it;
         strand.dtang = strand.init_dtang * spfac;
     }
+}
+
+// ========================================
+// PolySmokeGeom
+
+class SmokeStrandParticle
+{
+public:
+    LPoint3 apos;
+    double ctime;
+};
+typedef std::deque<SmokeStrandParticle*>::iterator SmokeStrandParticlesIter;
+
+struct SmokeStrand
+{
+public:
+    double thickness;
+    double endthickness;
+    double emitradius;
+    double emitspeed;
+    double spacing;
+    double offtang;
+    LVector4 color;
+    LVector4 endcolor;
+    double tcol;
+    double alphaexp;
+    int texsplit;
+    int numframes;
+
+    int maxpoly;
+    NodePath node;
+    PT(Geom) geom;
+    PT(GeomNode) geomnode;
+    PT(GeomVertexData) gvdata;
+    PT(GeomTriangles) gtris;
+    int last_clear_index;
+
+    double dtang;
+    double absspacing;
+
+    std::deque<SmokeStrandParticle*> particles;
+    int particle_count;
+
+    ~SmokeStrand ();
+};
+typedef std::deque<SmokeStrand*>::iterator SmokeStrandsIter;
+
+SmokeStrand::~SmokeStrand ()
+{
+    //printf("--polysmokegeom-smokestrand-dtr\n");
+    for (SmokeStrandParticlesIter it = particles.begin(); it != particles.end(); ++it) {
+        delete *it;
+    }
+    node.remove_node();
+}
+
+INITIALIZE_TYPE_HANDLE(PolySmokeGeom)
+
+PolySmokeGeom::PolySmokeGeom (
+    const LPoint3 &apos, const LQuaternion& aquat)
+: _strands()
+, _prev_apos(apos)
+, _prev_aquat(aquat)
+, _total_particle_count(0)
+{
+}
+
+PolySmokeGeom::~PolySmokeGeom ()
+{
+    //printf("--polysmokegeom-dtr\n");
+    for (SmokeStrandsIter it = _strands.begin(); it != _strands.end(); ++it) {
+        delete *it;
+    }
+}
+
+NodePath PolySmokeGeom::add_strand (
+    double thickness, double endthickness,
+    double emitradius, double emitspeed,
+    double spacing, double offtang,
+    const LVector4 &color, const LVector4 &endcolor,
+    double tcol, double alphaexp,
+    int texsplit, int numframes,
+    int maxpoly, const NodePath &pnode)
+{
+    if (numframes == 0) {
+        numframes = texsplit * texsplit;
+    }
+
+    _strands.push_back(new SmokeStrand());
+    SmokeStrand &strand = *_strands.back();
+
+    strand.thickness = thickness;
+    strand.endthickness = endthickness;
+    strand.emitradius = emitradius;
+    strand.emitspeed = emitspeed;
+    strand.spacing = spacing;
+    strand.offtang = offtang;
+    strand.color = color;
+    strand.endcolor = endcolor;
+    strand.tcol = tcol;
+    strand.alphaexp = alphaexp;
+    strand.texsplit = texsplit;
+    strand.numframes = numframes;
+    strand.maxpoly = maxpoly;
+
+    strand.dtang = -offtang * thickness;
+    strand.absspacing = thickness * spacing * 2;
+
+    strand.particle_count = 0;
+
+    strand.gvdata = new GeomVertexData("strand", GeomVertexFormat::get_v3n3c4t2(), Geom::UH_static);//UH_dynamic);
+    GeomVertexWriter *gvwvertex = new GeomVertexWriter(strand.gvdata, "vertex");
+    GeomVertexWriter *gvwnormal = new GeomVertexWriter(strand.gvdata, "normal");
+    GeomVertexWriter *gvwtexcoord = new GeomVertexWriter(strand.gvdata, "texcoord");
+    GeomVertexWriter *gvwcolor = new GeomVertexWriter(strand.gvdata, "color");
+    strand.gtris = new GeomTriangles(Geom::UH_static);
+    for (int i = 0; i < maxpoly; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            LVector2 v2 = LVector2(0.0, fx_uniform0());
+            LVector3 v3 = LVector3(0.0, 0.0, fx_uniform0());
+            LVector4 v4 = LVector4(1.0, 1.0, 1.0, fx_uniform0());
+            gvwvertex->add_data3(v3);
+            gvwnormal->add_data3(v3);
+            gvwtexcoord->add_data2(v2);
+            gvwcolor->add_data4(v4);
+        }
+        strand.gtris->add_vertices(i * 3, i * 3 + 1, i * 3 + 2);
+    }
+    strand.gtris->close_primitive();
+    strand.geom = new Geom(strand.gvdata);
+    strand.geom->add_primitive(strand.gtris);
+    strand.geomnode = new GeomNode("smoke-strand-geom");
+    strand.geomnode->add_geom(strand.geom);
+    strand.node = NodePath("smoke-strand");
+    strand.node.attach_new_node(strand.geomnode);
+    delete gvwvertex;
+    delete gvwnormal;
+    delete gvwtexcoord;
+    delete gvwcolor;
+    strand.last_clear_index = maxpoly;
+    strand.node.set_depth_write(0);
+    strand.node.set_transparency(TransparencyAttrib::M_alpha);
+    strand.node.reparent_to(pnode);
+
+    return strand.node;
+}
+
+void PolySmokeGeom::update (
+    const NodePath &camera,
+    double lifespan, const LPoint3 &bpos,
+    bool havepq, const LPoint3 &apos_, const LQuaternion &aquat_,
+    double adt)
+{
+    LPoint3 apos = apos_;
+    LQuaternion aquat = aquat_;
+    if (havepq) {
+        LVector3 dpos = apos - _prev_apos;
+        for (SmokeStrandsIter it = _strands.begin(); it != _strands.end(); ++it) {
+            SmokeStrand &strand = **it;
+            double ddtang = strand.emitspeed * adt;
+            strand.dtang += ddtang;
+            while (strand.dtang > 0.0) {
+                double dang = fx_uniform2(0.0, 2 * M_PI);
+                double drad = sqrt(fx_randunit()) * strand.emitradius;
+                double ctime = strand.dtang / strand.emitspeed;
+                LVector3 papos = (apos - dpos * (ctime / adt) +
+                                  LPoint3(drad * cos(dang),
+                                          drad * sin(dang),
+                                          strand.dtang));
+                strand.particles.push_front(new SmokeStrandParticle());
+                strand.particle_count += 1;
+                _total_particle_count += 1;
+                strand.dtang -= strand.absspacing;
+                SmokeStrandParticle &particle = *strand.particles.front();
+                particle.apos = papos;
+                particle.ctime = ctime;
+            }
+        }
+        _prev_apos = apos;
+        _prev_aquat = aquat;
+    } else if (_total_particle_count > 0) {
+        apos = _prev_apos;
+        aquat = _prev_aquat;
+    } else {
+        return;
+    }
+
+    for (SmokeStrandsIter it = _strands.begin(); it != _strands.end(); ++it) {
+        SmokeStrand &strand = **it;
+        strand.node.set_pos(bpos);
+
+        LVector3 up = strand.node.get_relative_vector(camera, LVector3(0.0, 0.0, 1.0));
+        LVector3 rt = strand.node.get_relative_vector(camera, LVector3(1.0, 0.0, 0.0));
+        LVector3 oc1 = -rt - up;
+        LVector3 oc2 =  rt - up;
+        LVector3 oc3 =  rt + up;
+        LVector3 oc4 = -rt + up;
+        LVector3 nrm = unitv(rt.cross(up)); // -fw
+        LVector3 nrm1 = unitv(oc1 + nrm * 0.05);
+        LVector3 nrm2 = unitv(oc2 + nrm * 0.05);
+        LVector3 nrm3 = unitv(oc3 + nrm * 0.05);
+        LVector3 nrm4 = unitv(oc4 + nrm * 0.05);
+
+        GeomVertexRewriter *gvwvertex = new GeomVertexRewriter(strand.gvdata, "vertex");
+        GeomVertexRewriter *gvwnormal = new GeomVertexRewriter(strand.gvdata, "normal");
+        GeomVertexRewriter *gvwtexcoord = new GeomVertexRewriter(strand.gvdata, "texcoord");
+        GeomVertexRewriter *gvwcolor = new GeomVertexRewriter(strand.gvdata, "color");
+        strand.gtris->decompose();
+
+        LVector4 col0 = strand.color;
+        LVector4 col1 = strand.endcolor;
+        LVector3 partvel = LVector3(0.0, 0.0, 1.0) * strand.emitspeed;
+        const int poly_per_particle = 2;
+        int clear_index = 0;
+        int particle_count = strand.particle_count;
+        double maxreach = 0.0;
+        int i = 0;
+        while (i < particle_count) {
+            SmokeStrandParticle &particle = *strand.particles[i];
+            if (particle.ctime < lifespan) {
+                if (clear_index + poly_per_particle <= strand.maxpoly) {
+                    double ifac = particle.ctime / lifespan;
+                    LPoint3 pos = particle.apos - bpos;
+
+                    double thck0 = strand.thickness;
+                    double thck1 = strand.endthickness;
+                    double size = thck0 + (thck1 - thck0) * ifac;
+                    LVector3 qp1 = pos + oc1 * size;
+                    LVector3 qp2 = pos + oc2 * size;
+                    LVector3 qp3 = pos + oc3 * size;
+                    LVector3 qp4 = pos + oc4 * size;
+
+                    LVector4 col;
+                    if (ifac < strand.tcol) {
+                        col = col0 + (col1 - col0) * (ifac / strand.tcol);
+                    } else {
+                        col = col1;
+                    }
+                    col[3] *= pow(1.0 - ifac, strand.alphaexp);
+
+                    double u0 = 0.0;
+                    double v0 = 0.0;
+                    double du = 1.0;
+                    double dv = 1.0;
+                    if (strand.texsplit > 0) {
+                        du = dv = 1.0 / strand.texsplit;
+                        int frind = int(strand.numframes * ifac);
+                        int uind = frind % strand.texsplit;
+                        int vind = frind / strand.texsplit;
+                        u0 = uind * du;
+                        v0 = 1.0 - (vind + 1) * dv;
+                    }
+
+                    add_tri(gvwvertex, gvwcolor, gvwtexcoord, gvwnormal,
+                            qp1, nrm1, col, LVector2(u0, v0),
+                            qp2, nrm2, col, LVector2(u0 + du, v0),
+                            qp3, nrm3, col, LVector2(u0 + du, v0 + dv));
+                    add_tri(gvwvertex, gvwcolor, gvwtexcoord, gvwnormal,
+                            qp1, nrm1, col, LVector2(u0, v0),
+                            qp3, nrm3, col, LVector2(u0 + du, v0 + dv),
+                            qp4, nrm4, col, LVector2(u0, v0 + dv));
+
+                    clear_index += poly_per_particle;
+                    maxreach = fmax(maxreach, pos.length());
+                }
+                particle.apos += partvel * adt;
+                particle.ctime += adt;
+                ++i;
+            } else {
+                --particle_count;
+                --_total_particle_count;
+                delete strand.particles[i];
+                strand.particles.erase(strand.particles.begin() + i);
+            }
+        }
+        strand.particle_count = particle_count;
+
+        for(int i = clear_index; i < strand.last_clear_index; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                gvwvertex->add_data3(0.0, 0.0, 0.0);
+            }
+        }
+        strand.last_clear_index = clear_index;
+        if (particle_count > 1) {
+            LPoint3 center(0.0, 0.0, 0.0);
+            PT(BoundingSphere) bnd = new BoundingSphere(center, maxreach);
+            strand.node.node()->set_bounds(bnd);
+            strand.node.node()->set_final(1);
+        }
+
+        delete gvwvertex;
+        delete gvwnormal;
+        delete gvwtexcoord;
+        delete gvwcolor;
+    }
+}
+
+void PolySmokeGeom::clear (
+    const NodePath &camera,
+    bool havepq, const LPoint3 &apos, const LQuaternion &aquat)
+{
+    for (SmokeStrandsIter it = _strands.begin(); it != _strands.end(); ++it) {
+        SmokeStrand &strand = **it;
+        GeomVertexRewriter *gvwvertex = new GeomVertexRewriter(strand.gvdata, "vertex");
+        strand.gtris->decompose();
+        for(int i = 0; i < strand.last_clear_index; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                gvwvertex->add_data3(0.0, 0.0, 0.0);
+            }
+        }
+        strand.last_clear_index = 0;
+        for (SmokeStrandParticlesIter it2 = strand.particles.begin(); it2 != strand.particles.end(); ++it2) {
+            delete *it2;
+        }
+        strand.particles.clear();
+        strand.particle_count = 0;
+        delete gvwvertex;
+    }
+    _total_particle_count = 0;
+
+    if (havepq) {
+        _prev_apos = apos;
+        _prev_aquat = aquat;
+    }
+}
+
+bool PolySmokeGeom::any_visible () const
+{
+    return _total_particle_count > 0;
+}
+
+LPoint3 PolySmokeGeom::prev_apos () const
+{
+    return _prev_apos;
+}
+
+LQuaternion PolySmokeGeom::prev_aquat () const
+{
+    return _prev_aquat;
 }
 

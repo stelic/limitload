@@ -174,4 +174,45 @@ private:
 DECLARE_TYPE_HANDLE(PolyBraidGeom)
 };
 
+class SmokeStrand;
+class EXPORT PolySmokeGeom : public TypedObject
+{
+PUBLISHED:
+
+    PolySmokeGeom (const LPoint3 &apos, const LQuaternion& aquat);
+    ~PolySmokeGeom ();
+
+    NodePath add_strand (
+        double thickness, double endthickness,
+        double emitradius, double emitspeed,
+        double spacing, double offtang,
+        const LVector4 &color, const LVector4 &endcolor,
+        double tcol, double alphaexp,
+        int texsplit, int numframes,
+        int maxpoly, const NodePath &pnode);
+
+    void update (
+        const NodePath &camera,
+        double lifespan, const LPoint3 &bpos,
+        bool havepq, const LPoint3 &apos, const LQuaternion &aquat,
+        double adt);
+
+    void clear (
+        const NodePath &camera,
+        bool havepq, const LPoint3 &apos, const LQuaternion &aquat);
+
+    bool any_visible () const;
+    LPoint3 prev_apos () const;
+    LQuaternion prev_aquat () const;
+
+private:
+
+    std::deque<SmokeStrand*> _strands;
+    LPoint3 _prev_apos;
+    LQuaternion _prev_aquat;
+    int _total_particle_count;
+
+DECLARE_TYPE_HANDLE(PolySmokeGeom)
+};
+
 #endif

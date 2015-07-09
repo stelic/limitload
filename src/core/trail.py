@@ -18,7 +18,7 @@ from src.core.light import AutoPointLight, PointOverbright
 from src.core.misc import rgba, unitv, clamp, make_particles, bin_view_b2f
 from src.core.misc import SimpleProps, set_texture, print_each, is_on_screen
 from src.core.misc import intl10r, intl01vr, set_particle_texture_noext
-from src.core.misc import fx_uniform, fx_choice
+from src.core.misc import fx_randunit, fx_uniform, fx_choice
 from src.core.shader import make_shader
 
 
@@ -1314,13 +1314,13 @@ class PolyBraid (object):
                 self._light = AutoPointLight(
                     parent=self.parent, color=ltcolor,
                     radius=ltradius, halfat=lthalfat,
-                    pos=ltpos, name="trail")
+                    pos=ltpos, name="polybraid")
 
             if obpos is not None and self.parent:
                 self._overbright = PointOverbright(
                     parent=self.parent, color=obcolor,
                     radius=obradius, halfat=obhalfat,
-                    pos=obpos, name="trail")
+                    pos=obpos, name="polybraid")
                 self.parent.node.setShaderInput(self.world.shdinp.pntobrn,
                                                 self._overbright.node)
 
@@ -1705,6 +1705,383 @@ class PolyBraidGeom (object):
 
         for strand in self._strands:
             strand.dtang = strand.init_dtang * spfac
+
+
+class PolySmoke (object):
+
+    def __init__ (self, parent, pos, lifespan, thickness,
+                  emitradius, emitspeed, texture,
+                  numstrands=1, maxpoly=2000,
+                  endthickness=None, spacing=0.5, offtang=0.0,
+                  color=Vec4(1, 1, 1, 1), endcolor=None,
+                  tcol=1.0, alphaexp=2.0,
+                  glowmap=None, dirlit=False,
+                  ltpos=None,
+                  ltcolor=Vec4(1, 1, 1, 1), ltcolor2=None,
+                  ltradius=10.0, ltradius2=None, lthalfat=0.5,
+                  ltpulse=0.0,
+                  obpos=None,
+                  obcolor=Vec4(1, 1, 1, 1), obcolor2=None,
+                  obradius=10.0, obradius2=None, obhalfat=0.5,
+                  obpulse=0.0,
+                  texsplit=None, numframes=None,
+                  frameskip=2, dbin=0.0,
+                  delay=0.0):
+
+        if isinstance(parent, tuple):
+            self.pnode, other = parent
+            if hasattr(other, "world"):
+                # FIXME: The question is actually isinstance(other, Body),
+                # but not possible to import Body due to order of imports.
+                self.parent = other
+                self.world = self.parent.world
+            else:
+                self.parent = None
+                self.world = other
+        else:
+            self.world = parent.world
+            self.parent = parent
+            self.pnode = parent.node
+
+        self.node = self.world.node.attachNewNode("polysmoke-root")
+        self.node.setAntialias(AntialiasAttrib.MNone)
+        if isinstance(glowmap, Vec4):
+            glow = glowmap
+            glowmap = None
+        else:
+            glow = (glowmap is not None)
+        #self.node.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
+        if dirlit:
+            ambln = self.world.shdinp.ambln
+            dirlns = self.world.shdinp.dirlns
+        else:
+            ambln = self.world.shdinp.ambsmln
+            dirlns = []
+        shader = make_shader(ambln=ambln, dirlns=dirlns,
+                             glow=glow, modcol=True) #, selfalpha=True)
+        self.node.setShader(shader)
+
+        self._pos = pos
+        self._lifespan = lifespan
+        self._frameskip = frameskip
+        self._dbin = dbin
+
+        self._ltcolor = ltcolor
+        self._ltcolor2 = ltcolor2 if ltcolor2 is not None else ltcolor
+        self._ltradius = ltradius
+        self._ltradius2 = ltradius2 if ltradius2 is not None else ltradius
+        if ltpulse is True:
+            ltpulse = 0.010
+        self._ltpulse_rate = ltpulse
+        self._ltpulse_wait = 0.0
+
+        self._obcolor = obcolor
+        self._obcolor2 = obcolor2 if obcolor2 is not None else obcolor
+        self._obradius = obradius
+        self._obradius2 = obradius2 if obradius2 is not None else obradius
+        if obpulse is True:
+            obpulse = 0.010
+        self._obpulse_rate = obpulse
+        self._obpulse_wait = 0.0
+
+        self._light = None
+        self._overbright = None
+
+        def gv (spec, i, default=(None,)):
+            if isinstance(spec, (tuple, list)):
+                return spec[i]
+            elif spec is not None:
+                return spec
+            elif default != (None,):
+                return default
+            else:
+                raise StandardError("Value cannot be resolved.")
+
+        def start ():
+            self.node.setPos(self.pnode.getPos(self.world.node))
+            apos = self.node.getRelativePoint(self.pnode, self._pos)
+            aquat = self.pnode.getQuat(self.world.node)
+            self._geom = PolySmokeGeom(apos, aquat)
+            for i in range(numstrands):
+                snode = self._geom.add_strand(
+                    gv(thickness, i),
+                    gv(endthickness, i, gv(thickness, i)),
+                    gv(emitradius, i),
+                    gv(emitspeed, i),
+                    gv(spacing, i),
+                    gv(offtang, i),
+                    gv(color, i),
+                    gv(endcolor, i, gv(color, i)),
+                    gv(tcol, i),
+                    gv(alphaexp, i),
+                    gv(texsplit, i, 0),
+                    gv(numframes, i, 0),
+                    gv(maxpoly, i),
+                    self.node)
+                set_texture(snode,
+                    texture=gv(texture, i),
+                    glowmap=gv(glowmap, i, None))
+                self.world.add_altbin_node(snode)
+
+            self._wait_update = 0.0
+            self._wait_update_frame = 0
+
+            if ltpos is not None and self.parent:
+                self._light = AutoPointLight(
+                    parent=self.parent, color=ltcolor,
+                    radius=ltradius, halfat=lthalfat,
+                    pos=ltpos, name="polysmoke")
+
+            if obpos is not None and self.parent:
+                self._overbright = PointOverbright(
+                    parent=self.parent, color=obcolor,
+                    radius=obradius, halfat=obhalfat,
+                    pos=obpos, name="polysmoke")
+                self.parent.node.setShaderInput(self.world.shdinp.pntobrn,
+                                                self._overbright.node)
+
+        self._start = start
+        if delay > 0.0:
+            self._wait_delay = delay
+        else:
+            self._wait_delay = None
+            self._start()
+
+        self.alive = True
+        base.taskMgr.add(self._loop, "polysmoke-loop")
+
+
+    def destroy (self):
+
+        if not self.alive:
+            return
+        self.alive = False
+        if self._light:
+            self._light.destroy()
+        if self._overbright:
+            if not self.parent.node.isEmpty():
+                self.parent.node.clearShaderInput(self.world.shdinp.pntobrn)
+            self._overbright.destroy()
+        self.node.removeNode()
+
+
+    def _loop (self, task):
+
+        if not self.alive:
+            return task.done
+
+        dt = self.world.dt
+
+        if self._wait_delay is not None:
+            self._wait_delay -= dt
+            if self._wait_delay <= 0.0:
+                if self.pnode.isEmpty():
+                    self.destroy()
+                    return task.done
+                self._start()
+                self._wait_delay = None
+            else:
+                return task.cont
+
+        apos = Point3()
+        aquat = Quat()
+        havepq = False
+        if not self.pnode.isEmpty():
+            apos = self.node.getRelativePoint(self.pnode, self._pos)
+            aquat = self.pnode.getQuat(self.world.node)
+            havepq = True
+        elif not self._geom.any_visible():
+            self.destroy()
+            return task.done
+
+        cleared_near = False
+        camfw = self.world.camera.getQuat(self.node).getForward()
+        dbpos = camfw * self._dbin
+        bpos = (apos if havepq else self._geom.prev_apos()) + dbpos
+        self._wait_update += dt
+        self._wait_update_frame += 1
+        if self._wait_update_frame >= self._frameskip:
+            self._geom.update(self.world.camera, self._lifespan,
+                              bpos, havepq, apos, aquat, self._wait_update)
+            self._wait_update = 0.0
+            self._wait_update_frame = 0
+
+        if self._light:
+            if self._ltpulse_rate:
+                self._ltpulse_wait -= self.world.dt
+                if self._ltpulse_wait < 0.0:
+                    self._ltpulse_wait += self._ltpulse_rate
+                    ifac = 0.5 * (sin(fx_uniform(0.0, 2 * pi)) + 1.0)
+                    color = self._ltcolor + (self._ltcolor2 - self._ltcolor) * ifac
+                    radius = self._ltradius + (self._ltradius2 - self._ltradius) * ifac
+                    self._light.update(color=color, radius=radius)
+
+        if self._overbright:
+            if self._obpulse_rate:
+                self._obpulse_wait -= self.world.dt
+                if self._obpulse_wait < 0.0:
+                    self._obpulse_wait += self._obpulse_rate
+                    ifac = 0.5 * (sin(fx_uniform(0.0, 2 * pi)) + 1.0)
+                    color = self._obcolor + (self._obcolor2 - self._obcolor) * ifac
+                    radius = self._obradius + (self._obradius2 - self._obradius) * ifac
+                    self._overbright.update(color=color, radius=radius)
+
+        return task.cont
+
+
+# :also-compiled:
+class PolySmokeGeom (object):
+
+    def __init__ (self, apos, aquat):
+
+        self._prev_apos = apos
+        self._prev_aquat = aquat
+
+        self._total_particle_count = 0
+
+        self._strands = []
+
+
+    def add_strand (self, thickness, endthickness, emitradius, emitspeed,
+                    spacing, offtang,
+                    color, endcolor, tcol, alphaexp,
+                    texsplit, numframes,
+                    maxpoly, pnode):
+
+        if numframes == 0:
+            numframes = texsplit**2
+
+        strand = SimpleProps()
+        self._strands.append(strand)
+
+        strand.thickness = thickness
+        strand.endthickness = endthickness
+        strand.emitradius = emitradius
+        strand.emitspeed = emitspeed
+        strand.spacing = spacing
+        strand.color = color
+        strand.endcolor = endcolor
+        strand.tcol = tcol
+        strand.alphaexp = alphaexp
+        strand.texsplit = texsplit
+        strand.numframes = numframes
+
+        strand.gen = MeshDrawer()
+        strand.gen.setBudget(maxpoly)
+        strand.node = strand.gen.getRoot()
+        strand.node.setDepthWrite(False)
+        strand.node.setTransparency(TransparencyAttrib.MAlpha)
+        strand.node.reparentTo(pnode)
+
+        strand.dtang = -offtang * thickness
+        strand.absspacing = thickness * spacing
+
+        strand.particles = []
+
+        return strand.node
+
+
+    def update (self, camera, lifespan, bpos, havepq, apos, aquat, adt):
+
+        if havepq:
+            dpos = apos - self._prev_apos
+            for strand in self._strands:
+                ddtang = strand.emitspeed * adt
+                strand.dtang += ddtang
+                while strand.dtang > 0.0:
+                    dang = fx_uniform(0.0, 2 * pi)
+                    drad = sqrt(fx_randunit()) * strand.emitradius
+                    ctime = strand.dtang / strand.emitspeed
+                    papos = (apos - dpos * (ctime / adt) +
+                             Point3(drad * cos(dang),
+                                    drad * sin(dang),
+                                    strand.dtang))
+                    particle = SimpleProps(ctime=ctime, apos=papos)
+                    strand.particles.append(particle)
+                    strand.dtang -= strand.absspacing
+                    self._total_particle_count += 1
+            self._prev_apos = apos
+            self._prev_aquat = aquat
+        elif self._total_particle_count > 0:
+            apos = self._prev_apos
+            aquat = self._prev_aquat
+        else:
+            return
+
+        for strand in self._strands:
+            strand.node.setPos(bpos)
+            strand.gen.begin(camera, strand.node)
+            strand.color0 = Vec4(strand.color)
+            strand.color1 = Vec4(strand.endcolor)
+            particle_count = len(strand.particles)
+            partvel = Vec3(0.0, 0.0, 1.0) * strand.emitspeed
+            maxreach = 0.0
+            i = 0
+            while i < particle_count:
+                particle = strand.particles[i]
+                if particle.ctime < lifespan:
+                    ifac = particle.ctime / lifespan
+                    pos = particle.apos - bpos
+                    thck0, thck1 = strand.thickness, strand.endthickness
+                    thck = thck0 + (thck1 - thck0) * ifac
+                    col0, col1 = strand.color0, strand.color1
+                    tfac1 = strand.tcol
+                    if ifac < tfac1:
+                        col = col0 + (col1 - col0) * (ifac / tfac1)
+                    else:
+                        col = Vec4(col1)
+                    alexp = strand.alphaexp
+                    col[3] *= (1.0 - ifac)**alexp
+                    if strand.texsplit > 0:
+                        dcoord = 1.0 / strand.texsplit
+                        frind = int(strand.numframes * ifac)
+                        uind = frind % strand.texsplit
+                        vind = frind // strand.texsplit
+                        uoff = uind  * dcoord
+                        voff = 1.0 - (vind + 1) * dcoord
+                        frame = Vec4(uoff, voff, dcoord, dcoord)
+                    else:
+                        frame = Vec4(0.0, 0.0, 1.0, 1.0)
+                    strand.gen.billboard(Vec3(pos), frame, thck, col)
+                    maxreach = max(maxreach, pos.length())
+                    particle.apos += partvel * adt
+                    particle.ctime += adt
+                    i += 1
+                else:
+                    strand.particles.pop(i)
+                    particle_count -= 1
+                    self._total_particle_count -= 1
+            strand.gen.end()
+            if particle_count > 1:
+                strand.node.node().setBounds(BoundingSphere(Point3(), maxreach))
+                strand.node.node().setFinal(True)
+
+
+    def clear (self, camera, havepq, apos, aquat):
+
+        for strand in self._strands:
+            strand.gen.begin(camera, strand.node)
+            strand.gen.end()
+            strand.particles = []
+        self._total_particle_count = 0
+        if havepq:
+            self._prev_apos = apos
+            self._prev_aquat = aquat
+
+
+    def any_visible (self):
+
+        return self._total_particle_count > 0
+
+
+    def prev_apos (self):
+
+        return self._prev_apos
+
+
+    def prev_aquat (self):
+
+        return self._prev_aquat
 
 
 if USE_COMPILED:
