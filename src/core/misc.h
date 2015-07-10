@@ -53,7 +53,7 @@ double EXPORT clamp (double val, double val0, double val1);
 inline T1 unitv (const T2 &v) \
 { \
     double lv = v.length(); \
-    return lv != 0.0 ? T1(v[0] / lv, v[1] / lv, v[2] / lv) : T1(); \
+    return lv != 0.0 ? T1(v[0] / lv, v[1] / lv, v[2] / lv) : T1(0.0, 0.0, 0.0); \
 }
 UNITV3(LVector3f, LVecBase3f)
 UNITV3(LVector3f, LVector3f)
@@ -65,7 +65,7 @@ UNITV3(LVector3d, LPoint3d)
 inline T1 unitv (const T2 &v) \
 { \
     double lv = v.length(); \
-    return lv != 0.0 ? T1(v[0] / lv, v[1] / lv) : T1(); \
+    return lv != 0.0 ? T1(v[0] / lv, v[1] / lv) : T1(0.0, 0.0); \
 }
 UNITV2(LVector2f, LVecBase2f)
 UNITV2(LVector2f, LVector2f)
