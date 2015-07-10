@@ -961,7 +961,7 @@ NodePath PolySmokeGeom::add_strand (
     strand.maxpoly = maxpoly;
 
     strand.dtang = -offtang * thickness;
-    strand.absspacing = thickness * spacing * 2;
+    strand.absspacing = thickness * spacing;
 
     strand.particle_count = 0;
 
