@@ -829,12 +829,13 @@ class Vehicle (Body):
 
     def jump_to (self, pos=None, hpr=None, speed=None):
 
-        Body.jump_to(self, pos, hpr, speed)
-
         gfix = self._fix_to_ground(self.world, self._gyro,
                                    self._modgndcnts, self.sink,
                                    ptod(pos), vtod(hpr))
         pos1, hpr1 = gfix[:2]
+
+        Body.jump_to(self, ptof(pos1), vtof(hpr1), speed)
+
         self.node.setPos(ptof(pos1))
         self.node.setHpr(vtof(hpr1))
         self._prev_gfix = gfix
@@ -842,6 +843,7 @@ class Vehicle (Body):
         tvelg = speed
         self._prev_dyn = (tvelg,)
 
+        self.zero_inputs()
         self.set_ap()
 
 
