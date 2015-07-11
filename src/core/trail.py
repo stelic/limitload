@@ -2042,7 +2042,8 @@ class PolySmokeGeom (object):
                         frame = Vec4(uoff, voff, dcoord, dcoord)
                     else:
                         frame = Vec4(0.0, 0.0, 1.0, 1.0)
-                    strand.gen.billboard(Vec3(pos), frame, thck, col)
+                    rad = thck * 0.5
+                    strand.gen.billboard(Vec3(pos), frame, rad, col)
                     maxreach = max(maxreach, pos.length())
                     particle.apos += partvel * adt
                     particle.ctime += adt

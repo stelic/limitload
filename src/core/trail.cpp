@@ -1082,10 +1082,10 @@ void PolySmokeGeom::update (
                     double thck0 = strand.thickness;
                     double thck1 = strand.endthickness;
                     double size = thck0 + (thck1 - thck0) * ifac;
-                    LVector3 qp1 = pos + oc1 * size;
-                    LVector3 qp2 = pos + oc2 * size;
-                    LVector3 qp3 = pos + oc3 * size;
-                    LVector3 qp4 = pos + oc4 * size;
+                    LVector3 qp1 = pos + oc1 * size * 0.5;
+                    LVector3 qp2 = pos + oc2 * size * 0.5;
+                    LVector3 qp3 = pos + oc3 * size * 0.5;
+                    LVector3 qp4 = pos + oc4 * size * 0.5;
 
                     LVector4 col;
                     if (ifac < strand.tcol) {
