@@ -1344,9 +1344,9 @@ class Plane (Body):
             # is in cockpit, to avoid strange effects when launching weapons, etc.
             refbody = None
             if (self.world.player and self.world.player.alive and
-                self.world.player_control_level == 0):
+                self.world.player_control_level <= 1):
                 refbody = self.world.player.ac
-                attached = self.world.player.ac is not self
+                attached = self.world.player.ac is self
             elif self.world.chaser:
                 refbody = self.world.chaser
                 attached = self.world.chaser.is_attached_to(self)
