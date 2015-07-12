@@ -1113,6 +1113,8 @@ class Cockpit (object):
 
         self._prev_player_control_level = None
 
+        self._frame_created = self.world.frame
+
         self.alive = True
         base.taskMgr.add(self._loop, "cockpit-loop", sort=-6)
         # ...should come after helmet loop, before player loop.
@@ -1575,11 +1577,11 @@ class Cockpit (object):
         if self._prev_lgear_active != lgear_active:
             self._prev_lgear_active = lgear_active
             if lgear_active:
-                if self.world.frame > 5:
+                if self.world.frame - self._frame_created > 3:
                     self._lgear_up_sound.stop()
                     self._lgear_down_sound.play(fadetime=0.1)
             else:
-                if self.world.frame > 5:
+                if self.world.frame - self._frame_created > 3:
                     self._lgear_down_sound.stop()
                     self._lgear_up_sound.play(fadetime=0.1)
         if lgear_active:
