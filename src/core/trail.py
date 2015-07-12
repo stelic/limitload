@@ -1707,7 +1707,7 @@ class PolyBraidGeom (object):
             strand.dtang = strand.init_dtang * spfac
 
 
-class PolySmoke (object):
+class PolyBurn (object):
 
     def __init__ (self, parent, pos, lifespan, thickness,
                   emitradius, emitspeed, texture,
@@ -1743,7 +1743,7 @@ class PolySmoke (object):
             self.parent = parent
             self.pnode = parent.node
 
-        self.node = self.world.node.attachNewNode("polysmoke-root")
+        self.node = self.world.node.attachNewNode("polyburn-root")
         self.node.setAntialias(AntialiasAttrib.MNone)
         if isinstance(glowmap, Vec4):
             glow = glowmap
@@ -1801,7 +1801,7 @@ class PolySmoke (object):
             self.node.setPos(self.pnode.getPos(self.world.node))
             apos = self.node.getRelativePoint(self.pnode, self._pos)
             aquat = self.pnode.getQuat(self.world.node)
-            self._geom = PolySmokeGeom(apos, aquat)
+            self._geom = PolyBurnGeom(apos, aquat)
             for i in range(numstrands):
                 snode = self._geom.add_strand(
                     gv(thickness, i),
@@ -1830,13 +1830,13 @@ class PolySmoke (object):
                 self._light = AutoPointLight(
                     parent=self.parent, color=ltcolor,
                     radius=ltradius, halfat=lthalfat,
-                    pos=ltpos, name="polysmoke")
+                    pos=ltpos, name="polyburn")
 
             if obpos is not None and self.parent:
                 self._overbright = PointOverbright(
                     parent=self.parent, color=obcolor,
                     radius=obradius, halfat=obhalfat,
-                    pos=obpos, name="polysmoke")
+                    pos=obpos, name="polyburn")
                 self.parent.node.setShaderInput(self.world.shdinp.pntobrn,
                                                 self._overbright.node)
 
@@ -1848,7 +1848,7 @@ class PolySmoke (object):
             self._start()
 
         self.alive = True
-        base.taskMgr.add(self._loop, "polysmoke-loop")
+        base.taskMgr.add(self._loop, "polyburn-loop")
 
 
     def destroy (self):
@@ -1930,7 +1930,7 @@ class PolySmoke (object):
 
 
 # :also-compiled:
-class PolySmokeGeom (object):
+class PolyBurnGeom (object):
 
     def __init__ (self, apos, aquat):
 

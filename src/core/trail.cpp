@@ -25,7 +25,7 @@ static void _init_trail ()
     INITIALIZE_TYPE(PolyTrailGeom)
     INITIALIZE_TYPE(PolyExhaustGeom)
     INITIALIZE_TYPE(PolyBraidGeom)
-    INITIALIZE_TYPE(PolySmokeGeom)
+    INITIALIZE_TYPE(PolyBurnGeom)
 }
 DToolConfigure(config_limload_trail);
 DToolConfigureFn(config_limload_trail) { _init_trail(); }
@@ -858,7 +858,7 @@ void PolyBraidGeom::multiply_init_dtang (double spfac)
 }
 
 // ========================================
-// PolySmokeGeom
+// PolyBurnGeom
 
 class SmokeStrandParticle
 {
@@ -904,16 +904,16 @@ typedef std::deque<SmokeStrand*>::iterator SmokeStrandsIter;
 
 SmokeStrand::~SmokeStrand ()
 {
-    //printf("--polysmokegeom-smokestrand-dtr\n");
+    //printf("--polyburngeom-smokestrand-dtr\n");
     for (SmokeStrandParticlesIter it = particles.begin(); it != particles.end(); ++it) {
         delete *it;
     }
     node.remove_node();
 }
 
-INITIALIZE_TYPE_HANDLE(PolySmokeGeom)
+INITIALIZE_TYPE_HANDLE(PolyBurnGeom)
 
-PolySmokeGeom::PolySmokeGeom (
+PolyBurnGeom::PolyBurnGeom (
     const LPoint3 &apos, const LQuaternion& aquat)
 : _strands()
 , _prev_apos(apos)
@@ -922,15 +922,15 @@ PolySmokeGeom::PolySmokeGeom (
 {
 }
 
-PolySmokeGeom::~PolySmokeGeom ()
+PolyBurnGeom::~PolyBurnGeom ()
 {
-    //printf("--polysmokegeom-dtr\n");
+    //printf("--polyburngeom-dtr\n");
     for (SmokeStrandsIter it = _strands.begin(); it != _strands.end(); ++it) {
         delete *it;
     }
 }
 
-NodePath PolySmokeGeom::add_strand (
+NodePath PolyBurnGeom::add_strand (
     double thickness, double endthickness,
     double emitradius, double emitspeed,
     double spacing, double offtang,
@@ -1002,7 +1002,7 @@ NodePath PolySmokeGeom::add_strand (
     return strand.node;
 }
 
-void PolySmokeGeom::update (
+void PolyBurnGeom::update (
     const NodePath &camera,
     double lifespan, const LPoint3 &bpos,
     bool havepq, const LPoint3 &apos_, const LQuaternion &aquat_,
@@ -1152,7 +1152,7 @@ void PolySmokeGeom::update (
     }
 }
 
-void PolySmokeGeom::clear (
+void PolyBurnGeom::clear (
     const NodePath &camera,
     bool havepq, const LPoint3 &apos, const LQuaternion &aquat)
 {
@@ -1181,17 +1181,17 @@ void PolySmokeGeom::clear (
     }
 }
 
-bool PolySmokeGeom::any_visible () const
+bool PolyBurnGeom::any_visible () const
 {
     return _total_particle_count > 0;
 }
 
-LPoint3 PolySmokeGeom::prev_apos () const
+LPoint3 PolyBurnGeom::prev_apos () const
 {
     return _prev_apos;
 }
 
-LQuaternion PolySmokeGeom::prev_aquat () const
+LQuaternion PolyBurnGeom::prev_aquat () const
 {
     return _prev_aquat;
 }

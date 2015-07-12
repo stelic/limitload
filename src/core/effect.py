@@ -6,7 +6,7 @@ from src import pycv
 from src.core.fire import Fire
 from src.core.misc import rgba
 from src.core.misc import fx_uniform, fx_randrange
-from src.core.trail import Trail, PolyExhaust, PolyBraid, PolySmoke
+from src.core.trail import Trail, PolyExhaust, PolyBraid, PolyBurn
 
 
 def fire_n_smoke (parent, store=None,
@@ -332,7 +332,7 @@ def fire_n_smoke_2 (parent, store=None,
     trails = []
 
     if fpos is not None:
-        fire = PolySmoke(
+        fire = PolyBurn(
             parent=parent,
             pos=fpos,
             numstrands=1,
@@ -372,7 +372,7 @@ def fire_n_smoke_2 (parent, store=None,
             delay=fdelay)
         trails.append(fire)
     if spos is not None:
-        smoke = PolySmoke(
+        smoke = PolyBurn(
             parent=parent,
             pos=spos,
             numstrands=1,
@@ -895,7 +895,7 @@ def fire_n_smoke_3 (parent, store=None,
     trails = []
 
     if fpos1 is not None:
-        fire1 = PolySmoke(
+        fire1 = PolyBurn(
             parent=parent,
             pos=fpos1,
             # # # # numstrands=3,
@@ -934,7 +934,7 @@ def fire_n_smoke_3 (parent, store=None,
             delay=fdelay1)
         trails.append(fire1)
 
-    fire2 = PolySmoke(
+    fire2 = PolyBurn(
         parent=parent,
         pos=Point3(fx_uniform(0, parent._size_xy * 0.9), fx_uniform(0, parent._size_xy * 0.9), 0.0 * sclfact),
         numstrands=1,
@@ -958,7 +958,7 @@ def fire_n_smoke_3 (parent, store=None,
         delay=fdelay2)
     trails.append(fire2)
 
-    fire3 = PolySmoke(
+    fire3 = PolyBurn(
         parent=parent,
         pos=Point3(fx_uniform(0, -parent._size_xy * 0.9), fx_uniform(0, parent._size_xy * 0.9), 0.0 * sclfact),
         numstrands=1,
@@ -982,7 +982,7 @@ def fire_n_smoke_3 (parent, store=None,
         delay=fdelay3)
     trails.append(fire3)
 
-    fire4 = PolySmoke(
+    fire4 = PolyBurn(
         parent=parent,
         pos=Point3(fx_uniform(0, -parent._size_xy * 0.9), fx_uniform(0, -parent._size_xy * 0.9), 0.0 * sclfact),
         numstrands=1,
@@ -1006,7 +1006,7 @@ def fire_n_smoke_3 (parent, store=None,
         delay=fdelay4)
     trails.append(fire4)
 
-    fire5 = PolySmoke(
+    fire5 = PolyBurn(
         parent=parent,
         pos=Point3(fx_uniform(0, parent._size_xy * 0.9), fx_uniform(0, -parent._size_xy * 0.9), 0.0 * sclfact),
         numstrands=1,
@@ -1031,7 +1031,7 @@ def fire_n_smoke_3 (parent, store=None,
     trails.append(fire5)
 
     if spos1 is not None:
-        smoke1 = PolySmoke(
+        smoke1 = PolyBurn(
             parent=parent,
             pos=spos1,
             # # # # numstrands=3,

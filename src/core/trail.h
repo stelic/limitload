@@ -175,12 +175,12 @@ DECLARE_TYPE_HANDLE(PolyBraidGeom)
 };
 
 class SmokeStrand;
-class EXPORT PolySmokeGeom : public TypedObject
+class EXPORT PolyBurnGeom : public TypedObject
 {
 PUBLISHED:
 
-    PolySmokeGeom (const LPoint3 &apos, const LQuaternion& aquat);
-    ~PolySmokeGeom ();
+    PolyBurnGeom (const LPoint3 &apos, const LQuaternion& aquat);
+    ~PolyBurnGeom ();
 
     NodePath add_strand (
         double thickness, double endthickness,
@@ -212,7 +212,7 @@ private:
     LQuaternion _prev_aquat;
     int _total_particle_count;
 
-DECLARE_TYPE_HANDLE(PolySmokeGeom)
+DECLARE_TYPE_HANDLE(PolyBurnGeom)
 };
 
 #endif
