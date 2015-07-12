@@ -1803,10 +1803,32 @@ class PolyBurn (object):
             aquat = self.pnode.getQuat(self.world.node)
             self._geom = PolyBurnGeom(apos, aquat)
             for i in range(numstrands):
+                emitspec = gv(emitradius, i)
+                if isinstance(emitspec, tuple):
+                    emitname = emitspec[0]
+                    if emitname == "circle":
+                        emittype = 0
+                        radius, = emitspec[1:]
+                        emitparam1 = Vec4(radius, 0.0, 0.0, 0.0)
+                    elif emitname == "yaxis":
+                        emittype = 1
+                        ymin, ymax, width = emitspec[1:]
+                        emitparam1 = Vec4(ymin, ymax, width, 0.0)
+                    elif emitname == "xaxis":
+                        emittype = 2
+                        xmin, xmax, width = emitspec[1:]
+                        emitparam1 = Vec4(xmin, xmax, width, 0.0)
+                    else:
+                        raise StandardError("Unknown emission type '%s'." % emitname)
+                else:
+                    emittype = 0
+                    radius = emitspec
+                    emitparam1 = Vec4(radius, 0.0, 0.0, 0.0)
                 snode = self._geom.add_strand(
                     gv(thickness, i),
                     gv(endthickness, i, gv(thickness, i)),
-                    gv(emitradius, i),
+                    emittype,
+                    emitparam1,
                     gv(emitspeed, i),
                     gv(spacing, i),
                     gv(offtang, i),
@@ -1942,7 +1964,8 @@ class PolyBurnGeom (object):
         self._strands = []
 
 
-    def add_strand (self, thickness, endthickness, emitradius, emitspeed,
+    def add_strand (self, thickness, endthickness,
+                    emittype, emitparam1, emitspeed,
                     spacing, offtang,
                     color, endcolor, tcol, alphaexp,
                     texsplit, numframes,
@@ -1956,7 +1979,8 @@ class PolyBurnGeom (object):
 
         strand.thickness = thickness
         strand.endthickness = endthickness
-        strand.emitradius = emitradius
+        strand.emittype = emittype
+        strand.emitparam1 = emitparam1
         strand.emitspeed = emitspeed
         strand.spacing = spacing
         strand.color = color
@@ -1989,13 +2013,20 @@ class PolyBurnGeom (object):
                 ddtang = strand.emitspeed * adt
                 strand.dtang += ddtang
                 while strand.dtang > 0.0:
-                    dang = fx_uniform(0.0, 2 * pi)
-                    drad = sqrt(fx_randunit()) * strand.emitradius
                     ctime = strand.dtang / strand.emitspeed
-                    papos = (apos - dpos * (ctime / adt) +
-                             Point3(drad * cos(dang),
-                                    drad * sin(dang),
-                                    strand.dtang))
+                    offx = 0.0; offy = 0.0
+                    if strand.emittype == 0: # "circle"
+                        dang = fx_uniform(0.0, 2 * pi)
+                        drad = sqrt(fx_randunit()) * strand.emitparam1[0]
+                        offx = drad * cos(dang)
+                        offy = drad * sin(dang)
+                    elif strand.emittype == 1: # "yaxis"
+                        offx = fx_uniform(-strand.emitparam1[2], strand.emitparam1[2])
+                        offy = fx_uniform(strand.emitparam1[0], strand.emitparam1[1])
+                    elif strand.emittype == 2: # "xaxis"
+                        offx = fx_uniform(strand.emitparam1[0], strand.emitparam1[1])
+                        offy = fx_uniform(-strand.emitparam1[2], strand.emitparam1[2])
+                    papos = apos - dpos * (ctime / adt) + Point3(offx, offy, strand.dtang)
                     particle = SimpleProps(ctime=ctime, apos=papos)
                     strand.particles.append(particle)
                     strand.dtang -= strand.absspacing

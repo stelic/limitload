@@ -873,7 +873,8 @@ struct SmokeStrand
 public:
     double thickness;
     double endthickness;
-    double emitradius;
+    int emittype;
+    LVector4 emitparam1;
     double emitspeed;
     double spacing;
     double offtang;
@@ -932,7 +933,7 @@ PolyBurnGeom::~PolyBurnGeom ()
 
 NodePath PolyBurnGeom::add_strand (
     double thickness, double endthickness,
-    double emitradius, double emitspeed,
+    int emittype, const LVector4 &emitparam1, double emitspeed,
     double spacing, double offtang,
     const LVector4 &color, const LVector4 &endcolor,
     double tcol, double alphaexp,
@@ -948,7 +949,8 @@ NodePath PolyBurnGeom::add_strand (
 
     strand.thickness = thickness;
     strand.endthickness = endthickness;
-    strand.emitradius = emitradius;
+    strand.emittype = emittype;
+    strand.emitparam1 = emitparam1;
     strand.emitspeed = emitspeed;
     strand.spacing = spacing;
     strand.offtang = offtang;
@@ -1017,13 +1019,21 @@ void PolyBurnGeom::update (
             double ddtang = strand.emitspeed * adt;
             strand.dtang += ddtang;
             while (strand.dtang > 0.0) {
-                double dang = fx_uniform2(0.0, 2 * M_PI);
-                double drad = sqrt(fx_randunit()) * strand.emitradius;
                 double ctime = strand.dtang / strand.emitspeed;
-                LVector3 papos = (apos - dpos * (ctime / adt) +
-                                  LPoint3(drad * cos(dang),
-                                          drad * sin(dang),
-                                          strand.dtang));
+                double offx = 0.0, offy = 0.0;
+                if (strand.emittype == 0) { // "circle"
+                    double dang = fx_uniform2(0.0, 2 * M_PI);
+                    double drad = sqrt(fx_randunit()) * strand.emitparam1[0];
+                    offx = drad * cos(dang);
+                    offy = drad * sin(dang);
+                } else if (strand.emittype == 1) { // "yaxis"
+                    offx = fx_uniform2(-strand.emitparam1[2], strand.emitparam1[2]);
+                    offy = fx_uniform2(strand.emitparam1[0], strand.emitparam1[1]);
+                } else if (strand.emittype == 2) { // "xaxis"
+                    offx = fx_uniform2(strand.emitparam1[0], strand.emitparam1[1]);
+                    offy = fx_uniform2(-strand.emitparam1[2], strand.emitparam1[2]);
+                }
+                LVector3 papos = apos - dpos * (ctime / adt) + LPoint3(offx, offy, strand.dtang);
                 strand.particles.push_front(new SmokeStrandParticle());
                 strand.particle_count += 1;
                 _total_particle_count += 1;

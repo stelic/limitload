@@ -184,7 +184,7 @@ PUBLISHED:
 
     NodePath add_strand (
         double thickness, double endthickness,
-        double emitradius, double emitspeed,
+        int emittype, const LVector4 &emitparam1, double emitspeed,
         double spacing, double offtang,
         const LVector4 &color, const LVector4 &endcolor,
         double tcol, double alphaexp,
