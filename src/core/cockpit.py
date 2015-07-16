@@ -1577,11 +1577,11 @@ class Cockpit (object):
         if self._prev_lgear_active != lgear_active:
             self._prev_lgear_active = lgear_active
             if lgear_active:
-                if self.world.frame - self._frame_created > 3:
+                if self.world.frame - self._frame_created > 5:
                     self._lgear_up_sound.stop()
                     self._lgear_down_sound.play(fadetime=0.1)
             else:
-                if self.world.frame - self._frame_created > 3:
+                if self.world.frame - self._frame_created > 5:
                     self._lgear_down_sound.stop()
                     self._lgear_up_sound.play(fadetime=0.1)
         if lgear_active:
