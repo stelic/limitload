@@ -7,7 +7,7 @@ from pandac.PandaModules import Vec3, Vec3D, Point3, Point3D
 from src import pycv
 from src.core.body import Body
 from src.core.curve import Segment, Arc
-from src.core.effect import fire_n_smoke
+from src.core.effect import fire_n_smoke_2
 from src.core.fire import PolyExplosion
 from src.core.misc import AutoProps, rgba, norm_ang_delta, to_navhead
 from src.core.misc import sign, clamp, vtod, vtof, ptod, ptof
@@ -183,50 +183,22 @@ class Ship (Body):
                 self.explode_minor()
 
             firescale = fx_uniform(1.0, 1.3)
-            fire_n_smoke(
-                parent=self, store=self.damage_trails,
-                fcolor=rgba(255, 255, 255, 1.0),
-                fcolorend=rgba(247, 229, 178, 1.0),
-                fpos=Vec3(0.0, 3.0, 4.0),
-                spos=Vec3(0.0, 2.0, 6.0),
-                spos2=None,
-                ftcol=0.8,
-                stcol=0.5,
-                fforce=0.0,
-                sforce=0.0,
-                flifespan=1.1,
-                slifespan=2.8,
-                sclfact=firescale,
-                psfact=0.6,
-                pdir=Vec3(0, 0, 1),
-                fphpr=Vec3(0,0,0),
-                sphpr=Vec3(0,0,0),
-                emradfact=fx_uniform(0.08, 0.16) * self._size_xy,
-                emampfact=fx_uniform(0.8, 1.0),
-                absolute=True,
-                fdelay=fx_uniform(0.1, 3.0))
-            fire_n_smoke(
-                parent=self, store=self.damage_trails,
-                fcolor=rgba(255, 255, 255, 1.0),
-                fcolorend=rgba(247, 229, 178, 1.0),
-                fpos=Vec3(0.0, -6.0, 4.0),
-                spos=Vec3(0.0, -5.0, 6.0),
-                spos2=None,
-                ftcol=0.8,
-                stcol=0.5,
-                fforce=0.0,
-                sforce=0.0,
-                flifespan=1.1,
-                slifespan=2.8,
-                sclfact=firescale,
-                psfact=0.6,
-                pdir=Vec3(0, 0, 1),
-                fphpr=Vec3(0,0,0),
-                sphpr=Vec3(0,0,0),
-                emradfact=fx_uniform(0.08, 0.16) * self._size_xy,
-                emampfact=fx_uniform(0.9, 1.0),
-                absolute=True,
-                fdelay=fx_uniform(0.1, 3.0))
+            fire_n_smoke_2(
+                parent=self, store=None,
+                sclfact = fx_uniform(0.5, 0.7) * self._size_xy,
+                emradtype="fat-y",
+                emradfact = fx_uniform(0.7, 0.9) * self._size_xy,
+                zvelfact = 20.0,
+                fcolor = rgba(255, 255, 255, 1.0),
+                fcolorend = rgba(246, 112, 27, 1.0),
+                ftcol = 0.5,
+                fspacing=0.1,
+                flifespan = 0.8,
+                fpos = Vec3(0.0, 0.0, 2.0),
+                fdelay = fx_uniform(0.1, 3.0),
+                spos = Vec3(0.0, 0.0, 2.0),
+                stcol = 0.4,
+                slifespan = 4.0)
 
             self._ap_active = True
             self._ap_pause = 0.0

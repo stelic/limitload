@@ -317,12 +317,14 @@ def fire_n_smoke_1 (parent, store=None,
     # return trails
 def fire_n_smoke_2 (parent, store=None,
                     sclfact = 1.0,
+                    emradtype="circle",
                     emradfact = 1.0,
                     zvelfact = 1.0,
                     fcolor = rgba(255, 255, 255, 1.0),
                     fcolorend = rgba(246, 112, 27, 1.0),
                     ftcol = 1.0,
                     flifespan = 1.0,
+                    fspacing=0.2,
                     fpos = Vec3(0.0, 0.0, 0.0),
                     fdelay = 0.0,
                     spos = Vec3(0.0, 0.0, 0.0),
@@ -330,6 +332,13 @@ def fire_n_smoke_2 (parent, store=None,
                     slifespan = 1.0):
 
     trails = []
+
+    if emradtype == "circle":
+        emitradius = [("circle", 1.0 * emradfact)]
+    elif emradtype == "fat-x":
+        emitradius = [("xaxis", -1.0 * emradfact, 1.0 * emradfact, 0.4 * emradfact)]
+    elif emradtype == "fat-y":
+        emitradius = [("yaxis", -1.0 * emradfact, 1.0 * emradfact, 0.4 * emradfact)]
 
     if fpos is not None:
         fire = PolyBurn(
@@ -339,9 +348,9 @@ def fire_n_smoke_2 (parent, store=None,
             lifespan=flifespan,
             thickness=2.0 * sclfact,
             endthickness=1.0 * sclfact,
-            spacing=0.2,
+            spacing=fspacing,
             emitspeed=1 * zvelfact,
-            emitradius=1.0 * emradfact,
+            emitradius=emitradius,
             offtang=0.0,
             texture="images/particles/explosion7-1.png",
             glowmap=rgba(255, 255, 255, 1.0),
@@ -368,7 +377,7 @@ def fire_n_smoke_2 (parent, store=None,
             tcol=ftcol,
             maxpoly=pycv(py=500, c=2000),
             dbin=3,
-            frameskip=pycv(py=1, c=None),
+            frameskip=pycv(py=2, c=1),
             delay=fdelay)
         trails.append(fire)
     if spos is not None:
@@ -381,7 +390,7 @@ def fire_n_smoke_2 (parent, store=None,
             endthickness=12.0 * sclfact,
             spacing=0.6,
             emitspeed=1 * zvelfact,
-            emitradius=1.0 * emradfact,
+            emitradius=emitradius,
             offtang=0.0,
             texture="images/particles/smoke6-1.png",
             glowmap=pycv(py=rgba(255, 255, 255, 1.0), c=rgba(0, 0, 0, 0.1)),
@@ -394,7 +403,7 @@ def fire_n_smoke_2 (parent, store=None,
             tcol=stcol,
             maxpoly=pycv(py=500, c=2000),
             dbin=3,
-            frameskip=pycv(py=1, c=None))
+            frameskip=pycv(py=2, c=1))
         trails.append(smoke)
 
     if store is not None:
@@ -930,7 +939,7 @@ def fire_n_smoke_3 (parent, store=None,
             tcol=0.8,
             maxpoly=pycv(py=500, c=2000),
             dbin=3,
-            frameskip=pycv(py=1, c=None),
+            frameskip=pycv(py=2, c=1),
             delay=fdelay1)
         trails.append(fire1)
 
@@ -954,7 +963,7 @@ def fire_n_smoke_3 (parent, store=None,
         tcol=0.8,
         maxpoly=pycv(py=500, c=2000),
         dbin=3,
-        frameskip=pycv(py=1, c=None),
+        frameskip=pycv(py=2, c=1),
         delay=fdelay2)
     trails.append(fire2)
 
@@ -978,7 +987,7 @@ def fire_n_smoke_3 (parent, store=None,
         tcol=0.6,
         maxpoly=pycv(py=500, c=2000),
         dbin=3,
-        frameskip=pycv(py=1, c=None),
+        frameskip=pycv(py=2, c=1),
         delay=fdelay3)
     trails.append(fire3)
 
@@ -1002,7 +1011,7 @@ def fire_n_smoke_3 (parent, store=None,
         tcol=0.8,
         maxpoly=pycv(py=500, c=2000),
         dbin=3,
-        frameskip=pycv(py=1, c=None),
+        frameskip=pycv(py=2, c=1),
         delay=fdelay4)
     trails.append(fire4)
 
@@ -1026,7 +1035,7 @@ def fire_n_smoke_3 (parent, store=None,
         tcol=0.8,
         maxpoly=pycv(py=500, c=2000),
         dbin=3,
-        frameskip=pycv(py=1, c=None),
+        frameskip=pycv(py=2, c=1),
         delay=fdelay5)
     trails.append(fire5)
 
@@ -1059,7 +1068,7 @@ def fire_n_smoke_3 (parent, store=None,
             tcol=0.6,
             maxpoly=pycv(py=500, c=2000),
             dbin=3,
-            frameskip=pycv(py=1, c=None))
+            frameskip=pycv(py=2, c=1))
         trails.append(smoke1)
 
     if store is not None:
