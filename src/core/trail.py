@@ -1726,7 +1726,7 @@ class PolyBurn (object):
                   obpulse=0.0,
                   texsplit=None, numframes=None,
                   frameskip=2, dbin=0.0,
-                  delay=0.0):
+                  delay=0.0, duration=None):
 
         if isinstance(parent, tuple):
             self.pnode, other = parent
@@ -1869,6 +1869,8 @@ class PolyBurn (object):
             self._wait_delay = None
             self._start()
 
+        self._wait_remove = duration
+
         self.alive = True
         base.taskMgr.add(self._loop, "polyburn-loop")
 
@@ -1905,10 +1907,14 @@ class PolyBurn (object):
             else:
                 return task.cont
 
+        if self._wait_remove is not None:
+            self._wait_remove -= dt
+
         apos = Point3()
         aquat = Quat()
         havepq = False
-        if not self.pnode.isEmpty():
+        if (not self.pnode.isEmpty() and
+            (self._wait_remove is None or self._wait_remove > 0.0)):
             apos = self.node.getRelativePoint(self.pnode, self._pos)
             aquat = self.pnode.getQuat(self.world.node)
             havepq = True
