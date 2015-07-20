@@ -77,32 +77,32 @@ def zone_zero_enter (zc, mc, gc):
 
     #Target vehicle group
     zc.target1 = Abrams(world=zc.world, name="harmor1", side="merc",
-                        texture="models/vehicles/abrams/abramsblackpanther_tex.png",
+                        texture="models/vehicles/abrams/abrams_tex.png",
                         pos=(zc.wp1pos + Point2(500, 450)),
                         hpr=Vec3(310, 0, 0),
                         speed=0.0)
     zc.target2 = Abrams(world=zc.world, name="harmor2", side="merc",
-                        texture="models/vehicles/abrams/abramsblackpanther_tex.png",
+                        texture="models/vehicles/abrams/abrams_tex.png",
                         pos=pos_from_horiz(zc.target1, Point2(100, -850)),
                         hpr=Vec3(220, 0, 0),
                         speed=0.0)
     zc.target3 = Bradley(world=zc.world, name="larmor1", side="merc",
-                         texture="models/vehicles/bradley/bradleyblackpanther_tex.png",
+                         texture="models/vehicles/bradley/bradley_tex.png",
                          pos=(zc.wp1pos + Point2(-400, 400)),
                          hpr=Vec3(270, 0, 0),
                          speed=0.0)
     zc.target4 = Bradley(world=zc.world, name="larmor2", side="merc",
-                         texture="models/vehicles/bradley/bradleyblackpanther_tex.png",
+                         texture="models/vehicles/bradley/bradley_tex.png",
                          pos=pos_from_horiz(zc.target3, Point2(-450, -400)),
                          hpr=Vec3(295, 0, 0),
                          speed=0.0)
     zc.target5 = Bradley(world=zc.world, name="larmor3", side="merc",
-                         texture="models/vehicles/bradley/bradleyblackpanther_tex.png",
+                         texture="models/vehicles/bradley/bradley_tex.png",
                          pos=pos_from_horiz(zc.target3, Point2(-300, -800)),
                          hpr=Vec3(180, 0, 0),
                          speed=0.0)
     zc.target6 = Bradley(world=zc.world, name="larmor4", side="merc",
-                         texture="models/vehicles/bradley/bradleyblackpanther_tex.png",
+                         texture="models/vehicles/bradley/bradley_tex.png",
                          pos=pos_from_horiz(zc.target3, Point2(200, -1000)),
                          hpr=Vec3(130, 0, 0),
                          speed=0.0)
