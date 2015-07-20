@@ -839,16 +839,17 @@ class Rocket (Body):
             if self._tracked_decoy:
                 decoy = self._tracked_decoy
                 tracked = False
-                decoy_offbore = self.offbore(decoy)
-                if decoy_offbore < self.maxoffbore:
-                    if target_weight and decoy_offbore > target_offbore:
-                        decoy_reloffb = (target_offbore / decoy_offbore)**0.5
-                    else:
-                        decoy_reloffb = 1.0
-                    decoy_effect = (1.0 - decoy.decay()) * decoy_reloffb
-                    if decoy_effect > self.decoyresist * resist_mod:
-                        offset = decoy.pos(refbody=target)
-                        tracked = True
+                if decoy.alive:
+                    decoy_offbore = self.offbore(decoy)
+                    if decoy_offbore < self.maxoffbore:
+                        if target_weight and decoy_offbore > target_offbore:
+                            decoy_reloffb = (target_offbore / decoy_offbore)**0.5
+                        else:
+                            decoy_reloffb = 1.0
+                        decoy_effect = (1.0 - decoy.decay()) * decoy_reloffb
+                        if decoy_effect > self.decoyresist * resist_mod:
+                            offset = decoy.pos(refbody=target)
+                            tracked = True
                 if not tracked:
                     self._tracked_decoy = None
                     self._eliminated_decoys.add(decoy)
