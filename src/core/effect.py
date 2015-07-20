@@ -340,6 +340,8 @@ def fire_n_smoke_2 (parent, store=None,
     elif emradtype == "fat-y":
         emitradius = [("yaxis", -1.0 * emradfact, 1.0 * emradfact, 0.4 * emradfact)]
 
+    duration = fx_uniform(120, 240)
+
     if fpos is not None:
         fire = PolyBurn(
             parent=parent,
@@ -378,7 +380,8 @@ def fire_n_smoke_2 (parent, store=None,
             maxpoly=pycv(py=500, c=2000),
             dbin=3,
             frameskip=pycv(py=2, c=1),
-            delay=fdelay)
+            delay=fdelay,
+            duration=duration)
         trails.append(fire)
     if spos is not None:
         smoke = PolyBurn(
@@ -403,7 +406,8 @@ def fire_n_smoke_2 (parent, store=None,
             tcol=stcol,
             maxpoly=pycv(py=500, c=2000),
             dbin=3,
-            frameskip=pycv(py=2, c=1))
+            frameskip=pycv(py=2, c=1),
+            duration=duration * 1.2)
         trails.append(smoke)
 
     if store is not None:
@@ -901,6 +905,8 @@ def fire_n_smoke_3 (parent, store=None,
     if fdelay5 is None:
         fdelay5 = fx_uniform(1.0, 4.0)
 
+    duration = fx_uniform(180, 300)
+
     trails = []
 
     if fpos1 is not None:
@@ -940,7 +946,8 @@ def fire_n_smoke_3 (parent, store=None,
             maxpoly=pycv(py=500, c=2000),
             dbin=3,
             frameskip=pycv(py=2, c=1),
-            delay=fdelay1)
+            delay=fdelay1,
+            duration=duration)
         trails.append(fire1)
 
     fire2 = PolyBurn(
@@ -964,7 +971,8 @@ def fire_n_smoke_3 (parent, store=None,
         maxpoly=pycv(py=500, c=2000),
         dbin=3,
         frameskip=pycv(py=2, c=1),
-        delay=fdelay2)
+        delay=fdelay2,
+        duration=duration * 0.6)
     trails.append(fire2)
 
     fire3 = PolyBurn(
@@ -988,7 +996,8 @@ def fire_n_smoke_3 (parent, store=None,
         maxpoly=pycv(py=500, c=2000),
         dbin=3,
         frameskip=pycv(py=2, c=1),
-        delay=fdelay3)
+        delay=fdelay3,
+        duration=duration * 0.6)
     trails.append(fire3)
 
     fire4 = PolyBurn(
@@ -1012,7 +1021,8 @@ def fire_n_smoke_3 (parent, store=None,
         maxpoly=pycv(py=500, c=2000),
         dbin=3,
         frameskip=pycv(py=2, c=1),
-        delay=fdelay4)
+        delay=fdelay4,
+        duration=duration * 0.6)
     trails.append(fire4)
 
     fire5 = PolyBurn(
@@ -1036,7 +1046,8 @@ def fire_n_smoke_3 (parent, store=None,
         maxpoly=pycv(py=500, c=2000),
         dbin=3,
         frameskip=pycv(py=2, c=1),
-        delay=fdelay5)
+        delay=fdelay5,
+        duration=duration * 0.6)
     trails.append(fire5)
 
     if spos1 is not None:
@@ -1068,7 +1079,8 @@ def fire_n_smoke_3 (parent, store=None,
             tcol=0.6,
             maxpoly=pycv(py=500, c=2000),
             dbin=3,
-            frameskip=pycv(py=2, c=1))
+            frameskip=pycv(py=2, c=1),
+            duration=duration * 1.3)
         trails.append(smoke1)
 
     if store is not None:
