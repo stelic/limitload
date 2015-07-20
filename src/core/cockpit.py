@@ -4726,7 +4726,9 @@ void main ()
 
     def _cleanup_mfd (self):
 
-        pass
+        if self._mfd_has_tvdisp:
+            if self._mfd_tvdisp_update_view_task is not None:
+                self._mfd_tvdisp_update_view_task.remove()
 
 
     def _update_mfd (self, dt):
