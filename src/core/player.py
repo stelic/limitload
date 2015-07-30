@@ -265,54 +265,81 @@ class Player (DirectObject):
             if self._missile_chasef is None:
                 # chf = lambda p: FixedChaser(parent=p, pos=Point3(0, -32, 8))
                 def chf(p):
-                    chaserchoice = randrange(4)
+                    chaserchoice = randrange(3)
                     if chaserchoice == 0:
-                        ch = ElasticChaser(
-                            world=p.world, point=Point3(0, -30, -10),
+                        # ch = ElasticChaser(
+                            # world=p.world, point=Point3(0, -30, -10),
+                            # relto=self.ac, rotrel=True,
+                            # atref=p, upref=self.ac,
+                            # distlag=0.50, atlag=0.25, uplag=0.25, fovlag=0.10,
+                            # remdelay=3.0)
+                        ch = TrackChaser(
+                            world=p.world, point=Point3(0, -30, -8),
                             relto=self.ac, rotrel=True,
                             atref=p, upref=self.ac,
-                            distlag=0.50, atlag=0.25, uplag=0.25, fovlag=0.10,
-                            remdelay=3.0)
+                            fov=20)
                     elif chaserchoice == 1:
-                        sidex = choice([15, -15])
-                        ch = ElasticChaser(
+                        # sidex = choice([15, -15])
+                        # ch = ElasticChaser(
+                            # world=p.world, point=Point3(sidex, 30, -8),
+                            # relto=self.ac, rotrel=True,
+                            # atref=p, upref=self.ac,
+                            # distlag=0.50, atlag=0.25, uplag=0.25, fovlag=0.10,
+                            # remdelay=3.0)
+                        sidex = choice([20, -20])
+                        ch = TrackChaser(
                             world=p.world, point=Point3(sidex, 30, -8),
                             relto=self.ac, rotrel=True,
                             atref=p, upref=self.ac,
-                            distlag=0.50, atlag=0.25, uplag=0.25, fovlag=0.10,
-                            remdelay=3.0)
+                            fov=20)
                     elif chaserchoice == 2:
-                        ch = ElasticChaser(
-                            world=p.world, point=Point3(0, 30, 4),
+                        # ch = ElasticChaser(
+                            # world=p.world, point=Point3(0, 30, 4),
+                            # relto=self.ac, rotrel=True,
+                            # atref=p, upref=self.ac,
+                            # distlag=0.50, atlag=0.25, uplag=0.25, fovlag=0.10,
+                            # remdelay=3.0)
+                        ch = TrackChaser(
+                            world=p.world, point=Point3(0, 60, 8),
                             relto=self.ac, rotrel=True,
                             atref=p, upref=self.ac,
-                            distlag=0.50, atlag=0.25, uplag=0.25, fovlag=0.10,
-                            remdelay=3.0)
-                    elif chaserchoice == 3:
-                        ch = ElasticChaser(
-                            world=p.world, point=Point3(0, -30, 5),
-                            relto=p, rotrel=True,
-                            atref=p, upref=p,
-                            distlag=0.50, atlag=0.25, uplag=0.25, fovlag=0.10,
-                            remdelay=3.0,
-                            pos=self.ac.pos(offset=Point3(
-                                0, randrange(-40,-30), randrange(-20,-10))))
+                            fov=20)
+                    # elif chaserchoice == 3:
+                        # ch = ElasticChaser(
+                            # world=p.world, point=Point3(0, -30, 5),
+                            # relto=p, rotrel=True,
+                            # atref=p, upref=p,
+                            # distlag=0.50, atlag=0.25, uplag=0.25, fovlag=0.10,
+                            # remdelay=3.0,
+                            # pos=self.ac.pos(offset=Point3(
+                                # 0, randrange(-40,-30), randrange(-20,-10))))
                     def camf (task):
                         if self.ac.alive and ch.alive and p and p.target.alive:
                             if chaserchoice == 0:
-                                ch.move_to(point=Point3(0, -10, 2), relto=p, rotrel=True,
-                                           atref=p, upref=p, fov=90,
-                                           distlag=1.60, atlag=0.60, uplag=0.60, fovlag=1.20)
+                                # ch.move_to(point=Point3(0, -10, 2), relto=p, rotrel=True,
+                                           # atref=p, upref=p, fov=90,
+                                           # distlag=1.60, atlag=0.60, uplag=0.60, fovlag=1.20)
+                                ch.move_to(point=Point3(0, -30, 2), relto=p, rotrel=True,
+                                           atref=p, upref=p, fov=90, speed=10.0, acc=5.0,
+                                           fovspeed=10.0, fovacc=4.0)
                             elif chaserchoice == 1:
+                                # ch.move_to(point=Point3(0, -20, 2), relto=p, rotrel=True,
+                                           # atref=p, upref=p, fov=90,
+                                           # distlag=1.40, atlag=1.20, uplag=1.20, fovlag=1.80)
                                 ch.move_to(point=Point3(0, -20, 2), relto=p, rotrel=True,
                                            atref=p, upref=p, fov=90,
-                                           distlag=1.40, atlag=1.20, uplag=1.20, fovlag=1.80)
+                                           speed=15.0, acc=5.0,
+                                           fovspeed=10.0, fovacc=4.0)
                             elif chaserchoice == 2:
-                                ch.move_to(point=Point3(0, -60, -4), relto=p, rotrel=False,
+                                # ch.move_to(point=Point3(0, -60, -4), relto=p, rotrel=False,
+                                           # atref=p, upref=p, fov=90,
+                                           # distlag=0.80, atlag=0.30, uplag=0.30, fovlag=1.00)
+                                ch.move_to(point=Point3(0, -60, 2), relto=p, rotrel=True,
                                            atref=p, upref=p, fov=90,
-                                           distlag=0.80, atlag=0.30, uplag=0.30, fovlag=1.00)
-                            elif chaserchoice == 3:
-                                ch.move_to(fov=90, fovlag=2.0)
+                                           speed=100.0, acc=50.0,
+                                           fovspeed=10, fovacc=4.0)
+                            # elif chaserchoice == 3:
+                                # ch.move_to(fov=90, fovlag=2.0)
                     taskMgr.doMethodLater(1.0, camf, "actionmissile")
                     return ch
                 self._missile_chasef = chf

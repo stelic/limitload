@@ -281,6 +281,7 @@ class Vehicle (Body):
                 fcolorend = rgba(246, 112, 27, 1.0),
                 ftcol = 0.5,
                 flifespan = 0.8,
+                fspacing=0.1,
                 fpos = Vec3(0.0, 0.0, 1.0),
                 fdelay = fx_uniform(0.1, 3.0),
                 spos = Vec3(0.0, 0.0, 1.0),
