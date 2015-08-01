@@ -1590,7 +1590,7 @@ class TrackChaser (Chaser):
             update_target_pos = True
             update_target_look = True
         at_reference = as_sequence(self._at_reference)
-        if isinstance(at_reference[0], Body) and not any(r.alive for r in at_reference):
+        if at_reference and isinstance(at_reference[0], Body) and not any(r.alive for r in at_reference):
             quat = self.node.getQuat()
             self._at_reference = quat.getForward()
             update_target_look = True
