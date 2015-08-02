@@ -11,9 +11,9 @@ from shutil import rmtree
 from time import time
 
 from pandac.PandaModules import Point2, Point2D, Point3, Point3D
-from pandac.PandaModules import Vec3, Vec3D, Vec4
+from pandac.PandaModules import Vec2D, Vec3, Vec3D, Vec4
 from pandac.PandaModules import QuatD
-from pandac.PandaModules import Texture, TextureStage, PNMImage
+from pandac.PandaModules import Texture, TextureStage
 from pandac.PandaModules import GeomVertexArrayFormat, InternalName
 from pandac.PandaModules import GeomVertexFormat
 from pandac.PandaModules import GeomVertexWriter, GeomVertexData
@@ -36,6 +36,7 @@ from src.core.shader import make_shdfunc_fogbln, make_shdfunc_fogapl
 from src.core.shader import make_shdfunc_sunbln
 from src.core.shader import make_shdfunc_shdcrd, make_shdfunc_shdfac, SHADOWBLUR
 from src.core.shader import make_frag_outputs
+from src.core.table import UnitGrid2
 from src.core.transl import *
 
 
@@ -216,10 +217,13 @@ class Terrain (object):
                   wshadows=None,
                   pos=Point3()):
 
-        timeit = False
-
         if maxheight is None:
             maxheight = minheight
+
+        if isinstance(maxsizex, tuple):
+            maxsizexa, maxsizexb = maxsizex
+        else:
+            maxsizexa = maxsizexb = maxsizex
 
         sizex = float(sizex)
         sizey = float(sizey)
@@ -240,11 +244,14 @@ class Terrain (object):
         self._sizey = sizey
 
         # Position of bottom left corner of the terrain, wrt. (0, 0).
-        self._offsetx = -0.5 * self._sizex
-        self._offsety = -0.5 * self._sizey
+        offsetx = -0.5 * self._sizex
+        offsety = -0.5 * self._sizey
+        self._offsetx = offsetx
+        self._offsety = offsety
 
         # Extract cut masks.
         cutmasks = []
+        levints = [False]
         for ic, cutspec in enumerate(cuts):
             if ic == 0 and cutspec.cutmask is not None:
                 raise StandardError(
@@ -255,85 +262,58 @@ class Terrain (object):
                     "No cut mask is specified for cut %d (%s) "
                     "but it should be." % (ic, cutspec.name))
             if cutspec.cutmask is not None:
-                cutmasks.append(cutspec.cutmask)
+                if not isinstance(cutspec.cutmask, tuple):
+                    cutmask, levint = cutspec.cutmask, True
+                else:
+                    cutmask, levint = cutspec.cutmask
+                cutmasks.append(cutmask)
+                levints.append(levint)
 
-# @cache-key-start: terrain-generation
+        heightmap, haveheightmap = ("", False) if heightmap is None else (heightmap, True)
+        maxsizexa, maxsizexb, havemaxsizex = (0.0, 0.0, False) if maxsizex is None else (maxsizexa, maxsizexb, True)
+        maxsizey, havemaxsizey = (0.0, False) if maxsizey is None else (maxsizey, True)
+        centerx, havecenterx = (0.0, False) if centerx is None else (centerx, True)
+        centery, havecentery = (0.0, False) if centery is None else (centery, True)
+        mingray, havemingray = (0, False) if mingray is None else (mingray, True)
+        maxgray, havemaxgray = (0, False) if maxgray is None else (maxgray, True)
+        minheight, haveminheight = (0.0, False) if minheight is None else (minheight, True)
+        maxheight, havemaxheight = (0.0, False) if maxheight is None else (maxheight, True)
 
-        # Construct everything.
-        carg = AutoProps(
-            sizex=self._sizex, sizey=self._sizey,
-            offsetx=self._offsetx, offsety=self._offsety,
-            heightmap=heightmap, maxsizex=maxsizex, maxsizey=maxsizey,
-            centerx=centerx, centery=centery, mingray=mingray, maxgray=maxgray,
-            minheight=minheight, maxheight=maxheight,
-            numtilesx=numtilesx, numtilesy=numtilesy,
-            celldensity=celldensity, periodic=periodic, cutmasks=cutmasks,
-        )
-        ret = None
-        keyhx = None
-        if name and isinstance(heightmap, basestring):
-            tname = name
-            fckey = [heightmap] + list(cutmasks)
-            ecarg = AutoProps()
-            hmdatapath = Terrain._hmdata_path(heightmap)
-            if path_exists("data", hmdatapath):
-                ecarg.hmdatapath = hmdatapath
-                fckey.append(hmdatapath)
-            this_path = internal_path("data", __file__)
-            key = (sorted(carg.props()), sorted(ecarg.props()),
-                   get_cache_key_section(this_path.replace(".pyc", ".py"),
-                                         "terrain-generation"))
-            keyhx = key_to_hex(key, fckey)
-# @cache-key-end: terrain-generation
-            if timeit:
-                t1 = time()
-# @cache-key-start: terrain-generation
-            ret = Terrain._load_from_cache(tname, keyhx)
-# @cache-key-end: terrain-generation
-            if timeit and ret:
-                t2 = time()
-                dbgval(1, "terrain-load-from-cache",
-                       (t2 - t1, "%.3f", "time", "s"))
-# @cache-key-start: terrain-generation
-        if not ret:
-            ret = Terrain._construct(**dict(carg.props()))
-            celldata, elevdata, geomdata = ret
-            if keyhx is not None:
-# @cache-key-end: terrain-generation
-                if timeit:
-                    t1 = time()
-# @cache-key-start: terrain-generation
-                Terrain._write_to_cache(tname, keyhx, celldata, elevdata, geomdata)
-# @cache-key-end: terrain-generation
-                if timeit:
-                    t2 = time()
-                    dbgval(1, "terrain-write-to-cache",
-                           (t2 - t1, "%.3f", "time", "s"))
-# @cache-key-start: terrain-generation
-        else:
-            celldata, elevdata, geomdata = ret
-# @cache-key-end: terrain-generation
+        self._geom = TerrainGeom(
+            name,
+            sizex, sizey, offsetx, offsety,
+            heightmap, haveheightmap,
+            maxsizexa, maxsizexb, havemaxsizex, maxsizey, havemaxsizey,
+            centerx, havecenterx, centery, havecentery,
+            mingray, havemingray, maxgray, havemaxgray,
+            minheight, haveminheight, maxheight, havemaxheight,
+            numtilesx, numtilesy,
+            celldensity, periodic,
+            cutmasks, levints)
 
-        (self._numquadsx, self._numquadsy, self._numtilesx, self._numtilesy,
-         tilesizex, tilesizey, numcuts) = celldata
-        (self._verts, self._tris, self._quadmap,
-         self._maxz, self._maxqzs) = elevdata
-        self._tileroot, = geomdata
+        self._numquadsx = self._geom.num_quads_x()
+        self._numquadsy = self._geom.num_quads_y()
+        numtilesx = self._geom.num_tiles_x()
+        numtilesy = self._geom.num_tiles_y()
+        tilesizex = self._geom.tile_size_x()
+        tilesizey = self._geom.tile_size_y()
+        numcuts = self._geom.num_cuts()
+        tileroot = self._geom.tile_root()
 
         self.node = world.node.attachNewNode("terrain")
         self.node.setPos(pos)
         self._pos = pos
         self._pos_x, self._pos_y = pos[0], pos[1]
-        self._tileroot.reparentTo(self.node)
+        tileroot.reparentTo(self.node)
 
         # Get tile pointers and set LOD distances.
-        self._tiles = [[[None] * numcuts for jt in xrange(self._numtilesy)]
-                       for it in xrange(self._numtilesx)]
+        self._tiles = [[[None] * numcuts for jt in xrange(numtilesy)]
+                       for it in xrange(numtilesx)]
         tileradius = 0.5 * sqrt(tilesizex**2 + tilesizey**2)
         maxaltitude = 30000.0
         outvisradius = sqrt((visradius + tileradius)**2 + maxaltitude**2)
         it = 0; jt = 0
-        for ijtlnp in self._tileroot.getChildren():
+        for ijtlnp in tileroot.getChildren():
             ijtlod = ijtlnp.node()
             ijtlod.setSwitch(0, outvisradius, 0.0)
             ijtile = ijtlnp.getChild(0)
@@ -342,56 +322,25 @@ class Terrain (object):
                 self._tiles[it][jt][ic] = ctile
                 ic += 1
             jt += 1
-            if jt >= self._numtilesy:
+            if jt >= numtilesy:
                 it += 1; jt = 0
 
         # Derive data for external use of heightmap as terrain chart.
         self.geomap_path = None
-        if isinstance(heightmap, basestring):
+        if heightmap:
             self.geomap_path = heightmap
-            hmdatapath = Terrain._hmdata_path(heightmap)
-            if path_exists("data", hmdatapath):
-                ret = Terrain._read_heightmap_data(hmdatapath)
-                maxsizex, maxsizey = ret[:2]
-            else:
-                maxsizex, maxsizey = sizex, sizey
-            if isinstance(maxsizex, tuple):
-                maxsizexa, maxsizexb = maxsizex
-            else:
-                maxsizexa = maxsizexb = maxsizex
+            maxsizexa, maxsizexb, maxsizey = self._geom.heightmap_size()
             self.geomap_uvext = []
             self.geomap_uvext_arena = []
             for kx, ky in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
                 x = self._offsetx + 0.5 * (1 + kx) * self._sizex
                 y = self._offsety + 0.5 * (1 + ky) * self._sizey
-                uv = Terrain._to_unit_trap(
-                    self._sizex, self._sizey, self._offsetx, self._offsety,
-                    maxsizexa, maxsizexb, maxsizey,
-                    float(centerx or 0.0), float(centery or 0.0),
-                    x, y)
+                uv = self._geom.to_unit_trap(maxsizexa, maxsizexb, maxsizey, x, y)
                 xa = x - kx * visradius
                 ya = y - ky * visradius
                 self.geomap_uvext.append(uv)
-                uva = Terrain._to_unit_trap(
-                    self._sizex, self._sizey, self._offsetx, self._offsety,
-                    maxsizexa, maxsizexb, maxsizey,
-                    float(centerx or 0.0), float(centery or 0.0),
-                    xa, ya)
+                uva = self._geom.to_unit_trap(maxsizexa, maxsizexb, maxsizey, xa, ya)
                 self.geomap_uvext_arena.append(uva)
-
-        ## Compute number of polygons: global, per tile (approx.),
-        ## maximum visible (approx.).
-        #self._globpoly = len(self._tris[0])
-        #numtiles = self._numtilesx * self._numtilesy
-        #self._tilepoly = int(float(self._globpoly) / numtiles)
-        #extvis = int(tileradius / visradius)
-        #self._maxvispoly = 0
-        #for i in range(-extvis, extvis + 1):
-            #for j in range(-extvis, extvis + 1):
-                #dijsq = i**2 + j**2
-                #if dijsq <= extvis**2 + 1:
-                    #self._maxvispoly += self._tilepoly
-        #print "--terrain-poly", len(self._tris[0])
 
         # Resolve None/empty-valued data to needed equivalents.
         for ic, cutspec in enumerate(cuts):
@@ -463,14 +412,13 @@ class Terrain (object):
         }
 
         # Assign textures.
-        tile_grid = lambda: [[[] for j in xrange(self._numtilesy)]
-                             for i in xrange(self._numtilesx)]
+        tile_grid = lambda: [[[] for j in xrange(numtilesy)] for i in xrange(numtilesx)]
         extras = []
         texstack = []
         for ic, cutspec in enumerate(cuts):
             texstack.append(tile_grid())
-            for it in xrange(self._numtilesx):
-                for jt in xrange(self._numtilesy):
+            for it in xrange(numtilesx):
+                for jt in xrange(numtilesy):
                     if with_shadows:
                         # Do not set wrap, do not set filter.
                         texstack[ic][it][jt].append(
@@ -499,7 +447,7 @@ class Terrain (object):
                         tilespec = Terrain._select_tiles(
                             self._sizex, self._sizey,
                             self._offsetx, self._offsety,
-                            self._numtilesx, self._numtilesy,
+                            numtilesx, numtilesy,
                             spanspec.extents, spanspec.relative,
                             spanspec.tilemode)
                         for it, jt in tilespec:
@@ -520,15 +468,15 @@ class Terrain (object):
                                 glossmap = spanspec.glossmap or "images/terrain/_black.png"
                                 texstack_gloss[it][jt].append(
                                     (texstage_gloss[ib][il], glossmap))
-                for it in xrange(self._numtilesx):
-                    for jt in xrange(self._numtilesy):
+                for it in xrange(numtilesx):
+                    for jt in xrange(numtilesy):
                         texstack[ic][it][jt].extend(texstack_color[it][jt])
                         texstack[ic][it][jt].extend(texstack_normal[it][jt])
                         texstack[ic][it][jt].extend(texstack_glow[it][jt])
                         texstack[ic][it][jt].extend(texstack_gloss[it][jt])
         for ic in xrange(len(cuts)):
-            for it in xrange(self._numtilesx):
-                for jt in xrange(self._numtilesy):
+            for it in xrange(numtilesx):
+                for jt in xrange(numtilesy):
                     tile = self._tiles[it][jt][ic]
                     if tile is not None:
                         set_texture(tile, extras=texstack[ic][it][jt], clamp=False)
@@ -560,8 +508,8 @@ class Terrain (object):
                     shdshow=with_shadows,
                     #showas=("terrain-cut-%d" % ic),
                 )
-                for it in xrange(self._numtilesx):
-                    for jt in xrange(self._numtilesy):
+                for it in xrange(numtilesx):
+                    for jt in xrange(numtilesy):
                         self._tiles[it][jt][ic].setShader(shader)
 
         # NOTE: Make sure all textures are loaded right here,
@@ -574,7 +522,7 @@ class Terrain (object):
         self.node.reparentTo(load_tex)
         self.node.setPos(0.0, 0.0, 0.0)
         self.node.setP(90.0)
-        lsize = max(self._numtilesx * tilesizex, self._numtilesy * tilesizey)
+        lsize = max(numtilesx * tilesizex, numtilesy * tilesizey)
         self.node.setScale(1.0 / lsize)
         hw = base.aspect_ratio
         make_image("images/ui/black.png", size=(hw * 2, 2.0), parent=load_tex)
@@ -608,1877 +556,11 @@ class Terrain (object):
         base.taskMgr.add(self._loop, "terrain-loop")
 
 
-# @cache-key-start: terrain-generation
-    class FlatCircle:
-
-        def __init__ (self, name, centerx, centery, radius,
-                      centerz=None, radiusout=None):
-            self._name = name
-            self._centerx = centerx
-            self._centery = centery
-            self._centerz = centerz
-            self._radius = radius
-            self._radiusout = radiusout or 0.0
-
-        def name (self):
-            return self._name
-
-        def refxy (self):
-            return self._centerx, self._centery
-
-        def refz (self):
-            return self._centerz
-
-        def set_refz (self, z):
-            self._centerz = z
-
-        def correct_z (self, x, y, z):
-
-            if self._centerz is None:
-                return None
-            rdist = ((x - self._centerx)**2 + (y - self._centery)**2)**0.5
-            if rdist <= self._radius:
-                return self._centerz
-            elif rdist <= self._radiusout:
-                ifc = (rdist - self._radius) / (self._radiusout - self._radius)
-                return self._centerz + (z - self._centerz) * ifc
-            else:
-                return None
-
-
-    @staticmethod
-    def _hmdata_path (heightmap):
-
-        return heightmap[:heightmap.rfind(".")] + ".dat"
-
-
-    _gvformat = None
-
-    @staticmethod
-    def _construct (sizex, sizey, offsetx, offsety,
-                    heightmap, maxsizex, maxsizey, centerx, centery,
-                    mingray, maxgray, minheight, maxheight,
-                    numtilesx, numtilesy,
-                    celldensity, periodic, cutmasks):
-
-# @cache-key-end: terrain-generation
-        report(_("Constructing terrain."))
-        timeit = False
-        memit = False
-# @cache-key-start: terrain-generation
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t0 = time()
-            t1 = t0
-# @cache-key-start: terrain-generation
-
-        # Load the height map.
-        flats = []
-        if isinstance(heightmap, basestring):
-            hmdatapath = Terrain._hmdata_path(heightmap)
-            if path_exists("data", hmdatapath):
-                ret = Terrain._read_heightmap_data(hmdatapath)
-                # Conctructor arguments override read data.
-                sx, sy, mnz, mxz, mng, mxg, flats = ret
-                if maxsizex is None:
-                    maxsizex = sx
-                if maxsizey is None:
-                    maxsizey = sy
-                if mingray is None:
-                    mingray = mng
-                if mingray is None:
-                    mingray = mng
-                if minheight is None:
-                    minheight = mnz
-                if maxheight is None:
-                    maxheight = mxz
-            heightmap = read_pnm_map(PNMImage(full_path("data", heightmap)))
-        elif isinstance(heightmap, PNMImage):
-            heightmap = read_pnm_map(heightmap)
-        elif heightmap is None:
-            heightmap = [[0.0]]
-
-        # Derive any non-initialized heightmap data.
-        if maxsizex is None:
-            maxsizex = sizex
-        if maxsizey is None:
-            maxsizey = sizey
-        if mingray is None:
-            mingray = 0
-        if maxgray is None:
-            maxgray = 255
-        if minheight is None:
-            minheight = 0.0
-        if minheight is None and maxheight is None:
-            minheight = 0.0
-            maxheight = 0.0
-        elif minheight is None:
-            minheight = maxheight
-        elif maxheight is None:
-            maxheight = minheight
-
-        mingray = int(mingray)
-        maxgray =  int(maxgray)
-        minheight = float(minheight)
-        maxheight = float(maxheight)
-        centerx = float(centerx or 0.0)
-        centery = float(centery or 0.0)
-
-        # Derive cell data.
-        def derive_cell_data (size, hmapsize, numtiles):
-            tilesize = size / numtiles
-            wquadsize = (size / hmapsize) / sqrt(celldensity)
-            numtilequads = int(ceil(tilesize / wquadsize))
-            numquads = numtiles * numtilequads
-            return numquads, tilesize, numtilequads
-        if isinstance(maxsizex, tuple):
-            maxsizexr = sum(maxsizex) / len(maxsizex)
-        else:
-            maxsizexr = maxsizex
-        hmapsizex = len(heightmap) * (sizex / maxsizexr)
-        ret = derive_cell_data(sizex, hmapsizex, numtilesx)
-        numquadsx, tilesizex, numtilequadsx = ret
-        hmapsizey = len(heightmap[0]) * (sizey / maxsizey)
-        ret = derive_cell_data(sizey, hmapsizey, numtilesy)
-        numquadsy, tilesizey, numtilequadsy = ret
-# @cache-key-end: terrain-generation
-        #print ("--terrain-construct-celldata  "
-               #"nqx=%d  nqy=%d  ntx=%d  nty=%d  tszx=%.1f  tszy=%.1f  "
-               #"estnp=%d  "
-               #% (numquadsx, numquadsy, numtilesx, numtilesy,
-                  #tilesizex, tilesizey,
-                  #(numquadsx * numquadsy * 2)))
-# @cache-key-start: terrain-generation
-
-        # Load cut masks.
-        cutmasks_new = []
-        levints = [False]
-        for cutmaskspec in cutmasks:
-            if not isinstance(cutmaskspec, tuple):
-                cutmask, levint = cutmaskspec, True
-            else:
-                cutmask, levint = cutmaskspec
-            if isinstance(cutmask, basestring):
-                cutmask = read_pnm_map(PNMImage(full_path("data", cutmask)))
-            elif isinstance(cutmask, PNMImage):
-                cutmask = read_pnm_map(cutmask)
-            elif isinstance(cutmask, int):
-                if not (mingray <= cutmask <= maxgray):
-                    raise StandardError(
-                        "Requested cut mask extraction with height value %d "
-                        "which is out of range %d-%d."
-                        % (cutmask, mingray, maxgray))
-                cutmask = Terrain._extract_cutmask(heightmap, cutmask)
-            cutmasks_new.append(cutmask)
-            levints.append(levint)
-        cutmasks = cutmasks_new
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "terrain-collect-maps",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-        if memit:
-            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
-# @cache-key-start: terrain-generation
-
-        cintdiv, cintlam, cintmu, cintiter = 2, 0.8, -0.2, 10
-        ret = Terrain._triangulate(
-            heightmap, cutmasks, levints,
-            maxsizex, maxsizey, centerx, centery,
-            sizex, sizey, offsetx, offsety, numquadsx, numquadsy,
-            mingray, maxgray, minheight, maxheight, flats,
-            cintdiv, cintlam, cintmu, cintiter,
-            periodic=periodic, timeit=timeit, memit=memit)
-        verts, tris, quadmap = ret[:3]
-# @cache-key-end: terrain-generation
-        if timeit:
-            t1 = ret[3]
-# @cache-key-start: terrain-generation
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "terrain-categorize-polygons",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-        if memit:
-            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
-# @cache-key-start: terrain-generation
-
-        # Construct vertex format for tile textures.
-        gvformat = Terrain._gvformat
-        if gvformat is None:
-            gvarray = GeomVertexArrayFormat()
-            gvarray.addColumn(InternalName.getVertex(), 3,
-                              Geom.NTFloat32, Geom.CPoint)
-            gvarray.addColumn(InternalName.getNormal(), 3,
-                              Geom.NTFloat32, Geom.CVector)
-            gvarray.addColumn(InternalName.getTangent(), 3,
-                              Geom.NTFloat32, Geom.CVector)
-            gvarray.addColumn(InternalName.getBinormal(), 3,
-                              Geom.NTFloat32, Geom.CVector)
-            gvarray.addColumn(InternalName.getColor(), 4,
-                              Geom.NTFloat32, Geom.CColor)
-            gvarray.addColumn(InternalName.getTexcoord(), 2,
-                              Geom.NTFloat32, Geom.CTexcoord)
-            gvformat = GeomVertexFormat()
-            gvformat.addArray(gvarray)
-            gvformat = GeomVertexFormat.registerFormat(gvformat)
-            Terrain._gvformat = gvformat
-
-        # Create tiles.
-        tiles = []
-        numcuts = len(cutmasks) + 1
-        for cut in xrange(numcuts):
-            tiles1 = Terrain._make_tiles(
-                offsetx, offsety, numquadsx, numquadsy,
-                numtilesx, numtilesy, tilesizex, tilesizey,
-                numtilequadsx, numtilequadsy,
-                gvformat,
-                verts, tris, quadmap, levints,
-                cut)
-            tiles.append(tiles1)
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "terrain-create-tiles",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-        if memit:
-            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
-# @cache-key-start: terrain-generation
-
-        # Assemble tiles into final terrain.
-        tileroot = NodePath("terrain")
-        dummyoutvisradius = (0.5 * sqrt(tilesizex**2 + tilesizey**2)) * 4
-        for it in xrange(numtilesx):
-            for jt in xrange(numtilesy):
-                ijtile = NodePath("tile-i%d-j%d" % (it, jt))
-                for cut in xrange(numcuts):
-                    ctile, x, y = tiles[cut][it][jt]
-                    ctile.reparentTo(ijtile)
-                ijtlod = LODNode("lod-visradius")
-                ijtlnp = NodePath(ijtlod)
-                ijtlnp.reparentTo(tileroot)
-                ijtlnp.setPos(x, y, 0.0) # all cuts have same (x, y)
-                ijtlod.addSwitch(dummyoutvisradius, 0.0)
-                ijtile.reparentTo(ijtlnp)
-
-        # Derive maximum heights for faster terrain collision check.
-        maxz = -1e30
-        maxqzs = array("d", [0.0] * (numquadsx * numquadsy))
-        tri1s, tri2s, tri3s = tris[:3]
-        qm1, qm2 = quadmap
-        vertzs = verts[2]
-        for i in xrange(numquadsx):
-            for j in xrange(numquadsy):
-                q = i * numquadsy + j
-                ks = range(qm1[q], qm2[q])
-                maxqz = -1e30
-                for k in ks:
-                    l1, l2, l3 = tri1s[k], tri2s[k], tri3s[k]
-                    maxqz = max(maxqz, vertzs[l1], vertzs[l2], vertzs[l3])
-                maxqzs[q] = maxqz
-                maxz = max(maxz, maxqz)
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "terrain-cumulative",
-                   (t2 - t0, "%.3f", "time", "s"))
-            t1 = t2
-        if memit:
-            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
-# @cache-key-start: terrain-generation
-
-        celldata = (numquadsx, numquadsy, numtilesx, numtilesy,
-                    tilesizex, tilesizey, numcuts)
-        elevdata = (verts, tris, quadmap, maxz, maxqzs)
-        geomdata = (tileroot,)
-        return celldata, elevdata, geomdata
-
-
-    _cache_pdir = "terrain"
-
-    @staticmethod
-    def _cache_key_path (tname):
-
-        return join_path(Terrain._cache_pdir, tname, "terrain.key")
-
-
-    @staticmethod
-    def _cache_celldata_path (tname):
-
-        return join_path(Terrain._cache_pdir, tname, "celldata.pkl")
-
-
-    @staticmethod
-    def _cache_elevdata_path (tname):
-
-        return join_path(Terrain._cache_pdir, tname, "elevdata.pkl.gz")
-
-
-    @staticmethod
-    def _cache_geomdata_path (tname):
-
-        return join_path(Terrain._cache_pdir, tname, "geomdata.bam")
-
-# @cache-key-end: terrain-generation
-
-    @staticmethod
-    def _load_from_cache (tname, keyhx):
-
-        keypath = Terrain._cache_key_path(tname)
-        if not path_exists("cache", keypath):
-            return None
-        okeyhx = open(real_path("cache", keypath), "rb").read()
-        if okeyhx != keyhx:
-            return None
-
-        celldatapath = Terrain._cache_celldata_path(tname)
-        if not path_exists("cache", celldatapath):
-            return None
-        fh = open(real_path("cache", celldatapath), "rb")
-        celldata = pickle.load(fh)
-        fh.close()
-
-        #from time import sleep
-        #print "--terrain235 start-sleep"
-        #sleep(10)
-        #print "--terrain236 end-sleep"
-        elevdatapath = Terrain._cache_elevdata_path(tname)
-        if not path_exists("cache", elevdatapath):
-            return None
-        fh = GzipFile(real_path("cache", elevdatapath), "rb")
-        elevdata = pickle.loads(fh.read())
-        fh.close()
-        del fh # prevent memory consumption peak
-        #print "--terrain237 start-sleep"
-        #sleep(10)
-        #print "--terrain238 end-sleep"
-
-        #print "--terrain245 start-sleep"
-        #sleep(10)
-        #print "--terrain246 end-sleep"
-        geomdatapath = Terrain._cache_geomdata_path(tname)
-        if not path_exists("cache", geomdatapath):
-            return None
-        geomroot = base.load_model("cache", geomdatapath, cache=False)
-        geomdata = geomroot.getChildren().getPaths()
-        #print "--terrain247 start-sleep"
-        #sleep(10)
-        #print "--terrain248 end-sleep"
-
-        return celldata, elevdata, geomdata
-
-# @cache-key-start: terrain-generation
-
-    @staticmethod
-    def _write_to_cache (tname, keyhx, celldata, elevdata, geomdata):
-
-        keypath = Terrain._cache_key_path(tname)
-
-        cdirpath = path_dirname(keypath)
-        if path_exists("cache", cdirpath):
-            rmtree(real_path("cache", cdirpath))
-        os.makedirs(real_path("cache", cdirpath))
-
-        geomdatapath = Terrain._cache_geomdata_path(tname)
-        geomroot = NodePath("root")
-        for np in geomdata:
-            np.reparentTo(geomroot)
-        base.write_model_bam(geomroot, "cache", geomdatapath)
-
-        elevdatapath = Terrain._cache_elevdata_path(tname)
-        fh = GzipFile(real_path("cache", elevdatapath), "wb", compresslevel=3)
-        pickle.dump(elevdata, fh, -1)
-        fh.close()
-
-        celldatapath = Terrain._cache_celldata_path(tname)
-        fh = open(real_path("cache", celldatapath), "wb")
-        pickle.dump(celldata, fh, -1)
-        fh.close()
-
-        fh = open(real_path("cache", keypath), "wb")
-        fh.write(keyhx)
-        fh.close()
-
-
-    @staticmethod
-    def _read_heightmap_data (fpath):
-
-        mhdat = SafeConfigParser()
-        mhdat.readfp(codecs.open(real_path("data", fpath), "r", "utf8"))
-        extsec = "extents"
-        if not mhdat.has_section(extsec):
-            raise StandardError(
-                "No '%s' section in heightmap data file '%s'." %
-                (extsec, fpath))
-        sxfld, sxafld, sxbfld = "sizex", "sizexs", "sizexn"
-        xymult = 1000.0
-        if (mhdat.has_option(extsec, sxafld) and
-            mhdat.has_option(extsec, sxbfld)):
-            sxa = mhdat.getfloat(extsec, sxafld) * xymult
-            sxb = mhdat.getfloat(extsec, sxbfld) * xymult
-            sx = (sxa, sxb)
-        elif mhdat.has_option(extsec, sxfld):
-            sx = mhdat.getfloat(extsec, sxfld) * xymult
-        else:
-            raise StandardError(
-                "No field '%s' nor fields '%s' and '%s' in section '%s' "
-                "in file '%s'." % (sxfld, sxafld, sxbfld, extsec, fpath))
-        vals = []
-        for fld, typ, defval, mult in (
-            ("sizey", float, None, xymult),
-            ("minz", float, None, 1.0),
-            ("maxz", float, None, 1.0),
-            ("ming", int, 0, 1),
-            ("maxg", int, 255, 1),
-        ):
-            val = Terrain._getconfval(fpath, mhdat, extsec, fld, typ, defval)
-            vals.append(val * mult)
-        sy, mnz, mxz, mng, mxg = vals
-
-        flats = []
-        flatpref = "flat-"
-        for flatsec in mhdat.sections():
-            if flatsec.startswith(flatpref):
-                def getf (field, defval=()):
-                    return Terrain._getconfval(fpath, mhdat, flatsec, field,
-                                               float, defval)
-                name = flatsec[len(flatpref):]
-                cx = getf("centerx") * xymult
-                cy = getf("centery") * xymult
-                cz = getf("centerz", ()) or None
-                if mhdat.has_option(flatsec, "radius"):
-                    rad = getf("radius") * xymult
-                    radout = getf("radiusout", 0.0) * xymult
-                    flat = Terrain.FlatCircle(name, cx, cy, rad, cz, radout)
-                else:
-                    raise StandardError(
-                        "Unknown flat section type '%s' in file '%s'." %
-                        (flatsec, fpath))
-                flats.append(flat)
-
-        return sx, sy, mnz, mxz, mng, mxg, flats
-
-
-    @staticmethod
-    def _getconfval (cfgpath, config, section, field, typ, defval=None):
-
-        if config.has_option(section, field):
-            strval = config.get(section, field)
-            try:
-                val = typ(strval)
-            except:
-                raise StandardError(
-                    "Cannot convert field '%s' to type %s "
-                    "in section '%s' file '%s'." %
-                    (field, typ, cfgpath, section))
-            return val
-        elif defval is not None:
-            return defval
-        else:
-            raise StandardError(
-                "Missing field '%s' in section '%s' file '%s'." %
-                (field, cfgpath, section))
-
-
-    @staticmethod
-    def _extract_cutmask (heightmap, selgray):
-
-        sx = len(heightmap)
-        sy = len(heightmap[0])
-        cutmask = [array("d", [0.0] * sy) for x in xrange(sx)]
-        for i in xrange(sx):
-            for j in xrange(sy):
-                if abs(heightmap[i][j] * 255 - selgray) < 0.5:
-                    cutmask[i][j] = 1.0
-        return cutmask
-
-
-    @staticmethod
-    def _triangulate (heightmap, cutmasks, levints,
-                      maxsizex, maxsizey, centerx, centery,
-                      sizex, sizey, offsetx, offsety,
-                      numquadsx, numquadsy,
-                      mingray, maxgray, minheight, maxheight, flats,
-                      cintdiv, cintlam, cintmu, cintiter,
-                      periodic=False, timeit=False, memit=False):
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t0 = time()
-            t1 = t0
-# @cache-key-start: terrain-generation
-
-        quadsizex = sizex / numquadsx
-        quadsizey = sizey / numquadsy
-
-        if isinstance(maxsizex, tuple):
-            maxsizexa, maxsizexb = maxsizex
-        else:
-            maxsizexa = maxsizexb = maxsizex
-
-        # When converting coordinates to non-periodic unit square,
-        # they may fall slightly out of range due to rounding.
-        # This is the tolerance to accept that and move to nearest boundary.
-        # The value should work for single precision too.
-        usqtol = 1e-4
-
-        # Assemble the cut map.
-        cutmap = [array("l", [0] * (numquadsy + 1))
-                  for x in xrange(numquadsx + 1)]
-        for i, cutmask in enumerate(cutmasks):
-            c = i + 1
-            for i in xrange(numquadsx + 1):
-                x = i * quadsizex + offsetx
-                for j in xrange(numquadsy + 1):
-                    y = j * quadsizey + offsety
-                    xu, yu = Terrain._to_unit_trap(
-                        sizex, sizey, offsetx, offsety, maxsizexa, maxsizexb,
-                        maxsizey, centerx, centery,
-                        x, y)
-                    cval = interpolate_unit_map(cutmask, xu, yu, usqtol, periodic)
-                    if cval > 0.5:
-                        cutmap[i][j] = c
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "terrain-assemble-cut-map",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-        if memit:
-            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
-# @cache-key-start: terrain-generation
-
-        # Split cut interface quads into triangles.
-        # NOTE: May modify the cut map, to repair problematic areas.
-        ret = Terrain._split_interface_quads(cutmap, quadsizex, quadsizey,
-                                             offsetx, offsety, cintdiv,
-                                             cintlam, cintmu, cintiter)
-        intquadchains, intquadverts, intquadtris, intquadlinks, intcurves = ret
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "terrain-compute-cut-interfaces",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-        if memit:
-            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
-# @cache-key-start: terrain-generation
-
-        # Compute quad vertices.
-        iqvertxs, iqvertys, iqvertzs = intquadverts
-        niqverts = len(iqvertxs)
-        nverts = (numquadsx + 1) * (numquadsy + 1) + niqverts
-        vertxs = array("d", [0.0] * nverts)
-        vertys = array("d", [0.0] * nverts)
-        vertzs = array("d", [0.0] * nverts)
-        verts = (vertxs, vertys, vertzs)
-        for i in xrange(numquadsx + 1):
-            x = i * quadsizex + offsetx
-            j0 = i * (numquadsy + 1)
-            for j in xrange(numquadsy + 1):
-                y = j * quadsizey + offsety
-                vertxs[j0 + j] = x; vertys[j0 + j] = y
-
-        # Add cut interface vertices.
-        i0 = (numquadsx + 1) * (numquadsy + 1)
-        for i in xrange(niqverts):
-            vertxs[i0 + i] = iqvertxs[i]; vertys[i0 + i] = iqvertys[i]
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "terrain-compute-quad-vertices",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-        if memit:
-            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
-# @cache-key-start: terrain-generation
-
-        # Add global links for cut interface triangles.
-        nquads = numquadsx * numquadsy
-        quadmap1 = array("l", [-1] * nquads)
-        quadmap2 = array("l", [-1] * nquads)
-        quadmap = (quadmap1, quadmap2)
-        for (i, j), (itri1, itri2) in intquadlinks:
-            q = i * numquadsy + j
-            quadmap1[q] = itri1
-            quadmap2[q] = itri2
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "terrain-add-quad-links",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-        if memit:
-            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
-# @cache-key-start: terrain-generation
-
-        # Split non-interface quads into triangles and add global links.
-        #tris = []
-        iqtri1s, iqtri2s, iqtri3s, iqtrics = intquadtris
-        niqtris = len(iqtri1s)
-        ntris = 2 * (numquadsx * numquadsy - len(intquadlinks)) + niqtris
-        tri1s = array("l", [0] * ntris)
-        tri2s = array("l", [0] * ntris)
-        tri3s = array("l", [0] * ntris)
-        trics = array("l", [0] * ntris)
-        tris = (tri1s, tri2s, tri3s, trics)
-        k = 0
-        for i in xrange(numquadsx):
-            for j in xrange(numquadsy):
-                q = i * numquadsy + j
-                if quadmap1[q] >= 0: # interface quad
-                    continue
-                # Indices of vertices.
-                k1 = i * (numquadsy + 1) + j
-                k2 = (i + 1) * (numquadsy + 1) + j
-                k3 = (i + 1) * (numquadsy + 1) + (j + 1)
-                k4 = i * (numquadsy + 1) + (j + 1)
-                # All four points from same cut (not interface quad).
-                c = cutmap[i][j]
-                # Whether to split this quad bottom-left top-right.
-                bltr = (i % 2 + j) % 2
-                if bltr:
-                    #tris.append(((k1, k2, k3), c))
-                    #tris.append(((k1, k3, k4), c))
-                    tri1s[k] = k1; tri2s[k] = k2; tri3s[k] = k3; trics[k] = c
-                    tri1s[k + 1] = k1; tri2s[k + 1] = k3; tri3s[k + 1] = k4; trics[k + 1] = c
-                else:
-                    #tris.append(((k2, k3, k4), c))
-                    #tris.append(((k2, k4, k1), c))
-                    tri1s[k] = k2; tri2s[k] = k3; tri3s[k] = k4; trics[k] = c
-                    tri1s[k + 1] = k2; tri2s[k + 1] = k4; tri3s[k + 1] = k1; trics[k + 1] = c
-                # Quad to triangle links.
-                quadmap1[q] = k
-                quadmap2[q] = k + 2
-                k += 2
-
-        # Add cut interface triangles.
-        #tris.extend(intquadtris)
-        k0 = ntris - niqtris
-        for k in xrange(niqtris):
-            tri1s[k0 + k] = iqtri1s[k]
-            tri2s[k0 + k] = iqtri2s[k]
-            tri3s[k0 + k] = iqtri3s[k]
-            trics[k0 + k] = iqtrics[k]
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "terrain-assemble-triangulation",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-        if memit:
-            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
-# @cache-key-start: terrain-generation
-
-        # Compute height at world (x, y).
-        hpv = (maxheight - minheight) / ((maxgray - mingray) / 255.0)
-        def getz (x, y):
-            xu, yu = Terrain._to_unit_trap(sizex, sizey, offsetx, offsety,
-                                           maxsizexa, maxsizexb, maxsizey,
-                                           centerx, centery,
-                                           x, y)
-            hval = interpolate_unit_map(heightmap, xu, yu, usqtol, periodic)
-            z = minheight + (hval - mingray / 255.0) * hpv
-            return z
-
-        # Equip flats with heights.
-        for flat in flats:
-            if flat.refz() is None:
-                flat.set_refz(getz(*flat.refxy()))
-
-        # Equip vertices with heights.
-        for i in xrange(nverts):
-            x, y = vertxs[i], vertys[i]
-            z = getz(x, y)
-            for flat in flats:
-                zc = flat.correct_z(x, y, z)
-                if zc is not None:
-                    z = zc
-                    break
-            vertzs[i] = z
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "terrain-compute-per-vertex-heights",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-        if memit:
-            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
-# @cache-key-start: terrain-generation
-
-        # Level heights at interface vertices.
-        l0 = nverts - niqverts
-        for ic in xrange(len(intquadchains)):
-            intcurve, closed = intcurves[ic]
-            intquadchain, closed = intquadchains[ic]
-            cl, cr = Terrain._interface_cut_levels(cutmap, intquadchain)
-            if levints[cl] or levints[cr]:
-                l1 = l0 + len(intcurve)
-                cvinds = range(l0, l1)
-                Terrain._level_curve_to_left(sizex, sizey, offsetx, offsety,
-                                             numquadsx, numquadsy,
-                                             verts, tris, quadmap,
-                                             cvinds, closed, cl)
-            l0 += len(intcurve)
-
-# @cache-key-end: terrain-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "terrain-level-interface-vertices",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-        if memit:
-            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
-# @cache-key-start: terrain-generation
-
-        ret = (verts, tris, quadmap)
-# @cache-key-end: terrain-generation
-        if timeit:
-            ret += (t1,)
-# @cache-key-start: terrain-generation
-        return ret
-
-
-    @staticmethod
-    def _to_unit_trap (sizex, sizey, offsetx, offsety,
-                       maxsizexa, maxsizexb, maxsizey, centerx, centery, x, y):
-
-        x1 = (x - offsetx) + centerx
-        y1 = (y - offsety) + centery
-        y1u = y1 / maxsizey + 0.5 * (1.0 - sizey / maxsizey)
-        maxsizex = maxsizexa + (maxsizexb - maxsizexa) * y1u
-        x1u = x1 / maxsizex + 0.5 * (1.0 - sizex / maxsizex)
-        return x1u, y1u
-
-
-    @staticmethod
-    def _get_tri_verts (tri, verts):
-
-        Pt = Point3D
-
-        k1, k2, k3 = tri
-        vertxs, vertys, vertzs = verts
-        v1 = Pt(vertxs[k1], vertys[k1], vertzs[k1])
-        v2 = Pt(vertxs[k2], vertys[k2], vertzs[k2])
-        v3 = Pt(vertxs[k3], vertys[k3], vertzs[k3])
-        return v1, v2, v3
-
-
-    @staticmethod
-    def _shift_index (size, k, dk, periodic=False):
-
-        k += dk
-        if k < 0:
-            if periodic:
-                while k < 0:
-                    k += size
-            else:
-                k = None
-        elif k >= size:
-            if periodic:
-                while k >= size:
-                    k -= size
-            else:
-                k = None
-        return k
-
-
-    @staticmethod
-    def _unit_to_index (size, u, tol=0.0, periodic=False):
-
-        k = int(u * size)
-        if k < 0:
-            if periodic:
-                while k < 0:
-                    k += size
-                    u += 1.0
-            elif u > -tol / size:
-                k = 0
-                u = 0.0
-            else:
-                k = None
-                u = None
-        elif k >= size:
-            if periodic:
-                while k >= size:
-                    k -= size
-                    u -= 1.0
-            elif u < 1.0 + tol / size:
-                k = size - 1
-                u = 1.0
-            else:
-                k = None
-                u = None
-        return k, u
-
-
-    @staticmethod
-    def _split_interface_quads (cutmap, quadsizex, quadsizey,
-                                offsetx, offsety, subdiv,
-                                tbslam, tbsmu, tbsiter):
-
-        numquadsx = len(cutmap) - 1
-        numquadsy = len(cutmap[0]) - 1
-
-        # Correct thin diagonal cuts.
-        anythin = True
-        while anythin:
-            anythin = False
-            for i in xrange(numquadsx):
-                for j in xrange(numquadsy):
-                    c1 = cutmap[i][j]
-                    c2 = cutmap[i + 1][j]
-                    c3 = cutmap[i + 1][j + 1]
-                    c4 = cutmap[i][j + 1]
-                    if c1 == c3 and c2 == c4 and c1 != c2:
-                        if c1 > c2:
-                            cutmap[i][j + 1] = c1
-                        else:
-                            cutmap[i][j] = c2
-                        anythin = True
-
-        # Collect interface quad chains.
-        freemap = [array("l", [1] * numquadsy) for x in xrange(numquadsx)]
-        intquadchains = []
-        for i in xrange(numquadsx):
-            for j in xrange(numquadsy):
-                if freemap[i][j]:
-                    c1 = cutmap[i][j]
-                    c2 = cutmap[i + 1][j]
-                    c3 = cutmap[i + 1][j + 1]
-                    c4 = cutmap[i][j + 1]
-                    cset = set((c1, c2, c3, c4))
-                    if len(cset) == 2:
-                        cr, cl = sorted(cset)
-                        # ...this order places the higher cut on the left of
-                        # the oriented interface curve.
-                        ret = Terrain._extract_interface_quads(cutmap, i, j,
-                                                               cl, cr, freemap)
-                        intquadchain, closed = ret
-                        intquadchains.append((intquadchain, closed))
-                        #print "--chain", len(intquadchain), closed
-                    elif len(cset) > 2:
-                        raise StandardError(
-                            "Neighboring points from more than two cuts "
-                            "at (%d, %d)." % (i, j))
-
-        # Construct interface curves.
-        intcurves = []
-        for q in range(len(intquadchains)):
-            intquadchain, closed = intquadchains[q]
-            intcurve = Terrain._init_interface_curve(
-                cutmap, intquadchain, closed,
-                quadsizex, quadsizey, offsetx, offsety,
-                subdiv)
-            intcurve = Terrain._smooth_interface_curve(
-                intcurve, closed, subdiv, tbslam, tbsmu, tbsiter)
-            intcurves.append((intcurve, closed))
-
-        # Number of quad vertices and triangles in non-interface quads,
-        # which are added in front of interface-related vertices and triangles.
-        nverts0 = (numquadsx + 1) * (numquadsy + 1)
-        ntris0 = 2 * (numquadsx * numquadsy -
-                      sum(len(x[0]) for x in intquadchains))
-
-        # Triangulate interface quads.
-        #intquadverts = []
-        vertxs = []; vertys = []; vertzs = []
-        intquadverts = (vertxs, vertys, vertzs)
-        #intquadtris = []
-        tri1s = []; tri2s = []; tri3s = []; trics = []
-        intquadtris = (tri1s, tri2s, tri3s, trics)
-        intquadlinks = []
-        for q in range(len(intquadchains)):
-            intquadchain, closed = intquadchains[q]
-            intcurve, closed = intcurves[q]
-            ret = Terrain._triangulate_interface_quads(
-                cutmap, quadsizex, quadsizey, offsetx, offsety,
-                intquadchain, intcurve, subdiv, nverts0, ntris0)
-            cverts, ctris, clinks = ret
-            #intquadverts.extend(cverts)
-            vxs, vys, vzs = cverts
-            vertxs.extend(vxs); vertys.extend(vys); vertzs.extend(vzs)
-            #intquadtris.extend(ctris)
-            t1s, t2s, t3s, tcs = ctris
-            tri1s.extend(t1s); tri2s.extend(t2s); tri3s.extend(t3s); trics.extend(tcs)
-            intquadlinks.extend(clinks)
-            nverts0 += len(vxs)
-            ntris0 += len(t1s)
-
-        return intquadchains, intquadverts, intquadtris, intquadlinks, intcurves
-
-
-    @staticmethod
-    def _extract_interface_quads (cutmap, i0, j0, cl, cr, freemap):
-
-        # Collect and join the two chain segments split by the given point.
-        qcparts = []
-        closed = True
-        for i in range(2):
-            ret = Terrain._extract_interface_quads_1(cutmap, i0, j0, cl, cr,
-                                                     freemap)
-            qcpart, cutbdry = ret
-            closed = closed and not cutbdry
-            qcparts.append(qcpart)
-        intquadchain = list(reversed(qcparts[0])) + qcparts[1][1:]
-
-        # Orient the chain so that it runs counter-clockwise around the cut.
-        c0l, c0r = Terrain._interface_cut_levels(cutmap, intquadchain)
-        if c0l != cl:
-            intquadchain = list(reversed(intquadchain))
-
-        return intquadchain, closed
-
-
-    @staticmethod
-    def _extract_interface_quads_1 (cutmap, i0, j0, cl, cr, freemap):
-
-        numquadsx = len(cutmap) - 1
-        numquadsy = len(cutmap[0]) - 1
-
-        intquadchain = []
-        i, j = i0, j0
-        while True:
-            freemap[i][j] = 0
-            selij = None
-            cutbdry = False
-            ncl = 0
-            for (di, dj), (di1, dj1), (di2, dj2) in (
-                ((1, 0), (1, 0), (1, 1)),
-                ((0, 1), (1, 1), (0, 1)),
-                ((-1, 0), (0, 1), (0, 0)),
-                ((0, -1), (0, 0), (1, 0)),
-            ):
-                c1 = cutmap[i + di1][j + dj1]
-                c2 = cutmap[i + di2][j + dj2]
-                if c1 == cl:
-                    ncl += 1
-                    if (i + di1 == 0 or i + di1 == numquadsx or
-                        j + dj1 == 0 or j + dj1 == numquadsy):
-                        cutbdry = True
-                if (selij is None and
-                    0 <= i + di < numquadsx and
-                    0 <= j + dj < numquadsy and
-                    freemap[i + di][j + dj] and
-                    (c1 == cl or c2 == cl) and
-                    c1 != c2):
-                    selij = (i + di, j + dj)
-            intquadchain.append(((i, j), ncl))
-            if selij is not None:
-                i, j = selij
-            else:
-                break
-
-        return intquadchain, cutbdry
-
-
-    @staticmethod
-    def _init_interface_curve (cutmap, intquadchain, closed,
-                               quadsizex, quadsizey, offsetx, offsety, subdiv,
-                               fromcut=0.5):
-
-        Vt = Vec3D
-
-        qsx = quadsizex; qsy = quadsizey
-        subdivc = subdiv if subdiv % 2 == 0 else subdiv + 1
-        subdivch = subdivc / 2
-        dx = qsx / subdivc; dy = qsy / subdivc
-        dxc = dx * 2; dyc = dy * 2
-        ka = 1.0 - fromcut; kb = fromcut
-        cl, cr = Terrain._interface_cut_levels(cutmap, intquadchain)
-
-        # NOTE: The assumption is that the chain is oriented counter-clockwise
-        # around the higher cut, i.e. that the higher cut is always on the left.
-        lenqc = len(intquadchain)
-        intcurve = []
-        for k in xrange(lenqc):
-            (i, j), ncl = intquadchain[k]
-            c1 = cutmap[i][j]
-            c2 = cutmap[i + 1][j]
-            c3 = cutmap[i + 1][j + 1]
-            c4 = cutmap[i][j + 1]
-            x0 = i * qsx + offsetx; y0 = j * qsy + offsety
-            sf = 0 if (closed or k + 1 < lenqc) else 1
-            if ncl == 1:
-                for s in range(subdivch):
-                    if c1 == cl:
-                        pa = Vt(x0, y0, 0.0)
-                        pb = Vt(x0 + qsx, y0 + dyc * s, 0.0)
-                        gva = (0, 0)
-                        gvb = (1, 0) if s == 0 else None
-                    elif c2 == cl:
-                        pa = Vt(x0 + qsx, y0, 0.0)
-                        pb = Vt(x0 + qsx - dxc * s, y0 + qsy, 0.0)
-                        gva = (1, 0)
-                        gvb = (1, 1) if s == 0 else None
-                    elif c3 == cl:
-                        pa = Vt(x0 + qsx, y0 + qsy, 0.0)
-                        pb = Vt(x0, y0 + qsy - dyc * s, 0.0)
-                        gva = (1, 1)
-                        gvb = (0, 1) if s == 0 else None
-                    elif c4 == cl:
-                        pa = Vt(x0, y0 + qsy, 0.0)
-                        pb = Vt(x0 + dxc * s, y0, 0.0)
-                        gva = (0, 1)
-                        gvb = (0, 0) if s == 0 else None
-                    intcurve.append((pa * ka + pb * kb, pa, pb, gva, gvb))
-                for s in range(subdivch + sf):
-                    if c1 == cl:
-                        pa = Vt(x0, y0, 0.0)
-                        pb = Vt(x0 + qsx - dxc * s, y0 + qsy, 0.0)
-                        gva = (0, 0)
-                        gvb = ((1, 1) if s == 0 else
-                               (0, 1) if s == subdivch else
-                               None)
-                    elif c2 == cl:
-                        pa = Vt(x0 + qsx, y0, 0.0)
-                        pb = Vt(x0, y0 + qsy - dyc * s, 0.0)
-                        gva = (1, 0)
-                        gvb = ((0, 1) if s == 0 else
-                               (0, 0) if s == subdivch else
-                               None)
-                    elif c3 == cl:
-                        pa = Vt(x0 + qsx, y0 + qsy, 0.0)
-                        pb = Vt(x0 + dxc * s, y0, 0.0)
-                        gva = (1, 1)
-                        gvb = ((0, 0) if s == 0 else
-                               (1, 0) if s == subdivch else
-                               None)
-                    elif c4 == cl:
-                        pa = Vt(x0, y0 + qsy, 0.0)
-                        pb = Vt(x0 + qsx, y0 + dyc * s, 0.0)
-                        gva = (0, 1)
-                        gvb = ((1, 0) if s == 0 else
-                               (1, 1) if s == subdivch else
-                               None)
-                    intcurve.append((pa * ka + pb * kb, pa, pb, gva, gvb))
-            elif ncl == 2:
-                for s in range(subdivc + sf):
-                    if c1 == cl and c2 == cl:
-                        pa = Vt(x0 + qsx - dx * s, y0, 0.0)
-                        pb = Vt(x0 + qsx - dx * s, y0 + qsy, 0.0)
-                        gva, gvb = (((1, 0), (1, 1)) if s == 0 else
-                                    ((0, 0), (0, 1)) if s == subdivc else
-                                    (None, None))
-                    elif c2 == cl and c3 == cl:
-                        pa = Vt(x0 + qsx, y0 + qsy - dy * s, 0.0)
-                        pb = Vt(x0, y0 + qsy - dy * s, 0.0)
-                        gva, gvb = (((1, 1), (0, 1)) if s == 0 else
-                                    ((1, 0), (0, 0)) if s == subdivc else
-                                    (None, None))
-                    elif c3 == cl and c4 == cl:
-                        pa = Vt(x0 + dx * s, y0 + qsy, 0.0)
-                        pb = Vt(x0 + dx * s, y0, 0.0)
-                        gva, gvb = (((0, 1), (0, 0)) if s == 0 else
-                                    ((1, 1), (1, 0)) if s == subdivc else
-                                    (None, None))
-                    elif c4 == cl and c1 == cl:
-                        pa = Vt(x0, y0 + dy * s, 0.0)
-                        pb = Vt(x0 + qsx, y0 + dy * s, 0.0)
-                        gva, gvb = (((0, 0), (1, 0)) if s == 0 else
-                                    ((0, 1), (1, 1)) if s == subdivc else
-                                    (None, None))
-                    intcurve.append((pa * ka + pb * kb, pa, pb, gva, gvb))
-            elif ncl == 3:
-                for s in range(subdivc / 2):
-                    if c1 == cr:
-                        pa = Vt(x0 + dxc * s, y0 + qsy, 0.0)
-                        pb = Vt(x0, y0, 0.0)
-                        gva = (0, 1) if s == 0 else None
-                        gvb = (0, 0)
-                    elif c2 == cr:
-                        pa = Vt(x0, y0 + dyc * s, 0.0)
-                        pb = Vt(x0 + qsx, y0, 0.0)
-                        gva = (0, 0) if s == 0 else None
-                        gvb = (1, 0)
-                    elif c3 == cr:
-                        pa = Vt(x0 + qsx - dxc * s, y0, 0.0)
-                        pb = Vt(x0 + qsx, y0 + qsy, 0.0)
-                        gva = (1, 0) if s == 0 else None
-                        gvb = (1, 1)
-                    elif c4 == cr:
-                        pa = Vt(x0 + qsx, y0 + qsy - dyc * s, 0.0)
-                        pb = Vt(x0, y0 + qsy, 0.0)
-                        gva = (1, 1) if s == 0 else None
-                        gvb = (0, 1)
-                    intcurve.append((pa * ka + pb * kb, pa, pb, gva, gvb))
-                for s in range(subdivc / 2 + sf):
-                    if c1 == cr:
-                        pa = Vt(x0 + qsx, y0 + qsy - dyc * s, 0.0)
-                        pb = Vt(x0, y0, 0.0)
-                        gva = ((1, 1) if s == 0 else
-                               (0, 1) if s == subdivch else
-                               None)
-                        gvb = (0, 0)
-                    elif c2 == cr:
-                        pa = Vt(x0 + dxc * s, y0 + qsy, 0.0)
-                        pb = Vt(x0 + qsx, y0, 0.0)
-                        gva = ((0, 1) if s == 0 else
-                               (1, 1) if s == subdivch else
-                               None)
-                        gvb = (1, 0)
-                    elif c3 == cr:
-                        pa = Vt(x0, y0 + dyc * s, 0.0)
-                        pb = Vt(x0 + qsx, y0 + qsy, 0.0)
-                        gva = ((0, 0) if s == 0 else
-                               (0, 1) if s == subdivch else
-                               None)
-                        gvb = (1, 1)
-                    elif c4 == cr:
-                        pa = Vt(x0 + qsx - dxc * s, y0, 0.0)
-                        pb = Vt(x0, y0 + qsy, 0.0)
-                        gva = ((1, 0) if s == 0 else
-                               (0, 0) if s == subdivch else
-                               None)
-                        gvb = (0, 1)
-                    intcurve.append((pa * ka + pb * kb, pa, pb, gva, gvb))
-
-        return intcurve
-
-
-    @staticmethod
-    def _smooth_interface_curve (intcurve, closed, subdiv,
-                                 tbslam, tbsmu, tbsiter):
-
-        Pt = type(intcurve[0][0])
-
-        mindf = 0.05 # minimum distance from segment start
-        maxdf = 0.95 # maximum distance from segment start
-
-        # NOTE: Taubin smoothing algorithm.
-        for p in range(tbsiter):
-            for scf in (tbslam, tbsmu):
-                if scf == 0.0:
-                    continue
-                lenic = len(intcurve)
-
-                ## Jacobi iteration.
-                #intcurve1 = []
-                #for k in xrange(lenic):
-                    #pc, pa, pb = intcurve[k][:3]
-                    #ptcs = []
-                    #if 0 < k < lenic - 1 or closed:
-                        #km = k - 1 if k > 0 else lenic - 1
-                        #kp = k + 1 if k < lenic - 1 else 0
-                        #pc1 = Pt(pc)
-                        #ks = (km, kp)
-                        #ws = (0.5, 0.5)
-                        #for k1, w1 in zip(ks, ws):
-                            #dp1 = intcurve[k1][0] - pc
-                            #pc1 += dp1 * (w1 * scf)
-                        #pc = pc1
-                        ## Limit back to originating segment.
-                        #ab = pb - pa
-                        #mab = ab.length()
-                        #abu = ab / mab
-                        #ac = pc - pa
-                        #acabu = ac.dot(abu)
-                        #if acabu < mindf * mab:
-                            #acabu = mindf * mab
-                        #elif acabu > maxdf * mab:
-                            #acabu = maxdf * mab
-                        #pc = pa + abu * acabu
-                    #intcurve1.append((pc, pa, pb) + intcurve[k][3:])
-                #intcurve = intcurve1
-
-                # Gauss iteration.
-                for k in xrange(lenic):
-                    pc, pa, pb = intcurve[k][:3]
-                    ptcs = []
-                    if 0 < k < lenic - 1 or closed:
-                        km = k - 1 if k > 0 else lenic - 1
-                        kp = k + 1 if k < lenic - 1 else 0
-                        pc1 = Pt(pc)
-                        ks = (km, kp)
-                        ws = (0.5, 0.5)
-                        for k1, w1 in zip(ks, ws):
-                            dp1 = intcurve[k1][0] - pc
-                            pc1 += dp1 * (w1 * scf)
-                        # Limit back to originating segment.
-                        ab = pb - pa
-                        mab = ab.length()
-                        abu = ab / mab
-                        ac = pc1 - pa
-                        acabu = ac.dot(abu)
-                        if acabu < mindf * mab:
-                            acabu = mindf * mab
-                        elif acabu > maxdf * mab:
-                            acabu = maxdf * mab
-                        pc2 = pa + abu * acabu
-                        pc.set(*pc2)
-
-        #mind = 1e30
-        #for p, pa, pb in intcurve:
-            #mind = min(mind, (pc - pa).length(), (pc - pb).length())
-        #print "--curve-mindist-ab", mind
-
-        return intcurve
-
-
-    @staticmethod
-    def _level_curve_to_left (sizex, sizey, offsetx, offsety,
-                              numquadsx, numquadsy,
-                              verts, tris, quadmap,
-                              cvinds, closed, lcut):
-
-        Vt = Vec3D
-
-        quadsizex = sizex / numquadsx
-        quadsizey = sizey / numquadsy
-        rhlen0 = 2 * sqrt(quadsizex**2 + quadsizey**2)
-        dhrlen = 0.11 * rhlen0
-
-        refpt = Vt()
-
-        lenv = len(cvinds)
-        vertxs, vertys, vertzs = verts
-        for k in xrange(lenv):
-            if not (0 < k < lenv - 1 or closed):
-                continue
-            km = k - 1 if k > 0 else lenv - 1
-            kp = k + 1 if k < lenv - 1 else 0
-            l = cvinds[k]; lm = cvinds[km]; lp = cvinds[kp]
-            # Compute right-hand xy-projected normal at this vertex.
-            v = Vt(vertxs[l], vertys[l], 0.0)
-            vm = Vt(vertxs[lm], vertys[lm], 0.0)
-            vp = Vt(vertxs[lp], vertys[lp], 0.0)
-            dvm = v - vm; nm = Vt(-dvm[1], dvm[0], 0.0); lenm = dvm.length()
-            dvp = vp - v; np = Vt(-dvp[1], dvp[0], 0.0); lenp = dvp.length()
-            n = unitv((nm * lenp + np * lenm) / (lenm + lenp))
-            # Take minimum height from a segment along the normal.
-            rhlen = rhlen0
-            zmin = None
-            atvinds = []
-            while rhlen > 0.0:
-                ph = v + n * rhlen
-                p, c, z, tvinds = Terrain._interpolate_z(
-                    sizex, sizey, offsetx, offsety, numquadsx, numquadsy,
-                    verts, tris, quadmap, ph[0], ph[1], refpt,
-                    wtvinds=True)
-                if c == lcut:
-                    atvinds.extend(tvinds)
-                    if zmin is None or zmin > z:
-                        zmin = z
-                rhlen -= dhrlen
-            if zmin is not None:
-                vertzs[l] = zmin
-                for la in atvinds:
-                    vertzs[la] = zmin
-
-
-    @staticmethod
-    def _triangulate_interface_quads (cutmap,
-                                      quadsizex, quadsizey, offsetx, offsety,
-                                      intquadchain, intcurve, subdiv,
-                                      nverts0, ntris0):
-
-        numquadsx = len(cutmap) - 1
-        numquadsy = len(cutmap[0]) - 1
-
-        subdivc = subdiv if subdiv % 2 == 0 else subdiv + 1
-        cl, cr = Terrain._interface_cut_levels(cutmap, intquadchain)
-
-        lenqc = len(intquadchain)
-        lenic = len(intcurve)
-
-        # Collect interface vertices, assign them indices.
-        # Collect associated quad corner point coordinates.
-        vertxs = []; vertys = []; vertzs = []
-        verts = (vertxs, vertys, vertzs)
-        vqvas = []
-        vqvbs = []
-        vinds = []
-        nverts1 = nverts0
-        kc = 0
-        for kq in xrange(lenqc):
-            (i, j), ncl = intquadchain[kq]
-            sf = 0
-            if kq == lenqc - 1 and kc + subdivc == lenic - 1: # open curve
-                sf = 1
-            for lc in range(subdivc + sf):
-                kc1 = kc + lc
-                p, a, b, qva, qvb = intcurve[kc1][:5]
-                vertxs.append(p[0]); vertys.append(p[1]); vertzs.append(p[2])
-                vqvas.append((i + qva[0], j + qva[1]) if qva else None)
-                vqvbs.append((i + qvb[0], j + qvb[1]) if qvb else None)
-                vinds.append(nverts1)
-                nverts1 += 1
-            kc += subdivc
-
-        # Triangulate left and right of curve in each interface quad.
-        tri1s = []; tri2s = []; tri3s = []; trics = []
-        links = []
-        ntris1 = ntris0
-        kc = 0
-        for kq in xrange(lenqc):
-            (i, j), ncl = intquadchain[kq]
-
-            # Collect interface vertex data in this quad.
-            iqvdata1 = []
-            for lc in range(subdivc + 1):
-                kc1 = (kc + lc) % lenic
-                xp = vertxs[kc1]
-                yp = vertys[kc1]
-                lp = vinds[kc1]
-                iqvdata1.append((lp, xp, yp))
-
-            # Order global offsets of quad corner points per side,
-            # left-winding for left side, right-winding for right side.
-            kc1 = kc
-            kcm = kc + subdivc / 2
-            kc2 = (kc + subdivc) % lenic
-            if ncl == 1:
-                gvels = [vqvas[kc1]]
-                gvers = [vqvbs[kc2], vqvbs[kcm], vqvbs[kc1]]
-            elif ncl == 2:
-                gvels = [vqvas[kc2], vqvas[kc1]]
-                gvers = [vqvbs[kc2], vqvbs[kc1]]
-            elif ncl == 3:
-                gvels = [vqvas[kc2], vqvas[kcm], vqvas[kc1]]
-                gvers = [vqvbs[kc1]]
-            else:
-                raise StandardError("Impossible number of left cut points.")
-
-            # Triangulate left and right.
-            cntris = 0
-            for side, gves, c in ((1, gvels, cl), (-1, gvers, cr)):
-                # Collect quad corner vertex data on this side.
-                iqvdata2 = []
-                for ie, je in gves: # left winding for left side
-                    xe = ie * quadsizex + offsetx
-                    ye = je * quadsizey + offsety
-                    le = ie * (numquadsy + 1) + je
-                    iqvdata2.append((le, xe, ye))
-
-                # Complete side polygon.
-                iqvdata = iqvdata1 + iqvdata2
-                if side == -1: # right polygon
-                    iqvdata = list(reversed(iqvdata))
-
-                # Triangulate the polygon and collect triangles.
-                leniqvd = len(iqvdata)
-                avgx = sum(iqvdata[lq][1] for lq in range(leniqvd)) / leniqvd
-                avgy = sum(iqvdata[lq][2] for lq in range(leniqvd)) / leniqvd
-                tgl = Triangulator()
-                showdat = False
-                for lq, (l, x, y) in enumerate(iqvdata):
-                    #if l == 1061963:
-                        #showdat = True
-                    # Subtract average coordinates to have numbers
-                    # as small as possible to avoid roundoff problems.
-                    lqt = tgl.addVertex(x - avgx, y - avgy)
-                    if lq != lqt:
-                        raise StandardError(
-                            "Unexpected behavior of the triangulator, "
-                            "changed indices (quad %d, %d)." % (i, j))
-                    tgl.addPolygonVertex(lqt) # Wtf?
-                if not tgl.isLeftWinding():
-                    raise StandardError(
-                        "Unexpected behavior of the triangulator, "
-                        "changed winding (quad %d, %d)." % (i, j))
-                tgl.triangulate()
-                nqstris = tgl.getNumTriangles()
-                for t in range(nqstris):
-                    lq1 = tgl.getTriangleV0(t)
-                    lq2 = tgl.getTriangleV1(t)
-                    lq3 = tgl.getTriangleV2(t)
-                    tri1s.append(iqvdata[lq1][0])
-                    tri2s.append(iqvdata[lq2][0])
-                    tri3s.append(iqvdata[lq3][0])
-                    trics.append(c)
-                    #if showdat:
-                        #print "--side-polygon-vertex", iqvdata[lq1][0], iqvdata[lq2][0], iqvdata[lq3][0]
-                cntris += nqstris
-
-            kc += subdivc
-            links.append(((i, j), (ntris1, ntris1 + cntris)))
-            ntris1 += cntris
-        tris = (tri1s, tri2s, tri3s, trics)
-
-        return verts, tris, links
-
-
-    # Forward left point direction for quad-to-quad direction.
-    _dij_ptfwlf = {
-        (1, 0): (1, 1),
-        (0, 1): (0, 1),
-        (-1, 0): (0, 0),
-        (0, -1): (1, 0),
-    }
-
-    # Forward right point direction for quad-to-quad direction.
-    _dij_ptfwrg = {
-        (1, 0): (1, 0),
-        (0, 1): (1, 1),
-        (-1, 0): (0, 1),
-        (0, -1): (0, 0),
-    }
-
-    @staticmethod
-    def _interface_cut_levels (cutmap, intquadchain):
-
-        i1, j1 = intquadchain[0][0]
-        if len(intquadchain) > 1:
-            i2, j2 = intquadchain[1][0]
-        else: # the single quad must be in corner
-            if i1 == 0:
-                if j1 == 0: # bottom left
-                    i2 = i1 - 1; j2 = j1
-                else: # top left
-                    i2 = i1; j2 = j1 + 1
-            else:
-                if j1 == 0: # bottom right
-                    i2 = i1; j2 = j1 - 1
-                else: # top right
-                    i2 = i1 + 1; j2 = j1
-        dil, djl = Terrain._dij_ptfwlf[(i2 - i1, j2 - j1)]
-        cl = cutmap[i1 + dil][j1 + djl]
-        dir, djr = Terrain._dij_ptfwrg[(i2 - i1, j2 - j1)]
-        cr = cutmap[i1 + dir][j1 + djr]
-
-        return cl, cr
-
-
-    @staticmethod
-    def _make_tiles (offsetx, offsety, numquadsx, numquadsy,
-                     numtilesx, numtilesy, tilesizex, tilesizey,
-                     numtilequadsx, numtilequadsy,
-                     gvformat,
-                     verts, tris, quadmap, levints,
-                     cut):
-
-        Vt = Vec3D
-
-        vertxs, vertys, vertzs = verts
-        nverts = len(vertxs)
-
-        # Compute vertex normals and tangents,
-        # as area-weighted averages of adjoining triangles.
-        # Loop over triangles, adding contributions to their vertices.
-        tri1s, tri2s, tri3s, trics = tris
-        vareas = array("d", [0.0] * nverts)
-        vnormxs = array("d", [0.0] * nverts)
-        vnormys = array("d", [0.0] * nverts)
-        vnormzs = array("d", [0.0] * nverts)
-        vnorms = (vnormxs, vnormys, vnormzs)
-        vtangxs = array("d", [0.0] * nverts)
-        vtangys = array("d", [0.0] * nverts)
-        vtangzs = array("d", [0.0] * nverts)
-        vtangs = (vtangxs, vtangys, vtangzs)
-        #zdir = Vt(0.0, 0.0, 1.0)
-        xdir = Vt(1.0, 0.0, 0.0)
-        for k in xrange(len(tri1s)):
-            c = trics[k]
-            if c != cut and (levints[cut] or levints[c]):
-                continue
-            l1, l2, l3 = tri1s[k], tri2s[k], tri3s[k]
-            v1 = Vt(vertxs[l1], vertys[l1], vertzs[l1])
-            v2 = Vt(vertxs[l2], vertys[l2], vertzs[l2])
-            v3 = Vt(vertxs[l3], vertys[l3], vertzs[l3])
-            v12, v13 = v2 - v1, v3 - v1
-            tnorm = v12.cross(v13)
-            tarea = 0.5 * tnorm.length()
-            tnorm.normalize()
-            #ttang = tnorm.cross(zdir).cross(tnorm) # steepest ascent (gradient)
-            ttang = tnorm.cross(xdir).cross(tnorm)
-            ttang.normalize()
-            for l in (l1, l2, l3):
-                vareas[l] += tarea
-                vn = tnorm * tarea
-                vnormxs[l] += vn[0]; vnormys[l] += vn[1]; vnormzs[l] += vn[2]
-                vt = ttang * tarea
-                vtangxs[l] += vt[0]; vtangys[l] += vt[1]; vtangzs[l] += vt[2]
-        for l in xrange(nverts):
-            va = vareas[l]
-            if va == 0.0:
-                # May happen if the vertex does not belong to this cut,
-                # or triangulation left some hanging vertices.
-                #print "--zero-area-vertex", l, vertxs[l], vertys[l], vertzs[l]
-                continue
-            vn = Vt(vnormxs[l], vnormys[l], vnormzs[l])
-            vn /= va
-            vn.normalize()
-            vnormxs[l] = vn[0]; vnormys[l] = vn[1]; vnormzs[l] = vn[2]
-            vt = Vt(vtangxs[l], vtangys[l], vtangzs[l])
-            vt /= va
-            vt.normalize()
-            vtangxs[l] = vt[0]; vtangys[l] = vt[1]; vtangzs[l] = vt[2]
-
-        # Construct tiles.
-        tiles = []
-        tilevertmap = array("l", [0] * nverts) # for use inside _make_tile()
-        for it in range(numtilesx):
-            tiles1 = []
-            xt = (it + 0.5) * tilesizex + offsetx
-            for jt in range(numtilesy):
-                yt = (jt + 0.5) * tilesizey + offsety
-                tile = Terrain._make_tile(
-                    offsetx, offsety,
-                    numtilesx, numtilesy, tilesizex, tilesizey,
-                    numquadsx, numquadsy, numtilequadsx, numtilequadsy,
-                    verts, vnorms, vtangs, tris, quadmap, tilevertmap,
-                    gvformat,
-                    cut, it, jt, xt, yt)
-                tiles1.append((tile, xt, yt))
-            tiles.append(tiles1)
-
-        return tiles
-
-
-    @staticmethod
-    def _make_tile (offsetx, offsety,
-                    numtilesx, numtilesy, tilesizex, tilesizey,
-                    numquadsx, numquadsy, numtilequadsx, numtilequadsy,
-                    verts, vnorms, vtangs, tris, quadmap, tilevertmap,
-                    gvformat,
-                    cut, it, jt, xt, yt):
-
-        Vt = Vec3D
-
-        i0 = it * numtilequadsx
-        j0 = jt * numtilequadsy
-
-        tname = "tile-i%d-j%d-c%d" % (it, jt, cut)
-
-        # Link global vertex and triangle indices to indices for this tile.
-        tilevinds = []
-        tiletinds = []
-        tri1s, tri2s, tri3s, trics = tris
-        qm1, qm2 = quadmap
-        for i in xrange(i0, i0 + numtilequadsx):
-            for j in xrange(j0, j0 + numtilequadsy):
-                q = i * numquadsy + j
-                ks = range(qm1[q], qm2[q])
-                for k in ks:
-                    #tri, c = tris[k]
-                    tri = (tri1s[k], tri2s[k], tri3s[k])
-                    c = trics[k]
-                    if c == cut:
-                        tilevinds.extend(tri)
-                        tiletinds.append(k)
-        if not tilevinds:
-            # There is nothing from this cut on this tile.
-            return NodePath(tname)
-        tilevinds = sorted(set(tilevinds))
-        for lt, l in enumerate(tilevinds):
-            tilevertmap[l] = lt
-
-        # Compute texture coordinates.
-        vertxs, vertys, vertzs = verts
-        texcs = []
-        x0 = offsetx
-        y0 = offsety
-        sx = tilesizex * numtilesx
-        sy = tilesizey * numtilesy
-        for l in tilevinds:
-            x, y = vertxs[l], vertys[l]
-            u = clamp((x - x0) / sx, 0.0, 1.0)
-            v = clamp((y - y0) / sy, 0.0, 1.0)
-            texcs.append((u, v))
-
-        # Construct graphics vertices.
-        gvdata = GeomVertexData("data", gvformat, Geom.UHStatic)
-        gvwvertex = GeomVertexWriter(gvdata, InternalName.getVertex())
-        gvwnormal = GeomVertexWriter(gvdata, InternalName.getNormal())
-        gvwtangent = GeomVertexWriter(gvdata, InternalName.getTangent())
-        gvwbinormal = GeomVertexWriter(gvdata, InternalName.getBinormal())
-        gvwcolor = GeomVertexWriter(gvdata, InternalName.getColor())
-        gvwtexcoord = GeomVertexWriter(gvdata, InternalName.getTexcoord())
-        vnormxs, vnormys, vnormzs = vnorms
-        vtangxs, vtangys, vtangzs = vtangs
-        for l in tilevinds:
-            lt = tilevertmap[l]
-            gvwvertex.addData3f(vertxs[l] - xt, vertys[l] - yt, vertzs[l])
-            gvwnormal.addData3f(vnormxs[l], vnormys[l], vnormzs[l])
-            gvwtangent.addData3f(vtangxs[l], vtangys[l], vtangzs[l])
-            vn = Vt(vnormxs[l], vnormys[l], vnormzs[l])
-            vt = Vt(vtangxs[l], vtangys[l], vtangzs[l])
-            vb = vn.cross(vt)
-            vb.normalize()
-            gvwbinormal.addData3f(*vb)
-            gvwcolor.addData4f(1.0, 1.0, 1.0, 1.0)
-            u, v = texcs[lt]
-            gvwtexcoord.addData2f(u, v)
-
-        # Construct graphics triangles.
-        gtris = GeomTriangles(Geom.UHStatic)
-        tri1s, tri2s, tri3s = tris[:3]
-        for k in tiletinds:
-            l1, l2, l3 = (tri1s[k], tri2s[k], tri3s[k])
-            lt1, lt2, lt3 = tilevertmap[l1], tilevertmap[l2], tilevertmap[l3]
-            gtris.addVertices(lt1, lt2, lt3)
-            gtris.closePrimitive()
-
-        # Construct tile skirt.
-        if True:
-            #print "------tile-skirt  it=%d  jt=%d  cut=%d" % (it, jt, cut)
-            xb0 = it * tilesizex + offsetx
-            yb0 = jt * tilesizey + offsety
-            xb1 = (it + 1) * tilesizex + offsetx
-            yb1 = (jt + 1) * tilesizey + offsety
-            quadsizex = tilesizex / numtilequadsx
-            quadsizey = tilesizey / numtilequadsy
-            incang = radians(10.0)
-            incrlen = 0.1
-            incvz = Vec3D(0, 0, -((quadsizex + quadsizey) * 0.5) * incrlen)
-            epsx = quadsizex * 1e-5
-            epsy = quadsizey * 1e-5
-            ltc = len(tilevinds)
-            for ku, ue, epsu, ijs in (
-                (0, xb0, epsx,
-                 zip([i0] * numtilequadsy,
-                     range(j0, j0 + numtilequadsy))),
-                (0, xb1, epsx,
-                 zip([i0 + numtilequadsx - 1] * numtilequadsy,
-                     range(j0, j0 + numtilequadsy))),
-                (1, yb0, epsy,
-                 zip(range(i0, i0 + numtilequadsx),
-                     [j0] * numtilequadsx)),
-                (1, yb1, epsy,
-                 zip(range(i0, i0 + numtilequadsx),
-                     [j0 + numtilequadsy - 1] * numtilequadsx)),
-            ):
-                #print "----tile-skirt  ku=%d  ue=%.1f" % (ku, ue)
-                rot = QuatD()
-                vertus = verts[ku]
-                ez = Vec3D(0.0, 0.0, 1.0)
-                for i, j in ijs:
-                    q = i * numquadsy + j
-                    ks = range(qm1[q], qm2[q])
-                    for k in ks:
-                        c = trics[k]
-                        if c == cut:
-                            l1, l2, l3 = tri1s[k], tri2s[k], tri3s[k]
-                            u1, u2, u3 = vertus[l1], vertus[l2], vertus[l3]
-                            la, lb = None, None
-                            if abs(u1 - ue) < epsu and abs(u2 - ue) < epsu:
-                                la = l1; lb = l2
-                            elif abs(u2 - ue) < epsu and abs(u3 - ue) < epsu:
-                                la = l2; lb = l3
-                            elif abs(u3 - ue) < epsu and abs(u1 - ue) < epsu:
-                                la = l3; lb = l1
-                            if la is not None:
-                                # Compute lower skirt points.
-                                xa, ya, za = vertxs[la], vertys[la], vertzs[la]
-                                xb, yb, zb = vertxs[lb], vertys[lb], vertzs[lb]
-                                #print ("--tile-skirt  "
-                                       #"xa=%.1f  ya=%.1f  xb=%.1f  yb=%.1f" %
-                                       #(xa, ya, xb, yb))
-                                pa = Point3D(xa, ya, 0.0)
-                                pb = Point3D(xb, yb, 0.0)
-                                ra = unitv(pa - pb)
-                                rot.setFromAxisAngleRad(incang, ra)
-                                incv = Point3D(rot.xform(incvz))
-                                pc = pa + incv
-                                pd = pb + incv
-                                pa[2] += za; pc[2] += za
-                                pb[2] += zb; pd[2] += zb
-                                xc, yc, zc = pc[0], pc[1], pc[2]
-                                xd, yd, zd = pd[0], pd[1], pd[2]
-                                lta, ltb = tilevertmap[la], tilevertmap[lb]
-                                # Add vertices.
-                                #vnc = unitv((pa - pb).cross(pc - pb))
-                                #vnd = unitv((pc - pb).cross(pd - pb))
-                                vnc = Vec3D(vnormxs[la], vnormys[la], vnormzs[la])
-                                vnd = Vec3D(vnormxs[lb], vnormys[lb], vnormzs[lb])
-                                for p, vn in ((pc, vnc), (pd, vnd)):
-                                    vt = vn.cross(ez).cross(vt) # steepest ascent
-                                    vb = vn.cross(vt)
-                                    gvwvertex.addData3f(p[0] - xt, p[1] - yt, p[2])
-                                    gvwnormal.addData3f(vn[0], vn[1], vn[2])
-                                    gvwtangent.addData3f(vt[0], vt[1], vt[2])
-                                    gvwbinormal.addData3f(vb[0], vb[1], vb[2])
-                                    gvwcolor.addData4f(1.0, 1.0, 1.0, 1.0)
-                                    x, y = p[0], p[1]
-                                    u = clamp((x - x0) / sx, 0.0, 1.0)
-                                    v = clamp((y - y0) / sy, 0.0, 1.0)
-                                    gvwtexcoord.addData2f(u, v)
-                                # Add triangles.
-                                ltd = ltc + 1
-                                gtris.addVertices(ltb, lta, ltc)
-                                gtris.closePrimitive()
-                                gtris.addVertices(ltb, ltc, ltd)
-                                gtris.closePrimitive()
-                                ltc += 2
-
-        # Construct the mesh.
-        geom = Geom(gvdata)
-        geom.addPrimitive(gtris)
-        gnode = GeomNode(tname)
-        gnode.addGeom(geom)
-        node = NodePath(gnode)
-        node.flattenStrong()
-
-        return node
-
-
-    @staticmethod
-    def _quad_index_for_xy (sizex, sizey, offsetx, offsety,
-                            numquadsx, numquadsy, x, y):
-
-        dx = sizex / numquadsx
-        dy = sizey / numquadsy
-        i = int((x - offsetx) / dx)
-        j = int((y - offsety) / dy)
-        if 0 <= i < numquadsx and 0 <= j < numquadsy:
-            return i * numquadsy + j
-        else:
-            return None
-
-
-    @staticmethod
-    def _interpolate_z (sizex, sizey, offsetx, offsety,
-                        numquadsx, numquadsy,
-                        verts, tris, quadmap,
-                        x1, y1, ref1, wnorm=False, wtvinds=False):
-
-        xr1, yr1, zr1 = ref1[0], ref1[1], ref1[2]
-        x, y = x1 - xr1, y1 - yr1
-
-        q = Terrain._quad_index_for_xy(sizex, sizey, offsetx, offsety,
-                                       numquadsx, numquadsy,
-                                       x, y)
-        if q is None:
-            ret = [1.0, -1, 0.0]
-            if wnorm:
-                ret.append(Vec3())
-            if wtvinds:
-                ret.append(())
-            return ret
-        qm1, qm2 = quadmap
-        ks = range(qm1[q], qm2[q])
-        trics = tris[3]
-        pmin = None
-        cpmin = None
-        zpmin = None
-        if wnorm:
-            npmin = None
-        if wtvinds:
-            tvindspmin = None
-        for k in ks:
-            ret = Terrain._interpolate_tri_z(verts, tris, k, x, y,
-                                             wnorm=wnorm, wtvinds=wtvinds)
-            p, z = ret.pop(0), ret.pop(0)
-            if wnorm:
-                n = ret.pop(0)
-            if wtvinds:
-                tvinds = ret.pop(0)
-            if pmin is None or pmin > p:
-                pmin = p
-                cpmin = trics[k]
-                zpmin = z
-                if wnorm:
-                    npmin = n
-                if wtvinds:
-                    tvindspmin = tvinds
-            if p == 0.0:
-                break
-        z1pmin = zpmin + zr1
-
-        ret = [pmin, cpmin, z1pmin]
-        if wnorm:
-            ret.append(npmin)
-        if wtvinds:
-            ret.append(tvindspmin)
-        return ret
-
-
-    @staticmethod
-    def _interpolate_tri_z (verts, tris, k, x, y,
-                            wnorm=False, wtvinds=False):
-
-        Pt2 = Point2D
-
-        pf = Pt2(x, y)
-        tri1s, tri2s, tri3s = tris[:3]
-        tri = (tri1s[k], tri2s[k], tri3s[k])
-        v1, v2, v3 = Terrain._get_tri_verts(tri, verts)
-        v1f, v2f, v3f = v1.getXy(), v2.getXy(), v3.getXy()
-
-        v12f = v2f - v1f
-        v13f = v3f - v1f
-        v1pf = pf - v1f
-        d1212 = v12f.dot(v12f)
-        d1213 = v12f.dot(v13f)
-        d1313 = v13f.dot(v13f)
-        den = d1313 * d1212 - d1213 * d1213
-        if den == 0.0: # can happen due to roundoff
-            ret = [1.0, v1[2]]
-            if wnorm:
-                ret.append(Vec3D(0, 0, 1))
-            if wtvinds:
-                ret.append(tri)
-            return ret
-        d131p = v13f.dot(v1pf)
-        d121p = v12f.dot(v1pf)
-        b2 = (d1313 * d121p - d1213 * d131p) / den
-        b3 = (d1212 * d131p - d1213 * d121p) / den
-        b1 = 1.0 - (b2 + b3)
-
-        p = 0.0 # outsideness penalty
-        for b in (b1, b2, b3):
-            if b < 0.0:
-                p += b**2
-            elif b > 1.0:
-                p += (b - 1.0)**2
-
-        z1, z2, z3 = v1[2], v2[2], v3[2]
-        z = b1 * z1 + b2 * z2 + b3 * z3
-        if wnorm:
-            n = unitv((v2 - v1).cross(v3 - v1))
-
-        ret = [p, z]
-        if wnorm:
-            ret.append(n)
-        if wtvinds:
-            ret.append(tri)
-        return ret
-
-# @cache-key-end: terrain-generation
-
     def destroy (self):
 
         if not self.alive:
             return
-
-        # Let it try harder to collect garbage.
-        e1, e2, e3 = self._verts
-        e1[:] = array("d", [0.0])
-        e2[:] = array("d", [0.0])
-        e3[:] = array("d", [0.0])
-        self._verts = None
-        del e1, e2, e3
-        e1, e2, e3, e4 = self._tris
-        e1[:] = array("l", [0])
-        e2[:] = array("l", [0])
-        e3[:] = array("l", [0])
-        e4[:] = array("l", [0])
-        self._tris = None
-        del e1, e2, e3, e4
-        e1, e2 = self._quadmap
-        e1[:] = array("l", [0])
-        e2[:] = array("l", [0])
-        self._quadmap = None
-        del e1, e2
-        e1 = self._maxqzs
-        e1[:] = array("d", [0.0])
-        self._maxqzs = None
-        del e1
-
+        self._geom.destroy()
         self.node.removeNode()
         self.alive = False
 
@@ -3266,10 +1348,7 @@ void main ()
         if not self._virtsurf_store: # shortcut for performance
             return z, n, t
 
-        q = Terrain._quad_index_for_xy(self._sizex, self._sizey,
-                                       self._offsetx, self._offsety,
-                                       self._numquadsx, self._numquadsy,
-                                       x - self._pos_x, y - self._pos_y)
+        q = self._geom.quad_index_for_xy(x - self._pos_x, y - self._pos_y)
         wnorm = (n is not None)
         for surf_ind in self._virtsurf_per_quad.get(q, ()):
             surf = self._virtsurf_store[surf_ind]
@@ -3287,12 +1366,7 @@ void main ()
 
     def height (self, x, y, flush=False):
 
-        p, c, z, n = Terrain._interpolate_z(
-            self._sizex, self._sizey, self._offsetx, self._offsety,
-            self._numquadsx, self._numquadsy,
-            self._verts, self._tris, self._quadmap,
-            x, y, self._pos,
-            wnorm=True)
+        p, c, z, n = self._geom.interpolate_z(x, y, self._pos, wnorm=True)
         t = self._ground_type_by_cut[c]
 
         z, n, t = self._mod_height_virtsurf(x, y, z, n, t, flush=flush)
@@ -3302,12 +1376,7 @@ void main ()
 
     def height_q (self, x, y, flush=False): # shortcut for performance
 
-        p, c, z = Terrain._interpolate_z(
-            self._sizex, self._sizey, self._offsetx, self._offsety,
-            self._numquadsx, self._numquadsy,
-            self._verts, self._tris, self._quadmap,
-            x, y, self._pos,
-            wnorm=False)
+        p, c, z = self._geom.interpolate_z(x, y, self._pos, wnorm=False)
         n = None
         t = None
 
@@ -3318,20 +1387,17 @@ void main ()
 
     def max_height (self):
 
-        return self._maxz
+        return self._geom.max_z()
 
 
     def below_surface (self, x, y, z):
 
-        if z < self._maxz:
-            q = Terrain._quad_index_for_xy(self._sizex, self._sizey,
-                                           self._offsetx, self._offsety,
-                                           self._numquadsx, self._numquadsy,
-                                           x - self._pos_x, y - self._pos_y)
+        if z < self._geom.max_z():
+            q = self._geom.quad_index_for_xy(x - self._pos_x, y - self._pos_y)
             if q is not None:
                 # height(x, y) is very expensive,
-                # execute it only if _maxqzs check passes.
-                return z < self._maxqzs[q] and z < self.height_q(x, y)
+                # execute it only if quad_max_z check passes.
+                return z < self._geom.quad_max_z(q) and z < self.height_q(x, y)
             else:
                 # This limit should not be zero, as this may be
                 # a small embedded terrain while the main terrain
@@ -3360,9 +1426,9 @@ void main ()
     def set_render_wireframe (self, on=True):
 
         if on:
-            self._tileroot.setRenderModeWireframe()
+            self._geom.tile_root().setRenderModeWireframe()
         else:
-            self._tileroot.setRenderModeFilled()
+            self._geom.tile_root().setRenderModeFilled()
 
 
     def pos (self, refbody=None, offset=None):
@@ -3404,12 +1470,12 @@ void main ()
         surf_maxz = e2[2]
         flush = surf.flush()
         if not flush:
-            self._maxz = max(self._maxz, surf_maxz)
+            self._geom.update_max_z(surf_maxz)
         for i in xrange(i1, i2 + 1):
             for j in xrange(j1, j2 + 1):
                 q = i * self._numquadsy + j
                 if not flush:
-                    self._maxqzs[q] = max(self._maxqzs[q], surf_maxz)
+                    self._geom.update_quad_max_z(q, surf_maxz)
                 vsq = self._virtsurf_per_quad.get(q)
                 if vsq is None:
                     vsq = []
@@ -3437,119 +1503,1990 @@ void main ()
                     set_texture(tile, extras=mod_texstack, clamp=False)
 
 
+class TerrainGeom (object):
+
+    def __init__ (self, name,
+                  sizex, sizey, offsetx, offsety,
+                  heightmap, haveheightmap,
+                  maxsizexa, maxsizexb, havemaxsizex, maxsizey, havemaxsizey,
+                  centerx, havecenterx, centery, havecentery,
+                  mingray, havemingray, maxgray, havemaxgray,
+                  minheight, haveminheight, maxheight, havemaxheight,
+                  numtilesx, numtilesy,
+                  celldensity, periodic,
+                  cutmasks, levints):
+
+        timeit = False
+
 # @cache-key-start: terrain-generation
-def read_pnm_map (pnmmap):
 
-    sx = pnmmap.getReadXSize()
-    sy = pnmmap.getReadYSize()
-    vals = [array("d", [0.0] * sy) for i in xrange(sx)]
-    for i in xrange(sx):
-        for j in xrange(sy):
-            vals[i][j] = pnmmap.getGray(i, sy - j - 1)
-    return vals
-
-
-def interpolate_unit_map (fmap, xr, yr, tol=0.0, periodic=False):
-
-    Pt = Point2D
-    #print "--interpolate-unit-map-05", "=========="
-
-    sizex = len(fmap)
-    sizey = len(fmap[0])
-    #print ("--interpolate-unit-map-10  "
-            #"xr=%.6f  yr=%.6f  sizex=%d  sizey=%d" % (xr, yr, sizex, sizey))
-
-    ret = _unit_to_index2(sizex, sizey, xr, yr, tol, periodic)
-    if not ret:
-        raise StandardError("Point out of range.")
-    i1, j1, xr, yr = ret
-    #print ("--interpolate-unit-map-12  "
-            #"xr=%.6f  yr=%.6f" % (xr, yr))
-    ij1 = (i1, j1)
-    x1 = (i1 + 0.5) / sizex
-    y1 = (j1 + 0.5) / sizey
-    di = 1 if xr > x1 else -1
-    dj = 1 if yr > y1 else -1
-    di2 = di; dj2 = 0
-    ij2 = _shift_index2(sizex, sizey, i1, j1, di2, dj2, periodic)
-    di3 = di; dj3 = dj
-    ij3 = _shift_index2(sizex, sizey, i1, j1, di3, dj3, periodic)
-    di4 = 0; dj4 = dj
-    ij4 = _shift_index2(sizex, sizey, i1, j1, di4, dj4, periodic)
-    # NOTE: Must not use iN, jN below when computing relative coordinates,
-    # in case there was wrap due to periodicity.
-    #print ("--interpolate-unit-map-20  "
-            #"ij1=%s  ij2=%s  ij3=%s  ij4=%s" % (ij1, ij2, ij3, ij4))
-
-    if ij2 and ij3 and ij4: # three neighbors
-        # Bilinear interpolation.
-        i2, j2 = ij3
-        i3, j3 = ij3
-        i4, j4 = ij4
-        x3 = (i1 + di3 + 0.5) / sizex
-        y3 = (j1 + dj3 + 0.5) / sizey
-        fd = (x3 - x1) * (y3 - y1)
-        f1 = (x3 - xr) * (y3 - yr)
-        f2 = (xr - x1) * (y3 - yr)
-        f3 = (xr - x1) * (yr - y1)
-        f4 = (x3 - xr) * (yr - y1)
-        v1 = fmap[i1][j1]
-        v2 = fmap[i2][j2]
-        v3 = fmap[i3][j3]
-        v4 = fmap[i4][j4]
-        v = (v1 * f1 + v2 * f2 + v3 * f3 + v4 * f4) / fd
-        #print ("--interpolate-unit-map-30  "
-                #"x1=%.6f  y1=%.6f  x3=%.6f  y3=%.6f" % (x1, y1, x3, y3))
-
-    elif ij2 or ij3 or ij4: # one neighbor
-        # Linear interpolation.
-        if ij2:
-            i2, j2, di2, dj2 = ij2 + (di2, dj2)
-        elif ij3:
-            i2, j2, di2, dj2 = ij3 + (di3, dj3)
-        elif ij4:
-            i2, j2, di2, dj2 = ij4 + (di4, dj4)
-        # else ij2
-        r = Pt(xr, yr)
-        x2 = (i1 + di2 + 0.5) / sizex
-        y2 = (j1 + dj2 + 0.5) / sizey
-        r1 = Pt(x1, y1)
-        r2 = Pt(x2, y2)
-        udr = r2 - r1
-        udr.normalize()
-        l1 = (r - r1).dot(udr)
-        l2 = (r2 - r).dot(udr)
-        v1 = fmap[i1][j1]
-        v2 = fmap[i2][j2]
-        v = (v1 * l2 + v2 * l1) / (l1 + l2)
-        #print ("--interpolate-unit-map-32  "
-                #"x1=%.6f  y1=%.6f  x2=%.6f  y2=%.6f" % (x1, y1, x2, y2))
-
-    else: # no neighbors (two neighbors not possible)
-        i, j = ij1
-        v = fmap[i][j]
-        #print ("--interpolate-unit-map-34  "
-                #"x1=%.6f  y1=%.6f" % (x1, y1))
-
-    return v
-
-
-
-def _unit_to_index2 (sizex, sizey, xr, yr, tol=0.0, periodic=False):
-
-    i, xr = Terrain._unit_to_index(sizex, xr, tol, periodic)
-    j, yr = Terrain._unit_to_index(sizey, yr, tol, periodic)
-    if i is None or j is None:
-        return None
-    return i, j, xr, yr
-
-
-def _shift_index2 (sizex, sizey, i, j, di, dj, periodic=False):
-
-    i = Terrain._shift_index(sizex, i, di, periodic)
-    j = Terrain._shift_index(sizey, j, dj, periodic)
-    if i is None or j is None:
-        return None
-    return i, j
+        # Construct everything.
+        carg = AutoProps(
+            sizex=sizex, sizey=sizey,
+            offsetx=offsetx, offsety=offsety,
+            heightmap=heightmap, haveheightmap=haveheightmap,
+            maxsizexa=maxsizexa, maxsizexb=maxsizexb, havemaxsizex=havemaxsizex,
+            maxsizey=maxsizey, havemaxsizey=havemaxsizey,
+            centerx=centerx, havecenterx=havecenterx,
+            centery=centery, havecentery=havecentery,
+            mingray=mingray, havemingray=havemingray,
+            maxgray=maxgray, havemaxgray=havemaxgray,
+            minheight=minheight, haveminheight=haveminheight,
+            maxheight=maxheight, havemaxheight=havemaxheight,
+            numtilesx=numtilesx, numtilesy=numtilesy,
+            celldensity=celldensity, periodic=periodic,
+            cutmasks=cutmasks, levints=levints,
+        )
+        ret = None
+        keyhx = None
+        if name:
+            tname = name
+            fckey = []
+            fckey.extend(cutmasks)
+            ecarg = AutoProps()
+            if haveheightmap:
+                fckey.append(heightmap)
+                hmdatapath = TerrainGeom._hmdata_path(heightmap)
+                if path_exists("data", hmdatapath):
+                    ecarg.hmdatapath = hmdatapath
+                    fckey.append(hmdatapath)
+            this_path = internal_path("data", __file__)
+            key = (sorted(carg.props()), sorted(ecarg.props()),
+                   get_cache_key_section(this_path.replace(".pyc", ".py"),
+                                         "terrain-generation"))
+            keyhx = key_to_hex(key, fckey)
 # @cache-key-end: terrain-generation
+            if timeit:
+                t1 = time()
+# @cache-key-start: terrain-generation
+            ret = TerrainGeom._load_from_cache(tname, keyhx)
+# @cache-key-end: terrain-generation
+            if timeit and ret:
+                t2 = time()
+                dbgval(1, "terrain-load-from-cache",
+                       (t2 - t1, "%.3f", "time", "s"))
+# @cache-key-start: terrain-generation
+        if not ret:
+            ret = TerrainGeom._construct(**dict(carg.props()))
+            celldata, elevdata, geomdata = ret
+            if keyhx is not None:
+# @cache-key-end: terrain-generation
+                if timeit:
+                    t1 = time()
+# @cache-key-start: terrain-generation
+                TerrainGeom._write_to_cache(tname, keyhx, celldata, elevdata, geomdata)
+# @cache-key-end: terrain-generation
+                if timeit:
+                    t2 = time()
+                    dbgval(1, "terrain-write-to-cache",
+                           (t2 - t1, "%.3f", "time", "s"))
+# @cache-key-start: terrain-generation
+        else:
+            celldata, elevdata, geomdata = ret
+# @cache-key-end: terrain-generation
+
+        (self._verts, self._tris, self._quadmap,
+         self._maxz, self._maxqzs) = elevdata
+        (self._numquadsx, self._numquadsy, self._numtilesx, self._numtilesy,
+         self._tilesizex, self._tilesizey, self._numcuts,
+         self._centerx, self._centery,
+         self._maxsizexa, self._maxsizexb, self._maxsizey) = celldata
+        self._tileroot, = geomdata
+
+        self._sizex = sizex
+        self._sizey = sizey
+        self._offsetx = offsetx
+        self._offsety = offsety
+
+
+    def destroy (self):
+
+        # Let it try harder to collect garbage.
+        e1, e2, e3 = self._verts
+        e1[:] = array("d", [0.0])
+        e2[:] = array("d", [0.0])
+        e3[:] = array("d", [0.0])
+        self._verts = None
+        del e1, e2, e3
+        e1, e2, e3, e4 = self._tris
+        e1[:] = array("l", [0])
+        e2[:] = array("l", [0])
+        e3[:] = array("l", [0])
+        e4[:] = array("l", [0])
+        self._tris = None
+        del e1, e2, e3, e4
+        e1, e2 = self._quadmap
+        e1[:] = array("l", [0])
+        e2[:] = array("l", [0])
+        self._quadmap = None
+        del e1, e2
+        e1 = self._maxqzs
+        e1[:] = array("d", [0.0])
+        self._maxqzs = None
+        del e1
+
+        self._tileroot.removeNode()
+
+
+    def tile_root (self):
+
+        return self._tileroot
+
+
+    def num_quads_x (self):
+
+        return self._numquadsx
+
+    def num_quads_y (self):
+
+        return self._numquadsy
+
+
+    def num_tiles_x (self):
+
+        return self._numtilesx
+
+
+    def num_tiles_y (self):
+
+        return self._numtilesy
+
+
+    def tile_size_x (self):
+
+        return self._tilesizex
+
+
+    def tile_size_y (self):
+
+        return self._tilesizey
+
+
+    def num_cuts (self):
+
+        return self._numcuts
+
+
+    def max_z (self):
+
+        return self._maxz
+
+
+    def update_max_z (self, z):
+
+        self._maxz = max(self._maxz, z)
+
+
+    def quad_max_z (self, q):
+
+        return self._maxqzs[q]
+
+
+    def update_quad_max_z (self, q, z):
+
+        self._maxqzs[q] = max(self._maxqzs[q], z)
+
+
+# @cache-key-start: terrain-generation
+    class FlatCircle:
+
+        def __init__ (self, name, centerx, centery, radius,
+                      centerz=None, radiusout=0.0):
+            self._name = name
+            self._centerx = centerx
+            self._centery = centery
+            self._centerz = centerz
+            self._radius = radius
+            self._radiusout = 0.0
+
+        def name (self):
+            return self._name
+
+        def refxy (self):
+            return self._centerx, self._centery
+
+        def refz (self):
+            return self._centerz
+
+        def set_refz (self, z):
+            self._centerz = z
+
+        def correct_z (self, x, y, z):
+
+            if self._centerz is None:
+                return None
+            rdist = ((x - self._centerx)**2 + (y - self._centery)**2)**0.5
+            if rdist <= self._radius:
+                return self._centerz
+            elif rdist <= self._radiusout:
+                ifc = (rdist - self._radius) / (self._radiusout - self._radius)
+                return self._centerz + (z - self._centerz) * ifc
+            else:
+                return None
+
+
+    @staticmethod
+    def _hmdata_path (heightmap):
+
+        return heightmap[:heightmap.rfind(".")] + ".dat"
+
+
+    _gvformat = None
+
+    @staticmethod
+    def _construct (sizex, sizey, offsetx, offsety,
+                    heightmap, haveheightmap,
+                    maxsizexa, maxsizexb, havemaxsizex, maxsizey, havemaxsizey,
+                    centerx, havecenterx, centery, havecentery,
+                    mingray, havemingray, maxgray, havemaxgray,
+                    minheight, haveminheight, maxheight, havemaxheight,
+                    numtilesx, numtilesy,
+                    celldensity, periodic,
+                    cutmasks, levints):
+
+# @cache-key-end: terrain-generation
+        report(_("Constructing terrain."))
+        timeit = False
+        memit = False
+# @cache-key-start: terrain-generation
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t0 = time()
+            t1 = t0
+# @cache-key-start: terrain-generation
+
+        # Load the height map.
+        flats = []
+        if haveheightmap:
+            hmdatapath = TerrainGeom._hmdata_path(heightmap)
+            if path_exists("data", hmdatapath):
+                ret = TerrainGeom._read_heightmap_data(hmdatapath)
+                # Conctructor arguments override read data.
+                sxa, sxb, sy, mnz, mxz, mng, mxg, flats = ret
+                if not havemaxsizex:
+                    maxsizexa = sxa
+                    maxsizexb = sxb
+                    havemaxsizex = True
+                if not havemaxsizey:
+                    maxsizey = sy
+                    havemaxsizey = True
+                if not havemingray:
+                    mingray = mng
+                    havemingray = True
+                if not havemaxgray:
+                    maxgray = mxg
+                    havemaxgray = True
+                if not haveminheight:
+                    minheight = mnz
+                    haveminheight = True
+                if not havemaxheight:
+                    maxheight = mxz
+                    havemaxheight = True
+            heightmap = UnitGrid2(full_path("data", heightmap))
+        else:
+            heightmap = UnitGrid2(0.0)
+
+        # Derive any non-initialized heightmap data.
+        if not havemaxsizex:
+            maxsizexa = sizex
+            maxsizexb = sizex
+        if not havemaxsizey:
+            maxsizey = sizey
+        if not havemingray:
+            mingray = 0
+        if not havemaxgray:
+            maxgray = 255
+        if not haveminheight:
+            minheight = 0.0
+        if not haveminheight and not havemaxheight:
+            minheight = 0.0
+            maxheight = 0.0
+        elif not haveminheight:
+            minheight = maxheight
+        elif not havemaxheight:
+            maxheight = minheight
+        if not havecenterx:
+            centerx = 0.0
+        if not havecentery:
+            centery = 0.0
+
+        mingray = int(mingray)
+        maxgray =  int(maxgray)
+        minheight = float(minheight)
+        maxheight = float(maxheight)
+        centerx = float(centerx)
+        centery = float(centery)
+
+        # Derive cell data.
+        def derive_cell_data (size, hmapsize, numtiles):
+            tilesize = size / numtiles
+            wquadsize = (size / hmapsize) / sqrt(celldensity)
+            numtilequads = int(ceil(tilesize / wquadsize))
+            numquads = numtiles * numtilequads
+            return numquads, tilesize, numtilequads
+        maxsizexr = (maxsizexa + maxsizexb) * 0.5
+        hmapsizex = heightmap.num_x() * (sizex / maxsizexr)
+        ret = derive_cell_data(sizex, hmapsizex, numtilesx)
+        numquadsx, tilesizex, numtilequadsx = ret
+        hmapsizey = heightmap.num_y() * (sizey / maxsizey)
+        ret = derive_cell_data(sizey, hmapsizey, numtilesy)
+        numquadsy, tilesizey, numtilequadsy = ret
+# @cache-key-end: terrain-generation
+        #print ("--terrain-construct-celldata  "
+               #"nqx=%d  nqy=%d  ntx=%d  nty=%d  tszx=%.1f  tszy=%.1f  "
+               #"estnp=%d  "
+               #% (numquadsx, numquadsy, numtilesx, numtilesy,
+                  #tilesizex, tilesizey,
+                  #(numquadsx * numquadsy * 2)))
+# @cache-key-start: terrain-generation
+
+        # Load cut masks.
+        cutmasks_new = []
+        for cutmask in cutmasks:
+            cutmask = UnitGrid2(full_path("data", cutmask))
+            cutmasks_new.append(cutmask)
+        cutmasks = cutmasks_new
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "terrain-collect-maps",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+        if memit:
+            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
+# @cache-key-start: terrain-generation
+
+        cintdiv, cintlam, cintmu, cintiter = 2, 0.8, -0.2, 10
+        ret = TerrainGeom._triangulate(
+            heightmap, cutmasks, levints,
+            maxsizexa, maxsizexb, maxsizey, centerx, centery,
+            sizex, sizey, offsetx, offsety, numquadsx, numquadsy,
+            mingray, maxgray, minheight, maxheight, flats,
+            cintdiv, cintlam, cintmu, cintiter,
+            periodic=periodic, timeit=timeit, memit=memit)
+        verts, tris, quadmap = ret[:3]
+# @cache-key-end: terrain-generation
+        if timeit:
+            t1 = ret[3]
+# @cache-key-start: terrain-generation
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "terrain-categorize-polygons",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+        if memit:
+            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
+# @cache-key-start: terrain-generation
+
+        # Construct vertex format for tile textures.
+        gvformat = TerrainGeom._gvformat
+        if gvformat is None:
+            gvarray = GeomVertexArrayFormat()
+            gvarray.addColumn(InternalName.getVertex(), 3,
+                              Geom.NTFloat32, Geom.CPoint)
+            gvarray.addColumn(InternalName.getNormal(), 3,
+                              Geom.NTFloat32, Geom.CVector)
+            gvarray.addColumn(InternalName.getTangent(), 3,
+                              Geom.NTFloat32, Geom.CVector)
+            gvarray.addColumn(InternalName.getBinormal(), 3,
+                              Geom.NTFloat32, Geom.CVector)
+            gvarray.addColumn(InternalName.getColor(), 4,
+                              Geom.NTFloat32, Geom.CColor)
+            gvarray.addColumn(InternalName.getTexcoord(), 2,
+                              Geom.NTFloat32, Geom.CTexcoord)
+            gvformat = GeomVertexFormat()
+            gvformat.addArray(gvarray)
+            gvformat = GeomVertexFormat.registerFormat(gvformat)
+            TerrainGeom._gvformat = gvformat
+
+        # Create tiles.
+        tiles = []
+        numcuts = len(cutmasks) + 1
+        for cut in xrange(numcuts):
+            tiles1 = TerrainGeom._make_tiles(
+                offsetx, offsety, numquadsx, numquadsy,
+                numtilesx, numtilesy, tilesizex, tilesizey,
+                numtilequadsx, numtilequadsy,
+                gvformat,
+                verts, tris, quadmap, levints,
+                cut)
+            tiles.append(tiles1)
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "terrain-create-tiles",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+        if memit:
+            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
+# @cache-key-start: terrain-generation
+
+        # Assemble tiles into final terrain.
+        tileroot = NodePath("terrain")
+        dummyoutvisradius = (0.5 * sqrt(tilesizex**2 + tilesizey**2)) * 4
+        for it in xrange(numtilesx):
+            for jt in xrange(numtilesy):
+                ijtile = NodePath("tile-i%d-j%d" % (it, jt))
+                for cut in xrange(numcuts):
+                    ctile, x, y = tiles[cut][it][jt]
+                    ctile.reparentTo(ijtile)
+                ijtlod = LODNode("lod-visradius")
+                ijtlnp = NodePath(ijtlod)
+                ijtlnp.reparentTo(tileroot)
+                ijtlnp.setPos(x, y, 0.0) # all cuts have same (x, y)
+                ijtlod.addSwitch(dummyoutvisradius, 0.0)
+                ijtile.reparentTo(ijtlnp)
+
+        # Derive maximum heights for faster terrain collision check.
+        maxz = -1e30
+        maxqzs = array("d", [0.0] * (numquadsx * numquadsy))
+        tri1s, tri2s, tri3s = tris[:3]
+        qm1, qm2 = quadmap
+        vertzs = verts[2]
+        for i in xrange(numquadsx):
+            for j in xrange(numquadsy):
+                q = i * numquadsy + j
+                ks = range(qm1[q], qm2[q])
+                maxqz = -1e30
+                for k in ks:
+                    l1, l2, l3 = tri1s[k], tri2s[k], tri3s[k]
+                    maxqz = max(maxqz, vertzs[l1], vertzs[l2], vertzs[l3])
+                maxqzs[q] = maxqz
+                maxz = max(maxz, maxqz)
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "terrain-cumulative",
+                   (t2 - t0, "%.3f", "time", "s"))
+            t1 = t2
+        if memit:
+            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
+# @cache-key-start: terrain-generation
+
+        celldata = (numquadsx, numquadsy, numtilesx, numtilesy,
+                    tilesizex, tilesizey, numcuts,
+                    centerx, centery,
+                    maxsizexa, maxsizexb, maxsizey)
+        elevdata = (verts, tris, quadmap, maxz, maxqzs)
+        geomdata = (tileroot,)
+        return celldata, elevdata, geomdata
+
+
+    _cache_pdir = "terrain"
+
+    @staticmethod
+    def _cache_key_path (tname):
+
+        return join_path(TerrainGeom._cache_pdir, tname, "terrain.key")
+
+
+    @staticmethod
+    def _cache_celldata_path (tname):
+
+        return join_path(TerrainGeom._cache_pdir, tname, "celldata.pkl")
+
+
+    @staticmethod
+    def _cache_elevdata_path (tname):
+
+        return join_path(TerrainGeom._cache_pdir, tname, "elevdata.pkl.gz")
+
+
+    @staticmethod
+    def _cache_geomdata_path (tname):
+
+        return join_path(TerrainGeom._cache_pdir, tname, "geomdata.bam")
+
+# @cache-key-end: terrain-generation
+
+    @staticmethod
+    def _load_from_cache (tname, keyhx):
+
+        keypath = TerrainGeom._cache_key_path(tname)
+        if not path_exists("cache", keypath):
+            return None
+        okeyhx = open(real_path("cache", keypath), "rb").read()
+        if okeyhx != keyhx:
+            return None
+
+        celldatapath = TerrainGeom._cache_celldata_path(tname)
+        if not path_exists("cache", celldatapath):
+            return None
+        fh = open(real_path("cache", celldatapath), "rb")
+        celldata = pickle.load(fh)
+        fh.close()
+
+        #from time import sleep
+        #print "--terrain235 start-sleep"
+        #sleep(10)
+        #print "--terrain236 end-sleep"
+        elevdatapath = TerrainGeom._cache_elevdata_path(tname)
+        if not path_exists("cache", elevdatapath):
+            return None
+        fh = GzipFile(real_path("cache", elevdatapath), "rb")
+        elevdata = pickle.loads(fh.read())
+        fh.close()
+        del fh # prevent memory consumption peak
+        #print "--terrain237 start-sleep"
+        #sleep(10)
+        #print "--terrain238 end-sleep"
+
+        #print "--terrain245 start-sleep"
+        #sleep(10)
+        #print "--terrain246 end-sleep"
+        geomdatapath = TerrainGeom._cache_geomdata_path(tname)
+        if not path_exists("cache", geomdatapath):
+            return None
+        geomroot = base.load_model("cache", geomdatapath, cache=False)
+        geomdata = geomroot.getChildren().getPaths()
+        #print "--terrain247 start-sleep"
+        #sleep(10)
+        #print "--terrain248 end-sleep"
+
+        return celldata, elevdata, geomdata
+
+# @cache-key-start: terrain-generation
+
+    @staticmethod
+    def _write_to_cache (tname, keyhx, celldata, elevdata, geomdata):
+
+        keypath = TerrainGeom._cache_key_path(tname)
+
+        cdirpath = path_dirname(keypath)
+        if path_exists("cache", cdirpath):
+            rmtree(real_path("cache", cdirpath))
+        os.makedirs(real_path("cache", cdirpath))
+
+        geomdatapath = TerrainGeom._cache_geomdata_path(tname)
+        geomroot = NodePath("root")
+        for np in geomdata:
+            np.reparentTo(geomroot)
+        base.write_model_bam(geomroot, "cache", geomdatapath)
+
+        elevdatapath = TerrainGeom._cache_elevdata_path(tname)
+        fh = GzipFile(real_path("cache", elevdatapath), "wb", compresslevel=3)
+        pickle.dump(elevdata, fh, -1)
+        fh.close()
+
+        celldatapath = TerrainGeom._cache_celldata_path(tname)
+        fh = open(real_path("cache", celldatapath), "wb")
+        pickle.dump(celldata, fh, -1)
+        fh.close()
+
+        fh = open(real_path("cache", keypath), "wb")
+        fh.write(keyhx)
+        fh.close()
+
+
+    @staticmethod
+    def _read_heightmap_data (fpath):
+
+        mhdat = SafeConfigParser()
+        mhdat.readfp(codecs.open(real_path("data", fpath), "r", "utf8"))
+        extsec = "extents"
+        if not mhdat.has_section(extsec):
+            raise StandardError(
+                "No '%s' section in heightmap data file '%s'." %
+                (extsec, fpath))
+        sxfld, sxafld, sxbfld = "sizex", "sizexs", "sizexn"
+        xymult = 1000.0
+        if (mhdat.has_option(extsec, sxafld) and
+            mhdat.has_option(extsec, sxbfld)):
+            sxa = mhdat.getfloat(extsec, sxafld) * xymult
+            sxb = mhdat.getfloat(extsec, sxbfld) * xymult
+        elif mhdat.has_option(extsec, sxfld):
+            sxa = sxb = mhdat.getfloat(extsec, sxfld) * xymult
+        else:
+            raise StandardError(
+                "No field '%s' nor fields '%s' and '%s' in section '%s' "
+                "in file '%s'." % (sxfld, sxafld, sxbfld, extsec, fpath))
+        vals = []
+        for fld, typ, defval, mult in (
+            ("sizey", float, None, xymult),
+            ("minz", float, None, 1.0),
+            ("maxz", float, None, 1.0),
+            ("ming", int, 0, 1),
+            ("maxg", int, 255, 1),
+        ):
+            val = TerrainGeom._getconfval(fpath, mhdat, extsec, fld, typ, defval)
+            vals.append(val * mult)
+        sy, mnz, mxz, mng, mxg = vals
+
+        flats = []
+        flatpref = "flat-"
+        for flatsec in mhdat.sections():
+            if flatsec.startswith(flatpref):
+                def getf (field, defval=()):
+                    return TerrainGeom._getconfval(fpath, mhdat, flatsec, field,
+                                                   float, defval)
+                name = flatsec[len(flatpref):]
+                cx = getf("centerx") * xymult
+                cy = getf("centery") * xymult
+                cz = getf("centerz", ()) or None
+                if mhdat.has_option(flatsec, "radius"):
+                    rad = getf("radius") * xymult
+                    radout = getf("radiusout", 0.0) * xymult
+                    flat = TerrainGeom.FlatCircle(name, cx, cy, rad, cz, radout)
+                else:
+                    raise StandardError(
+                        "Unknown flat section type '%s' in file '%s'." %
+                        (flatsec, fpath))
+                flats.append(flat)
+
+        return sxa, sxb, sy, mnz, mxz, mng, mxg, flats
+
+
+    @staticmethod
+    def _getconfval (cfgpath, config, section, field, typ, defval=None):
+
+        if config.has_option(section, field):
+            strval = config.get(section, field)
+            try:
+                val = typ(strval)
+            except:
+                raise StandardError(
+                    "Cannot convert field '%s' to type %s "
+                    "in section '%s' file '%s'." %
+                    (field, typ, cfgpath, section))
+            return val
+        elif defval is not None:
+            return defval
+        else:
+            raise StandardError(
+                "Missing field '%s' in section '%s' file '%s'." %
+                (field, cfgpath, section))
+
+
+    @staticmethod
+    def _triangulate (heightmap, cutmasks, levints,
+                      maxsizexa, maxsizexb, maxsizey, centerx, centery,
+                      sizex, sizey, offsetx, offsety,
+                      numquadsx, numquadsy,
+                      mingray, maxgray, minheight, maxheight, flats,
+                      cintdiv, cintlam, cintmu, cintiter,
+                      periodic=False, timeit=False, memit=False):
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t0 = time()
+            t1 = t0
+# @cache-key-start: terrain-generation
+
+        quadsizex = sizex / numquadsx
+        quadsizey = sizey / numquadsy
+
+        # When converting coordinates to non-periodic unit square,
+        # they may fall slightly out of range due to rounding.
+        # This is the tolerance to accept that and move to nearest boundary.
+        # The value should work for single precision too.
+        usqtol = 1e-4
+
+        # Assemble the cut map.
+        cutmap = [array("l", [0] * (numquadsy + 1))
+                  for x in xrange(numquadsx + 1)]
+        for i, cutmask in enumerate(cutmasks):
+            c = i + 1
+            for i in xrange(numquadsx + 1):
+                x = i * quadsizex + offsetx
+                for j in xrange(numquadsy + 1):
+                    y = j * quadsizey + offsety
+                    xu, yu = TerrainGeom._to_unit_trap(
+                        sizex, sizey, offsetx, offsety, maxsizexa, maxsizexb,
+                        maxsizey, centerx, centery,
+                        x, y)
+                    cval = cutmask(xu, yu, usqtol, periodic)
+                    if cval > 0.5:
+                        cutmap[i][j] = c
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "terrain-assemble-cut-map",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+        if memit:
+            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
+# @cache-key-start: terrain-generation
+
+        # Split cut interface quads into triangles.
+        # NOTE: May modify the cut map, to repair problematic areas.
+        ret = TerrainGeom._split_interface_quads(cutmap, quadsizex, quadsizey,
+                                                 offsetx, offsety, cintdiv,
+                                                 cintlam, cintmu, cintiter)
+        intquadchains, intquadverts, intquadtris, intquadlinks, intcurves = ret
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "terrain-compute-cut-interfaces",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+        if memit:
+            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
+# @cache-key-start: terrain-generation
+
+        # Compute quad vertices.
+        iqvertxs, iqvertys, iqvertzs = intquadverts
+        niqverts = len(iqvertxs)
+        nverts = (numquadsx + 1) * (numquadsy + 1) + niqverts
+        vertxs = array("d", [0.0] * nverts)
+        vertys = array("d", [0.0] * nverts)
+        vertzs = array("d", [0.0] * nverts)
+        verts = (vertxs, vertys, vertzs)
+        for i in xrange(numquadsx + 1):
+            x = i * quadsizex + offsetx
+            j0 = i * (numquadsy + 1)
+            for j in xrange(numquadsy + 1):
+                y = j * quadsizey + offsety
+                vertxs[j0 + j] = x; vertys[j0 + j] = y
+
+        # Add cut interface vertices.
+        i0 = (numquadsx + 1) * (numquadsy + 1)
+        for i in xrange(niqverts):
+            vertxs[i0 + i] = iqvertxs[i]; vertys[i0 + i] = iqvertys[i]
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "terrain-compute-quad-vertices",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+        if memit:
+            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
+# @cache-key-start: terrain-generation
+
+        # Add global links for cut interface triangles.
+        nquads = numquadsx * numquadsy
+        quadmap1 = array("l", [-1] * nquads)
+        quadmap2 = array("l", [-1] * nquads)
+        quadmap = (quadmap1, quadmap2)
+        for (i, j), (itri1, itri2) in intquadlinks:
+            q = i * numquadsy + j
+            quadmap1[q] = itri1
+            quadmap2[q] = itri2
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "terrain-add-quad-links",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+        if memit:
+            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
+# @cache-key-start: terrain-generation
+
+        # Split non-interface quads into triangles and add global links.
+        #tris = []
+        iqtri1s, iqtri2s, iqtri3s, iqtrics = intquadtris
+        niqtris = len(iqtri1s)
+        ntris = 2 * (numquadsx * numquadsy - len(intquadlinks)) + niqtris
+        tri1s = array("l", [0] * ntris)
+        tri2s = array("l", [0] * ntris)
+        tri3s = array("l", [0] * ntris)
+        trics = array("l", [0] * ntris)
+        tris = (tri1s, tri2s, tri3s, trics)
+        k = 0
+        for i in xrange(numquadsx):
+            for j in xrange(numquadsy):
+                q = i * numquadsy + j
+                if quadmap1[q] >= 0: # interface quad
+                    continue
+                # Indices of vertices.
+                k1 = i * (numquadsy + 1) + j
+                k2 = (i + 1) * (numquadsy + 1) + j
+                k3 = (i + 1) * (numquadsy + 1) + (j + 1)
+                k4 = i * (numquadsy + 1) + (j + 1)
+                # All four points from same cut (not interface quad).
+                c = cutmap[i][j]
+                # Whether to split this quad bottom-left top-right.
+                bltr = (i % 2 + j) % 2
+                if bltr:
+                    #tris.append(((k1, k2, k3), c))
+                    #tris.append(((k1, k3, k4), c))
+                    tri1s[k] = k1; tri2s[k] = k2; tri3s[k] = k3; trics[k] = c
+                    tri1s[k + 1] = k1; tri2s[k + 1] = k3; tri3s[k + 1] = k4; trics[k + 1] = c
+                else:
+                    #tris.append(((k2, k3, k4), c))
+                    #tris.append(((k2, k4, k1), c))
+                    tri1s[k] = k2; tri2s[k] = k3; tri3s[k] = k4; trics[k] = c
+                    tri1s[k + 1] = k2; tri2s[k + 1] = k4; tri3s[k + 1] = k1; trics[k + 1] = c
+                # Quad to triangle links.
+                quadmap1[q] = k
+                quadmap2[q] = k + 2
+                k += 2
+
+        # Add cut interface triangles.
+        #tris.extend(intquadtris)
+        k0 = ntris - niqtris
+        for k in xrange(niqtris):
+            tri1s[k0 + k] = iqtri1s[k]
+            tri2s[k0 + k] = iqtri2s[k]
+            tri3s[k0 + k] = iqtri3s[k]
+            trics[k0 + k] = iqtrics[k]
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "terrain-assemble-triangulation",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+        if memit:
+            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
+# @cache-key-start: terrain-generation
+
+        # Compute height at world (x, y).
+        hpv = (maxheight - minheight) / ((maxgray - mingray) / 255.0)
+        def getz (x, y):
+            xu, yu = TerrainGeom._to_unit_trap(sizex, sizey, offsetx, offsety,
+                                               maxsizexa, maxsizexb, maxsizey,
+                                               centerx, centery,
+                                               x, y)
+            hval = heightmap(xu, yu, usqtol, periodic)
+            z = minheight + (hval - mingray / 255.0) * hpv
+            return z
+
+        # Equip flats with heights.
+        for flat in flats:
+            if flat.refz() is None:
+                flat.set_refz(getz(*flat.refxy()))
+
+        # Equip vertices with heights.
+        for i in xrange(nverts):
+            x, y = vertxs[i], vertys[i]
+            z = getz(x, y)
+            for flat in flats:
+                zc = flat.correct_z(x, y, z)
+                if zc is not None:
+                    z = zc
+                    break
+            vertzs[i] = z
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "terrain-compute-per-vertex-heights",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+        if memit:
+            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
+# @cache-key-start: terrain-generation
+
+        # Level heights at interface vertices.
+        l0 = nverts - niqverts
+        for ic in xrange(len(intquadchains)):
+            intcurve, closed = intcurves[ic]
+            intquadchain, closed = intquadchains[ic]
+            cl, cr = TerrainGeom._interface_cut_levels(cutmap, intquadchain)
+            if levints[cl] or levints[cr]:
+                l1 = l0 + len(intcurve)
+                cvinds = range(l0, l1)
+                TerrainGeom._level_curve_to_left(sizex, sizey, offsetx, offsety,
+                                                 numquadsx, numquadsy,
+                                                 verts, tris, quadmap,
+                                                 cvinds, closed, cl)
+            l0 += len(intcurve)
+
+# @cache-key-end: terrain-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "terrain-level-interface-vertices",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+        if memit:
+            os.system("echo mem `free -m | grep rs/ca | sed 's/  */ /g' | cut -d ' ' -f 3`")
+# @cache-key-start: terrain-generation
+
+        ret = (verts, tris, quadmap)
+# @cache-key-end: terrain-generation
+        if timeit:
+            ret += (t1,)
+# @cache-key-start: terrain-generation
+        return ret
+
+
+    @staticmethod
+    def _to_unit_trap (sizex, sizey, offsetx, offsety,
+                       maxsizexa, maxsizexb, maxsizey, centerx, centery, x, y):
+
+        x1 = (x - offsetx) + centerx
+        y1 = (y - offsety) + centery
+        y1u = y1 / maxsizey + 0.5 * (1.0 - sizey / maxsizey)
+        maxsizex = maxsizexa + (maxsizexb - maxsizexa) * y1u
+        x1u = x1 / maxsizex + 0.5 * (1.0 - sizex / maxsizex)
+        return Vec2D(x1u, y1u)
+
+
+    @staticmethod
+    def _get_tri_verts (tri, verts):
+
+        Pt = Point3D
+
+        k1, k2, k3 = tri
+        vertxs, vertys, vertzs = verts
+        v1 = Pt(vertxs[k1], vertys[k1], vertzs[k1])
+        v2 = Pt(vertxs[k2], vertys[k2], vertzs[k2])
+        v3 = Pt(vertxs[k3], vertys[k3], vertzs[k3])
+        return v1, v2, v3
+
+
+    @staticmethod
+    def _split_interface_quads (cutmap, quadsizex, quadsizey,
+                                offsetx, offsety, subdiv,
+                                tbslam, tbsmu, tbsiter):
+
+        numquadsx = len(cutmap) - 1
+        numquadsy = len(cutmap[0]) - 1
+
+        # Correct thin diagonal cuts.
+        anythin = True
+        while anythin:
+            anythin = False
+            for i in xrange(numquadsx):
+                for j in xrange(numquadsy):
+                    c1 = cutmap[i][j]
+                    c2 = cutmap[i + 1][j]
+                    c3 = cutmap[i + 1][j + 1]
+                    c4 = cutmap[i][j + 1]
+                    if c1 == c3 and c2 == c4 and c1 != c2:
+                        if c1 > c2:
+                            cutmap[i][j + 1] = c1
+                        else:
+                            cutmap[i][j] = c2
+                        anythin = True
+
+        # Collect interface quad chains.
+        freemap = [array("l", [1] * numquadsy) for x in xrange(numquadsx)]
+        intquadchains = []
+        for i in xrange(numquadsx):
+            for j in xrange(numquadsy):
+                if freemap[i][j]:
+                    c1 = cutmap[i][j]
+                    c2 = cutmap[i + 1][j]
+                    c3 = cutmap[i + 1][j + 1]
+                    c4 = cutmap[i][j + 1]
+                    cset = set((c1, c2, c3, c4))
+                    if len(cset) == 2:
+                        cr, cl = sorted(cset)
+                        # ...this order places the higher cut on the left of
+                        # the oriented interface curve.
+                        ret = TerrainGeom._extract_interface_quads(
+                            cutmap, i, j, cl, cr, freemap)
+                        intquadchain, closed = ret
+                        intquadchains.append((intquadchain, closed))
+                        #print "--chain", len(intquadchain), closed
+                    elif len(cset) > 2:
+                        raise StandardError(
+                            "Neighboring points from more than two cuts "
+                            "at (%d, %d)." % (i, j))
+
+        # Construct interface curves.
+        intcurves = []
+        for q in range(len(intquadchains)):
+            intquadchain, closed = intquadchains[q]
+            intcurve = TerrainGeom._init_interface_curve(
+                cutmap, intquadchain, closed,
+                quadsizex, quadsizey, offsetx, offsety,
+                subdiv)
+            intcurve = TerrainGeom._smooth_interface_curve(
+                intcurve, closed, subdiv, tbslam, tbsmu, tbsiter)
+            intcurves.append((intcurve, closed))
+
+        # Number of quad vertices and triangles in non-interface quads,
+        # which are added in front of interface-related vertices and triangles.
+        nverts0 = (numquadsx + 1) * (numquadsy + 1)
+        ntris0 = 2 * (numquadsx * numquadsy -
+                      sum(len(x[0]) for x in intquadchains))
+
+        # Triangulate interface quads.
+        #intquadverts = []
+        vertxs = []; vertys = []; vertzs = []
+        intquadverts = (vertxs, vertys, vertzs)
+        #intquadtris = []
+        tri1s = []; tri2s = []; tri3s = []; trics = []
+        intquadtris = (tri1s, tri2s, tri3s, trics)
+        intquadlinks = []
+        for q in range(len(intquadchains)):
+            intquadchain, closed = intquadchains[q]
+            intcurve, closed = intcurves[q]
+            ret = TerrainGeom._triangulate_interface_quads(
+                cutmap, quadsizex, quadsizey, offsetx, offsety,
+                intquadchain, intcurve, subdiv, nverts0, ntris0)
+            cverts, ctris, clinks = ret
+            #intquadverts.extend(cverts)
+            vxs, vys, vzs = cverts
+            vertxs.extend(vxs); vertys.extend(vys); vertzs.extend(vzs)
+            #intquadtris.extend(ctris)
+            t1s, t2s, t3s, tcs = ctris
+            tri1s.extend(t1s); tri2s.extend(t2s); tri3s.extend(t3s); trics.extend(tcs)
+            intquadlinks.extend(clinks)
+            nverts0 += len(vxs)
+            ntris0 += len(t1s)
+
+        return intquadchains, intquadverts, intquadtris, intquadlinks, intcurves
+
+
+    @staticmethod
+    def _extract_interface_quads (cutmap, i0, j0, cl, cr, freemap):
+
+        # Collect and join the two chain segments split by the given point.
+        qcparts = []
+        closed = True
+        for i in range(2):
+            ret = TerrainGeom._extract_interface_quads_1(
+                cutmap, i0, j0, cl, cr, freemap)
+            qcpart, cutbdry = ret
+            closed = closed and not cutbdry
+            qcparts.append(qcpart)
+        intquadchain = list(reversed(qcparts[0])) + qcparts[1][1:]
+
+        # Orient the chain so that it runs counter-clockwise around the cut.
+        c0l, c0r = TerrainGeom._interface_cut_levels(cutmap, intquadchain)
+        if c0l != cl:
+            intquadchain = list(reversed(intquadchain))
+
+        return intquadchain, closed
+
+
+    @staticmethod
+    def _extract_interface_quads_1 (cutmap, i0, j0, cl, cr, freemap):
+
+        numquadsx = len(cutmap) - 1
+        numquadsy = len(cutmap[0]) - 1
+
+        intquadchain = []
+        i, j = i0, j0
+        while True:
+            freemap[i][j] = 0
+            selij = None
+            cutbdry = False
+            ncl = 0
+            for (di, dj), (di1, dj1), (di2, dj2) in (
+                ((1, 0), (1, 0), (1, 1)),
+                ((0, 1), (1, 1), (0, 1)),
+                ((-1, 0), (0, 1), (0, 0)),
+                ((0, -1), (0, 0), (1, 0)),
+            ):
+                c1 = cutmap[i + di1][j + dj1]
+                c2 = cutmap[i + di2][j + dj2]
+                if c1 == cl:
+                    ncl += 1
+                    if (i + di1 == 0 or i + di1 == numquadsx or
+                        j + dj1 == 0 or j + dj1 == numquadsy):
+                        cutbdry = True
+                if (selij is None and
+                    0 <= i + di < numquadsx and
+                    0 <= j + dj < numquadsy and
+                    freemap[i + di][j + dj] and
+                    (c1 == cl or c2 == cl) and
+                    c1 != c2):
+                    selij = (i + di, j + dj)
+            intquadchain.append(((i, j), ncl))
+            if selij is not None:
+                i, j = selij
+            else:
+                break
+
+        return intquadchain, cutbdry
+
+
+    @staticmethod
+    def _init_interface_curve (cutmap, intquadchain, closed,
+                               quadsizex, quadsizey, offsetx, offsety, subdiv,
+                               fromcut=0.5):
+
+        Vt = Vec3D
+
+        qsx = quadsizex; qsy = quadsizey
+        subdivc = subdiv if subdiv % 2 == 0 else subdiv + 1
+        subdivch = subdivc / 2
+        dx = qsx / subdivc; dy = qsy / subdivc
+        dxc = dx * 2; dyc = dy * 2
+        ka = 1.0 - fromcut; kb = fromcut
+        cl, cr = TerrainGeom._interface_cut_levels(cutmap, intquadchain)
+
+        # NOTE: The assumption is that the chain is oriented counter-clockwise
+        # around the higher cut, i.e. that the higher cut is always on the left.
+        lenqc = len(intquadchain)
+        intcurve = []
+        for k in xrange(lenqc):
+            (i, j), ncl = intquadchain[k]
+            c1 = cutmap[i][j]
+            c2 = cutmap[i + 1][j]
+            c3 = cutmap[i + 1][j + 1]
+            c4 = cutmap[i][j + 1]
+            x0 = i * qsx + offsetx; y0 = j * qsy + offsety
+            sf = 0 if (closed or k + 1 < lenqc) else 1
+            if ncl == 1:
+                for s in range(subdivch):
+                    if c1 == cl:
+                        pa = Vt(x0, y0, 0.0)
+                        pb = Vt(x0 + qsx, y0 + dyc * s, 0.0)
+                        gva = (0, 0)
+                        gvb = (1, 0) if s == 0 else None
+                    elif c2 == cl:
+                        pa = Vt(x0 + qsx, y0, 0.0)
+                        pb = Vt(x0 + qsx - dxc * s, y0 + qsy, 0.0)
+                        gva = (1, 0)
+                        gvb = (1, 1) if s == 0 else None
+                    elif c3 == cl:
+                        pa = Vt(x0 + qsx, y0 + qsy, 0.0)
+                        pb = Vt(x0, y0 + qsy - dyc * s, 0.0)
+                        gva = (1, 1)
+                        gvb = (0, 1) if s == 0 else None
+                    elif c4 == cl:
+                        pa = Vt(x0, y0 + qsy, 0.0)
+                        pb = Vt(x0 + dxc * s, y0, 0.0)
+                        gva = (0, 1)
+                        gvb = (0, 0) if s == 0 else None
+                    intcurve.append((pa * ka + pb * kb, pa, pb, gva, gvb))
+                for s in range(subdivch + sf):
+                    if c1 == cl:
+                        pa = Vt(x0, y0, 0.0)
+                        pb = Vt(x0 + qsx - dxc * s, y0 + qsy, 0.0)
+                        gva = (0, 0)
+                        gvb = ((1, 1) if s == 0 else
+                               (0, 1) if s == subdivch else
+                               None)
+                    elif c2 == cl:
+                        pa = Vt(x0 + qsx, y0, 0.0)
+                        pb = Vt(x0, y0 + qsy - dyc * s, 0.0)
+                        gva = (1, 0)
+                        gvb = ((0, 1) if s == 0 else
+                               (0, 0) if s == subdivch else
+                               None)
+                    elif c3 == cl:
+                        pa = Vt(x0 + qsx, y0 + qsy, 0.0)
+                        pb = Vt(x0 + dxc * s, y0, 0.0)
+                        gva = (1, 1)
+                        gvb = ((0, 0) if s == 0 else
+                               (1, 0) if s == subdivch else
+                               None)
+                    elif c4 == cl:
+                        pa = Vt(x0, y0 + qsy, 0.0)
+                        pb = Vt(x0 + qsx, y0 + dyc * s, 0.0)
+                        gva = (0, 1)
+                        gvb = ((1, 0) if s == 0 else
+                               (1, 1) if s == subdivch else
+                               None)
+                    intcurve.append((pa * ka + pb * kb, pa, pb, gva, gvb))
+            elif ncl == 2:
+                for s in range(subdivc + sf):
+                    if c1 == cl and c2 == cl:
+                        pa = Vt(x0 + qsx - dx * s, y0, 0.0)
+                        pb = Vt(x0 + qsx - dx * s, y0 + qsy, 0.0)
+                        gva, gvb = (((1, 0), (1, 1)) if s == 0 else
+                                    ((0, 0), (0, 1)) if s == subdivc else
+                                    (None, None))
+                    elif c2 == cl and c3 == cl:
+                        pa = Vt(x0 + qsx, y0 + qsy - dy * s, 0.0)
+                        pb = Vt(x0, y0 + qsy - dy * s, 0.0)
+                        gva, gvb = (((1, 1), (0, 1)) if s == 0 else
+                                    ((1, 0), (0, 0)) if s == subdivc else
+                                    (None, None))
+                    elif c3 == cl and c4 == cl:
+                        pa = Vt(x0 + dx * s, y0 + qsy, 0.0)
+                        pb = Vt(x0 + dx * s, y0, 0.0)
+                        gva, gvb = (((0, 1), (0, 0)) if s == 0 else
+                                    ((1, 1), (1, 0)) if s == subdivc else
+                                    (None, None))
+                    elif c4 == cl and c1 == cl:
+                        pa = Vt(x0, y0 + dy * s, 0.0)
+                        pb = Vt(x0 + qsx, y0 + dy * s, 0.0)
+                        gva, gvb = (((0, 0), (1, 0)) if s == 0 else
+                                    ((0, 1), (1, 1)) if s == subdivc else
+                                    (None, None))
+                    intcurve.append((pa * ka + pb * kb, pa, pb, gva, gvb))
+            elif ncl == 3:
+                for s in range(subdivc / 2):
+                    if c1 == cr:
+                        pa = Vt(x0 + dxc * s, y0 + qsy, 0.0)
+                        pb = Vt(x0, y0, 0.0)
+                        gva = (0, 1) if s == 0 else None
+                        gvb = (0, 0)
+                    elif c2 == cr:
+                        pa = Vt(x0, y0 + dyc * s, 0.0)
+                        pb = Vt(x0 + qsx, y0, 0.0)
+                        gva = (0, 0) if s == 0 else None
+                        gvb = (1, 0)
+                    elif c3 == cr:
+                        pa = Vt(x0 + qsx - dxc * s, y0, 0.0)
+                        pb = Vt(x0 + qsx, y0 + qsy, 0.0)
+                        gva = (1, 0) if s == 0 else None
+                        gvb = (1, 1)
+                    elif c4 == cr:
+                        pa = Vt(x0 + qsx, y0 + qsy - dyc * s, 0.0)
+                        pb = Vt(x0, y0 + qsy, 0.0)
+                        gva = (1, 1) if s == 0 else None
+                        gvb = (0, 1)
+                    intcurve.append((pa * ka + pb * kb, pa, pb, gva, gvb))
+                for s in range(subdivc / 2 + sf):
+                    if c1 == cr:
+                        pa = Vt(x0 + qsx, y0 + qsy - dyc * s, 0.0)
+                        pb = Vt(x0, y0, 0.0)
+                        gva = ((1, 1) if s == 0 else
+                               (0, 1) if s == subdivch else
+                               None)
+                        gvb = (0, 0)
+                    elif c2 == cr:
+                        pa = Vt(x0 + dxc * s, y0 + qsy, 0.0)
+                        pb = Vt(x0 + qsx, y0, 0.0)
+                        gva = ((0, 1) if s == 0 else
+                               (1, 1) if s == subdivch else
+                               None)
+                        gvb = (1, 0)
+                    elif c3 == cr:
+                        pa = Vt(x0, y0 + dyc * s, 0.0)
+                        pb = Vt(x0 + qsx, y0 + qsy, 0.0)
+                        gva = ((0, 0) if s == 0 else
+                               (0, 1) if s == subdivch else
+                               None)
+                        gvb = (1, 1)
+                    elif c4 == cr:
+                        pa = Vt(x0 + qsx - dxc * s, y0, 0.0)
+                        pb = Vt(x0, y0 + qsy, 0.0)
+                        gva = ((1, 0) if s == 0 else
+                               (0, 0) if s == subdivch else
+                               None)
+                        gvb = (0, 1)
+                    intcurve.append((pa * ka + pb * kb, pa, pb, gva, gvb))
+
+        return intcurve
+
+
+    @staticmethod
+    def _smooth_interface_curve (intcurve, closed, subdiv,
+                                 tbslam, tbsmu, tbsiter):
+
+        Pt = type(intcurve[0][0])
+
+        mindf = 0.05 # minimum distance from segment start
+        maxdf = 0.95 # maximum distance from segment start
+
+        # NOTE: Taubin smoothing algorithm.
+        for p in range(tbsiter):
+            for scf in (tbslam, tbsmu):
+                if scf == 0.0:
+                    continue
+                lenic = len(intcurve)
+
+                ## Jacobi iteration.
+                #intcurve1 = []
+                #for k in xrange(lenic):
+                    #pc, pa, pb = intcurve[k][:3]
+                    #ptcs = []
+                    #if 0 < k < lenic - 1 or closed:
+                        #km = k - 1 if k > 0 else lenic - 1
+                        #kp = k + 1 if k < lenic - 1 else 0
+                        #pc1 = Pt(pc)
+                        #ks = (km, kp)
+                        #ws = (0.5, 0.5)
+                        #for k1, w1 in zip(ks, ws):
+                            #dp1 = intcurve[k1][0] - pc
+                            #pc1 += dp1 * (w1 * scf)
+                        #pc = pc1
+                        ## Limit back to originating segment.
+                        #ab = pb - pa
+                        #mab = ab.length()
+                        #abu = ab / mab
+                        #ac = pc - pa
+                        #acabu = ac.dot(abu)
+                        #if acabu < mindf * mab:
+                            #acabu = mindf * mab
+                        #elif acabu > maxdf * mab:
+                            #acabu = maxdf * mab
+                        #pc = pa + abu * acabu
+                    #intcurve1.append((pc, pa, pb) + intcurve[k][3:])
+                #intcurve = intcurve1
+
+                # Gauss iteration.
+                for k in xrange(lenic):
+                    pc, pa, pb = intcurve[k][:3]
+                    ptcs = []
+                    if 0 < k < lenic - 1 or closed:
+                        km = k - 1 if k > 0 else lenic - 1
+                        kp = k + 1 if k < lenic - 1 else 0
+                        pc1 = Pt(pc)
+                        ks = (km, kp)
+                        ws = (0.5, 0.5)
+                        for k1, w1 in zip(ks, ws):
+                            dp1 = intcurve[k1][0] - pc
+                            pc1 += dp1 * (w1 * scf)
+                        # Limit back to originating segment.
+                        ab = pb - pa
+                        mab = ab.length()
+                        abu = ab / mab
+                        ac = pc1 - pa
+                        acabu = ac.dot(abu)
+                        if acabu < mindf * mab:
+                            acabu = mindf * mab
+                        elif acabu > maxdf * mab:
+                            acabu = maxdf * mab
+                        pc2 = pa + abu * acabu
+                        pc.set(*pc2)
+
+        #mind = 1e30
+        #for p, pa, pb in intcurve:
+            #mind = min(mind, (pc - pa).length(), (pc - pb).length())
+        #print "--curve-mindist-ab", mind
+
+        return intcurve
+
+
+    @staticmethod
+    def _level_curve_to_left (sizex, sizey, offsetx, offsety,
+                              numquadsx, numquadsy,
+                              verts, tris, quadmap,
+                              cvinds, closed, lcut):
+
+        Vt = Vec3D
+
+        quadsizex = sizex / numquadsx
+        quadsizey = sizey / numquadsy
+        rhlen0 = 2 * sqrt(quadsizex**2 + quadsizey**2)
+        dhrlen = 0.11 * rhlen0
+
+        refpt = Vt()
+
+        lenv = len(cvinds)
+        vertxs, vertys, vertzs = verts
+        for k in xrange(lenv):
+            if not (0 < k < lenv - 1 or closed):
+                continue
+            km = k - 1 if k > 0 else lenv - 1
+            kp = k + 1 if k < lenv - 1 else 0
+            l = cvinds[k]; lm = cvinds[km]; lp = cvinds[kp]
+            # Compute right-hand xy-projected normal at this vertex.
+            v = Vt(vertxs[l], vertys[l], 0.0)
+            vm = Vt(vertxs[lm], vertys[lm], 0.0)
+            vp = Vt(vertxs[lp], vertys[lp], 0.0)
+            dvm = v - vm; nm = Vt(-dvm[1], dvm[0], 0.0); lenm = dvm.length()
+            dvp = vp - v; np = Vt(-dvp[1], dvp[0], 0.0); lenp = dvp.length()
+            n = unitv((nm * lenp + np * lenm) / (lenm + lenp))
+            # Take minimum height from a segment along the normal.
+            rhlen = rhlen0
+            zmin = None
+            atvinds = []
+            while rhlen > 0.0:
+                ph = v + n * rhlen
+                p, c, z, tvinds = TerrainGeom._interpolate_z(
+                    sizex, sizey, offsetx, offsety, numquadsx, numquadsy,
+                    verts, tris, quadmap, ph[0], ph[1], refpt,
+                    wtvinds=True)
+                if c == lcut:
+                    atvinds.extend(tvinds)
+                    if zmin is None or zmin > z:
+                        zmin = z
+                rhlen -= dhrlen
+            if zmin is not None:
+                vertzs[l] = zmin
+                for la in atvinds:
+                    vertzs[la] = zmin
+
+
+    @staticmethod
+    def _triangulate_interface_quads (cutmap,
+                                      quadsizex, quadsizey, offsetx, offsety,
+                                      intquadchain, intcurve, subdiv,
+                                      nverts0, ntris0):
+
+        numquadsx = len(cutmap) - 1
+        numquadsy = len(cutmap[0]) - 1
+
+        subdivc = subdiv if subdiv % 2 == 0 else subdiv + 1
+        cl, cr = TerrainGeom._interface_cut_levels(cutmap, intquadchain)
+
+        lenqc = len(intquadchain)
+        lenic = len(intcurve)
+
+        # Collect interface vertices, assign them indices.
+        # Collect associated quad corner point coordinates.
+        vertxs = []; vertys = []; vertzs = []
+        verts = (vertxs, vertys, vertzs)
+        vqvas = []
+        vqvbs = []
+        vinds = []
+        nverts1 = nverts0
+        kc = 0
+        for kq in xrange(lenqc):
+            (i, j), ncl = intquadchain[kq]
+            sf = 0
+            if kq == lenqc - 1 and kc + subdivc == lenic - 1: # open curve
+                sf = 1
+            for lc in range(subdivc + sf):
+                kc1 = kc + lc
+                p, a, b, qva, qvb = intcurve[kc1][:5]
+                vertxs.append(p[0]); vertys.append(p[1]); vertzs.append(p[2])
+                vqvas.append((i + qva[0], j + qva[1]) if qva else None)
+                vqvbs.append((i + qvb[0], j + qvb[1]) if qvb else None)
+                vinds.append(nverts1)
+                nverts1 += 1
+            kc += subdivc
+
+        # Triangulate left and right of curve in each interface quad.
+        tri1s = []; tri2s = []; tri3s = []; trics = []
+        links = []
+        ntris1 = ntris0
+        kc = 0
+        for kq in xrange(lenqc):
+            (i, j), ncl = intquadchain[kq]
+
+            # Collect interface vertex data in this quad.
+            iqvdata1 = []
+            for lc in range(subdivc + 1):
+                kc1 = (kc + lc) % lenic
+                xp = vertxs[kc1]
+                yp = vertys[kc1]
+                lp = vinds[kc1]
+                iqvdata1.append((lp, xp, yp))
+
+            # Order global offsets of quad corner points per side,
+            # left-winding for left side, right-winding for right side.
+            kc1 = kc
+            kcm = kc + subdivc / 2
+            kc2 = (kc + subdivc) % lenic
+            if ncl == 1:
+                gvels = [vqvas[kc1]]
+                gvers = [vqvbs[kc2], vqvbs[kcm], vqvbs[kc1]]
+            elif ncl == 2:
+                gvels = [vqvas[kc2], vqvas[kc1]]
+                gvers = [vqvbs[kc2], vqvbs[kc1]]
+            elif ncl == 3:
+                gvels = [vqvas[kc2], vqvas[kcm], vqvas[kc1]]
+                gvers = [vqvbs[kc1]]
+            else:
+                raise StandardError("Impossible number of left cut points.")
+
+            # Triangulate left and right.
+            cntris = 0
+            for side, gves, c in ((1, gvels, cl), (-1, gvers, cr)):
+                # Collect quad corner vertex data on this side.
+                iqvdata2 = []
+                for ie, je in gves: # left winding for left side
+                    xe = ie * quadsizex + offsetx
+                    ye = je * quadsizey + offsety
+                    le = ie * (numquadsy + 1) + je
+                    iqvdata2.append((le, xe, ye))
+
+                # Complete side polygon.
+                iqvdata = iqvdata1 + iqvdata2
+                if side == -1: # right polygon
+                    iqvdata = list(reversed(iqvdata))
+
+                # Triangulate the polygon and collect triangles.
+                leniqvd = len(iqvdata)
+                avgx = sum(iqvdata[lq][1] for lq in range(leniqvd)) / leniqvd
+                avgy = sum(iqvdata[lq][2] for lq in range(leniqvd)) / leniqvd
+                tgl = Triangulator()
+                showdat = False
+                for lq, (l, x, y) in enumerate(iqvdata):
+                    #if l == 1061963:
+                        #showdat = True
+                    # Subtract average coordinates to have numbers
+                    # as small as possible to avoid roundoff problems.
+                    lqt = tgl.addVertex(x - avgx, y - avgy)
+                    if lq != lqt:
+                        raise StandardError(
+                            "Unexpected behavior of the triangulator, "
+                            "changed indices (quad %d, %d)." % (i, j))
+                    tgl.addPolygonVertex(lqt) # Wtf?
+                if not tgl.isLeftWinding():
+                    raise StandardError(
+                        "Unexpected behavior of the triangulator, "
+                        "changed winding (quad %d, %d)." % (i, j))
+                tgl.triangulate()
+                nqstris = tgl.getNumTriangles()
+                for t in range(nqstris):
+                    lq1 = tgl.getTriangleV0(t)
+                    lq2 = tgl.getTriangleV1(t)
+                    lq3 = tgl.getTriangleV2(t)
+                    tri1s.append(iqvdata[lq1][0])
+                    tri2s.append(iqvdata[lq2][0])
+                    tri3s.append(iqvdata[lq3][0])
+                    trics.append(c)
+                    #if showdat:
+                        #print "--side-polygon-vertex", iqvdata[lq1][0], iqvdata[lq2][0], iqvdata[lq3][0]
+                cntris += nqstris
+
+            kc += subdivc
+            links.append(((i, j), (ntris1, ntris1 + cntris)))
+            ntris1 += cntris
+        tris = (tri1s, tri2s, tri3s, trics)
+
+        return verts, tris, links
+
+
+    # Forward left point direction for quad-to-quad direction.
+    _dij_ptfwlf = {
+        (1, 0): (1, 1),
+        (0, 1): (0, 1),
+        (-1, 0): (0, 0),
+        (0, -1): (1, 0),
+    }
+
+    # Forward right point direction for quad-to-quad direction.
+    _dij_ptfwrg = {
+        (1, 0): (1, 0),
+        (0, 1): (1, 1),
+        (-1, 0): (0, 1),
+        (0, -1): (0, 0),
+    }
+
+    @staticmethod
+    def _interface_cut_levels (cutmap, intquadchain):
+
+        i1, j1 = intquadchain[0][0]
+        if len(intquadchain) > 1:
+            i2, j2 = intquadchain[1][0]
+        else: # the single quad must be in corner
+            if i1 == 0:
+                if j1 == 0: # bottom left
+                    i2 = i1 - 1; j2 = j1
+                else: # top left
+                    i2 = i1; j2 = j1 + 1
+            else:
+                if j1 == 0: # bottom right
+                    i2 = i1; j2 = j1 - 1
+                else: # top right
+                    i2 = i1 + 1; j2 = j1
+        dil, djl = TerrainGeom._dij_ptfwlf[(i2 - i1, j2 - j1)]
+        cl = cutmap[i1 + dil][j1 + djl]
+        dir, djr = TerrainGeom._dij_ptfwrg[(i2 - i1, j2 - j1)]
+        cr = cutmap[i1 + dir][j1 + djr]
+
+        return cl, cr
+
+
+    @staticmethod
+    def _make_tiles (offsetx, offsety, numquadsx, numquadsy,
+                     numtilesx, numtilesy, tilesizex, tilesizey,
+                     numtilequadsx, numtilequadsy,
+                     gvformat,
+                     verts, tris, quadmap, levints,
+                     cut):
+
+        Vt = Vec3D
+
+        vertxs, vertys, vertzs = verts
+        nverts = len(vertxs)
+
+        # Compute vertex normals and tangents,
+        # as area-weighted averages of adjoining triangles.
+        # Loop over triangles, adding contributions to their vertices.
+        tri1s, tri2s, tri3s, trics = tris
+        vareas = array("d", [0.0] * nverts)
+        vnormxs = array("d", [0.0] * nverts)
+        vnormys = array("d", [0.0] * nverts)
+        vnormzs = array("d", [0.0] * nverts)
+        vnorms = (vnormxs, vnormys, vnormzs)
+        vtangxs = array("d", [0.0] * nverts)
+        vtangys = array("d", [0.0] * nverts)
+        vtangzs = array("d", [0.0] * nverts)
+        vtangs = (vtangxs, vtangys, vtangzs)
+        #zdir = Vt(0.0, 0.0, 1.0)
+        xdir = Vt(1.0, 0.0, 0.0)
+        for k in xrange(len(tri1s)):
+            c = trics[k]
+            if c != cut and (levints[cut] or levints[c]):
+                continue
+            l1, l2, l3 = tri1s[k], tri2s[k], tri3s[k]
+            v1 = Vt(vertxs[l1], vertys[l1], vertzs[l1])
+            v2 = Vt(vertxs[l2], vertys[l2], vertzs[l2])
+            v3 = Vt(vertxs[l3], vertys[l3], vertzs[l3])
+            v12, v13 = v2 - v1, v3 - v1
+            tnorm = v12.cross(v13)
+            tarea = 0.5 * tnorm.length()
+            tnorm.normalize()
+            #ttang = tnorm.cross(zdir).cross(tnorm) # steepest ascent (gradient)
+            ttang = tnorm.cross(xdir).cross(tnorm)
+            ttang.normalize()
+            for l in (l1, l2, l3):
+                vareas[l] += tarea
+                vn = tnorm * tarea
+                vnormxs[l] += vn[0]; vnormys[l] += vn[1]; vnormzs[l] += vn[2]
+                vt = ttang * tarea
+                vtangxs[l] += vt[0]; vtangys[l] += vt[1]; vtangzs[l] += vt[2]
+        for l in xrange(nverts):
+            va = vareas[l]
+            if va == 0.0:
+                # May happen if the vertex does not belong to this cut,
+                # or triangulation left some hanging vertices.
+                #print "--zero-area-vertex", l, vertxs[l], vertys[l], vertzs[l]
+                continue
+            vn = Vt(vnormxs[l], vnormys[l], vnormzs[l])
+            vn /= va
+            vn.normalize()
+            vnormxs[l] = vn[0]; vnormys[l] = vn[1]; vnormzs[l] = vn[2]
+            vt = Vt(vtangxs[l], vtangys[l], vtangzs[l])
+            vt /= va
+            vt.normalize()
+            vtangxs[l] = vt[0]; vtangys[l] = vt[1]; vtangzs[l] = vt[2]
+
+        # Construct tiles.
+        tiles = []
+        tilevertmap = array("l", [0] * nverts) # for use inside _make_tile()
+        for it in range(numtilesx):
+            tiles1 = []
+            xt = (it + 0.5) * tilesizex + offsetx
+            for jt in range(numtilesy):
+                yt = (jt + 0.5) * tilesizey + offsety
+                tile = TerrainGeom._make_tile(
+                    offsetx, offsety,
+                    numtilesx, numtilesy, tilesizex, tilesizey,
+                    numquadsx, numquadsy, numtilequadsx, numtilequadsy,
+                    verts, vnorms, vtangs, tris, quadmap, tilevertmap,
+                    gvformat,
+                    cut, it, jt, xt, yt)
+                tiles1.append((tile, xt, yt))
+            tiles.append(tiles1)
+
+        return tiles
+
+
+    @staticmethod
+    def _make_tile (offsetx, offsety,
+                    numtilesx, numtilesy, tilesizex, tilesizey,
+                    numquadsx, numquadsy, numtilequadsx, numtilequadsy,
+                    verts, vnorms, vtangs, tris, quadmap, tilevertmap,
+                    gvformat,
+                    cut, it, jt, xt, yt):
+
+        Vt = Vec3D
+
+        i0 = it * numtilequadsx
+        j0 = jt * numtilequadsy
+
+        tname = "tile-i%d-j%d-c%d" % (it, jt, cut)
+
+        # Link global vertex and triangle indices to indices for this tile.
+        tilevinds = []
+        tiletinds = []
+        tri1s, tri2s, tri3s, trics = tris
+        qm1, qm2 = quadmap
+        for i in xrange(i0, i0 + numtilequadsx):
+            for j in xrange(j0, j0 + numtilequadsy):
+                q = i * numquadsy + j
+                ks = range(qm1[q], qm2[q])
+                for k in ks:
+                    #tri, c = tris[k]
+                    tri = (tri1s[k], tri2s[k], tri3s[k])
+                    c = trics[k]
+                    if c == cut:
+                        tilevinds.extend(tri)
+                        tiletinds.append(k)
+        if not tilevinds:
+            # There is nothing from this cut on this tile.
+            return NodePath(tname)
+        tilevinds = sorted(set(tilevinds))
+        for lt, l in enumerate(tilevinds):
+            tilevertmap[l] = lt
+
+        # Compute texture coordinates.
+        vertxs, vertys, vertzs = verts
+        texcs = []
+        x0 = offsetx
+        y0 = offsety
+        sx = tilesizex * numtilesx
+        sy = tilesizey * numtilesy
+        for l in tilevinds:
+            x, y = vertxs[l], vertys[l]
+            u = clamp((x - x0) / sx, 0.0, 1.0)
+            v = clamp((y - y0) / sy, 0.0, 1.0)
+            texcs.append((u, v))
+
+        # Construct graphics vertices.
+        gvdata = GeomVertexData("data", gvformat, Geom.UHStatic)
+        gvwvertex = GeomVertexWriter(gvdata, InternalName.getVertex())
+        gvwnormal = GeomVertexWriter(gvdata, InternalName.getNormal())
+        gvwtangent = GeomVertexWriter(gvdata, InternalName.getTangent())
+        gvwbinormal = GeomVertexWriter(gvdata, InternalName.getBinormal())
+        gvwcolor = GeomVertexWriter(gvdata, InternalName.getColor())
+        gvwtexcoord = GeomVertexWriter(gvdata, InternalName.getTexcoord())
+        vnormxs, vnormys, vnormzs = vnorms
+        vtangxs, vtangys, vtangzs = vtangs
+        for l in tilevinds:
+            lt = tilevertmap[l]
+            gvwvertex.addData3f(vertxs[l] - xt, vertys[l] - yt, vertzs[l])
+            gvwnormal.addData3f(vnormxs[l], vnormys[l], vnormzs[l])
+            gvwtangent.addData3f(vtangxs[l], vtangys[l], vtangzs[l])
+            vn = Vt(vnormxs[l], vnormys[l], vnormzs[l])
+            vt = Vt(vtangxs[l], vtangys[l], vtangzs[l])
+            vb = vn.cross(vt)
+            vb.normalize()
+            gvwbinormal.addData3f(*vb)
+            gvwcolor.addData4f(1.0, 1.0, 1.0, 1.0)
+            u, v = texcs[lt]
+            gvwtexcoord.addData2f(u, v)
+
+        # Construct graphics triangles.
+        gtris = GeomTriangles(Geom.UHStatic)
+        tri1s, tri2s, tri3s = tris[:3]
+        for k in tiletinds:
+            l1, l2, l3 = (tri1s[k], tri2s[k], tri3s[k])
+            lt1, lt2, lt3 = tilevertmap[l1], tilevertmap[l2], tilevertmap[l3]
+            gtris.addVertices(lt1, lt2, lt3)
+            gtris.closePrimitive()
+
+        # Construct tile skirt.
+        if True:
+            #print "------tile-skirt  it=%d  jt=%d  cut=%d" % (it, jt, cut)
+            xb0 = it * tilesizex + offsetx
+            yb0 = jt * tilesizey + offsety
+            xb1 = (it + 1) * tilesizex + offsetx
+            yb1 = (jt + 1) * tilesizey + offsety
+            quadsizex = tilesizex / numtilequadsx
+            quadsizey = tilesizey / numtilequadsy
+            incang = radians(10.0)
+            incrlen = 0.1
+            incvz = Vec3D(0, 0, -((quadsizex + quadsizey) * 0.5) * incrlen)
+            epsx = quadsizex * 1e-5
+            epsy = quadsizey * 1e-5
+            ltc = len(tilevinds)
+            for ku, ue, epsu, ijs in (
+                (0, xb0, epsx,
+                 zip([i0] * numtilequadsy,
+                     range(j0, j0 + numtilequadsy))),
+                (0, xb1, epsx,
+                 zip([i0 + numtilequadsx - 1] * numtilequadsy,
+                     range(j0, j0 + numtilequadsy))),
+                (1, yb0, epsy,
+                 zip(range(i0, i0 + numtilequadsx),
+                     [j0] * numtilequadsx)),
+                (1, yb1, epsy,
+                 zip(range(i0, i0 + numtilequadsx),
+                     [j0 + numtilequadsy - 1] * numtilequadsx)),
+            ):
+                #print "----tile-skirt  ku=%d  ue=%.1f" % (ku, ue)
+                rot = QuatD()
+                vertus = verts[ku]
+                ez = Vec3D(0.0, 0.0, 1.0)
+                for i, j in ijs:
+                    q = i * numquadsy + j
+                    ks = range(qm1[q], qm2[q])
+                    for k in ks:
+                        c = trics[k]
+                        if c == cut:
+                            l1, l2, l3 = tri1s[k], tri2s[k], tri3s[k]
+                            u1, u2, u3 = vertus[l1], vertus[l2], vertus[l3]
+                            la, lb = None, None
+                            if abs(u1 - ue) < epsu and abs(u2 - ue) < epsu:
+                                la = l1; lb = l2
+                            elif abs(u2 - ue) < epsu and abs(u3 - ue) < epsu:
+                                la = l2; lb = l3
+                            elif abs(u3 - ue) < epsu and abs(u1 - ue) < epsu:
+                                la = l3; lb = l1
+                            if la is not None:
+                                # Compute lower skirt points.
+                                xa, ya, za = vertxs[la], vertys[la], vertzs[la]
+                                xb, yb, zb = vertxs[lb], vertys[lb], vertzs[lb]
+                                #print ("--tile-skirt  "
+                                       #"xa=%.1f  ya=%.1f  xb=%.1f  yb=%.1f" %
+                                       #(xa, ya, xb, yb))
+                                pa = Point3D(xa, ya, 0.0)
+                                pb = Point3D(xb, yb, 0.0)
+                                ra = unitv(pa - pb)
+                                rot.setFromAxisAngleRad(incang, ra)
+                                incv = Point3D(rot.xform(incvz))
+                                pc = pa + incv
+                                pd = pb + incv
+                                pa[2] += za; pc[2] += za
+                                pb[2] += zb; pd[2] += zb
+                                xc, yc, zc = pc[0], pc[1], pc[2]
+                                xd, yd, zd = pd[0], pd[1], pd[2]
+                                lta, ltb = tilevertmap[la], tilevertmap[lb]
+                                # Add vertices.
+                                #vnc = unitv((pa - pb).cross(pc - pb))
+                                #vnd = unitv((pc - pb).cross(pd - pb))
+                                vnc = Vec3D(vnormxs[la], vnormys[la], vnormzs[la])
+                                vnd = Vec3D(vnormxs[lb], vnormys[lb], vnormzs[lb])
+                                for p, vn in ((pc, vnc), (pd, vnd)):
+                                    vt = vn.cross(ez).cross(vt) # steepest ascent
+                                    vb = vn.cross(vt)
+                                    gvwvertex.addData3f(p[0] - xt, p[1] - yt, p[2])
+                                    gvwnormal.addData3f(vn[0], vn[1], vn[2])
+                                    gvwtangent.addData3f(vt[0], vt[1], vt[2])
+                                    gvwbinormal.addData3f(vb[0], vb[1], vb[2])
+                                    gvwcolor.addData4f(1.0, 1.0, 1.0, 1.0)
+                                    x, y = p[0], p[1]
+                                    u = clamp((x - x0) / sx, 0.0, 1.0)
+                                    v = clamp((y - y0) / sy, 0.0, 1.0)
+                                    gvwtexcoord.addData2f(u, v)
+                                # Add triangles.
+                                ltd = ltc + 1
+                                gtris.addVertices(ltb, lta, ltc)
+                                gtris.closePrimitive()
+                                gtris.addVertices(ltb, ltc, ltd)
+                                gtris.closePrimitive()
+                                ltc += 2
+
+        # Construct the mesh.
+        geom = Geom(gvdata)
+        geom.addPrimitive(gtris)
+        gnode = GeomNode(tname)
+        gnode.addGeom(geom)
+        node = NodePath(gnode)
+        node.flattenStrong()
+
+        return node
+
+
+    @staticmethod
+    def _quad_index_for_xy (sizex, sizey, offsetx, offsety,
+                            numquadsx, numquadsy, x, y):
+
+        dx = sizex / numquadsx
+        dy = sizey / numquadsy
+        i = int((x - offsetx) / dx)
+        j = int((y - offsety) / dy)
+        if 0 <= i < numquadsx and 0 <= j < numquadsy:
+            return i * numquadsy + j
+        else:
+            return None
+
+
+    @staticmethod
+    def _interpolate_z (sizex, sizey, offsetx, offsety,
+                        numquadsx, numquadsy,
+                        verts, tris, quadmap,
+                        x1, y1, ref1, wnorm=False, wtvinds=False):
+
+        xr1, yr1, zr1 = ref1[0], ref1[1], ref1[2]
+        x, y = x1 - xr1, y1 - yr1
+
+        q = TerrainGeom._quad_index_for_xy(sizex, sizey, offsetx, offsety,
+                                           numquadsx, numquadsy,
+                                           x, y)
+        if q is None:
+            ret = [1.0, -1, 0.0]
+            if wnorm:
+                ret.append(Vec3())
+            if wtvinds:
+                ret.append(())
+            return ret
+        qm1, qm2 = quadmap
+        ks = range(qm1[q], qm2[q])
+        trics = tris[3]
+        pmin = None
+        cpmin = None
+        zpmin = None
+        if wnorm:
+            npmin = None
+        if wtvinds:
+            tvindspmin = None
+        for k in ks:
+            ret = TerrainGeom._interpolate_tri_z(verts, tris, k, x, y,
+                                                 wnorm=wnorm, wtvinds=wtvinds)
+            p, z = ret.pop(0), ret.pop(0)
+            if wnorm:
+                n = ret.pop(0)
+            if wtvinds:
+                tvinds = ret.pop(0)
+            if pmin is None or pmin > p:
+                pmin = p
+                cpmin = trics[k]
+                zpmin = z
+                if wnorm:
+                    npmin = n
+                if wtvinds:
+                    tvindspmin = tvinds
+            if p == 0.0:
+                break
+        z1pmin = zpmin + zr1
+
+        ret = [pmin, cpmin, z1pmin]
+        if wnorm:
+            ret.append(npmin)
+        if wtvinds:
+            ret.append(tvindspmin)
+        return ret
+
+
+    @staticmethod
+    def _interpolate_tri_z (verts, tris, k, x, y,
+                            wnorm=False, wtvinds=False):
+
+        Pt2 = Point2D
+
+        pf = Pt2(x, y)
+        tri1s, tri2s, tri3s = tris[:3]
+        tri = (tri1s[k], tri2s[k], tri3s[k])
+        v1, v2, v3 = TerrainGeom._get_tri_verts(tri, verts)
+        v1f, v2f, v3f = v1.getXy(), v2.getXy(), v3.getXy()
+
+        v12f = v2f - v1f
+        v13f = v3f - v1f
+        v1pf = pf - v1f
+        d1212 = v12f.dot(v12f)
+        d1213 = v12f.dot(v13f)
+        d1313 = v13f.dot(v13f)
+        den = d1313 * d1212 - d1213 * d1213
+        if den == 0.0: # can happen due to roundoff
+            ret = [1.0, v1[2]]
+            if wnorm:
+                ret.append(Vec3D(0, 0, 1))
+            if wtvinds:
+                ret.append(tri)
+            return ret
+        d131p = v13f.dot(v1pf)
+        d121p = v12f.dot(v1pf)
+        b2 = (d1313 * d121p - d1213 * d131p) / den
+        b3 = (d1212 * d131p - d1213 * d121p) / den
+        b1 = 1.0 - (b2 + b3)
+
+        p = 0.0 # outsideness penalty
+        for b in (b1, b2, b3):
+            if b < 0.0:
+                p += b**2
+            elif b > 1.0:
+                p += (b - 1.0)**2
+
+        z1, z2, z3 = v1[2], v2[2], v3[2]
+        z = b1 * z1 + b2 * z2 + b3 * z3
+        if wnorm:
+            n = unitv((v2 - v1).cross(v3 - v1))
+
+        ret = [p, z]
+        if wnorm:
+            ret.append(n)
+        if wtvinds:
+            ret.append(tri)
+        return ret
+# @cache-key-end: terrain-generation
+
+
+    def heightmap_size (self):
+
+        return Vec3D(self._maxsizexa, self._maxsizexb, self._maxsizey)
+
+
+    def to_unit_trap (self, maxsizexa, maxsizexb, maxsizey, x, y):
+
+        return TerrainGeom._to_unit_trap(
+            self._sizex, self._sizey, self._offsetx, self._offsety,
+            maxsizexa, maxsizexb, maxsizey,
+            self._centerx, self._centery,
+            x, y)
+
+
+    def quad_index_for_xy (self, x, y):
+
+        return TerrainGeom._quad_index_for_xy(
+            self._sizex, self._sizey, self._offsetx, self._offsety,
+            self._numquadsx, self._numquadsy,
+            x, y)
+
+
+    def interpolate_z (self, x1, y1, ref1, wnorm=False, wtvinds=False):
+
+        return TerrainGeom._interpolate_z(
+            self._sizex, self._sizey, self._offsetx, self._offsety,
+            self._numquadsx, self._numquadsy,
+            self._verts, self._tris, self._quadmap,
+            x1, y1, ref1, wnorm, wtvinds)
+
 
