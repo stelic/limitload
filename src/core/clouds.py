@@ -82,36 +82,37 @@ class Clouds (object):
             fckey = [cloudmap]
             this_path = internal_path("data", __file__)
             key = (sorted(carg.props()),
-                   (this_path.replace(".pyc", ".py"), "clouds-generation"))
+                   get_cache_key_section(this_path.replace(".pyc", ".py"),
+                                         "clouds-generation"))
             keyhx = key_to_hex(key, fckey)
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
             if timeit:
                 t1 = time()
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
             ret = self._load_from_cache(tname, keyhx)
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
             if timeit:
                 t2 = time()
                 dbgval(1, "clouds-load-from-cache",
                        (t2 - t1, "%.3f", "time", "s"))
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
         if not ret:
             if timeit:
                 t1 = time()
             ret = Clouds._construct(**dict(carg.props()))
             celldata, vsortdata, geomdata = ret
             if keyhx is not None:
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
                 if timeit:
                     t1 = time()
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
                 Clouds._write_to_cache(tname, keyhx, celldata, vsortdata, geomdata)
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
                 if timeit:
                     t2 = time()
                     dbgval(1, "clouds-write-to-cache",
                            (t2 - t1, "%.3f", "time", "s"))
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
         else:
             celldata, vsortdata, geomdata = ret
 # @cache-key-end: clouds-generation
@@ -236,11 +237,11 @@ class Clouds (object):
         timeit = False
 # @cache-key-start: clouds-generation
 
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
         if timeit:
             t0 = time()
             t1 = t0
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
 
         randgen = Random(randseed)
 
@@ -346,13 +347,13 @@ class Clouds (object):
             elif cloudshape == 1:
                 cvol = pi * (0.5 * cwidth)**2 * (cheight2 - cheight1)
             cloudvol.append(cvol)
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
         if timeit:
             t2 = time()
             dbgval(1, "clouds-distribute",
                    (t2 - t1, "%.3f", "time", "s"))
             t1 = t2
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
 
         # Number of quads per LOD level.
         sumcloudvol = sum(cloudvol)
@@ -407,7 +408,7 @@ class Clouds (object):
                     numquads[kl] -= cloudspec[4][kl]
         cloudspecs = cloudspecs_m
         numclouds = len(cloudspecs)
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
         if timeit:
             if lodaccum:
                 cqs1 = [0] * numclouds
@@ -432,13 +433,13 @@ class Clouds (object):
             dbgval(1, "clouds-distribute-quads",
                    (t2 - t1, "%.3f", "time", "s"))
             t1 = t2
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
 
         # Create view direction sorting data.
         if vsortbase >= 0:
             ret = geodesic_sphere(base=vsortbase, numdivs=vsortdivs)
             vsortdirs, vsmaxoffangs, vsnbinds = ret[2:5]
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
             if timeit:
                 vsavgmaxoffang = sum(vsmaxoffangs) / len(vsortdirs)
                 vsmaxoffangsd = (sum((ma - vsavgmaxoffang)**2 for ma in vsmaxoffangs) /
@@ -449,7 +450,7 @@ class Clouds (object):
                        (degrees(min(vsmaxoffangs)), "%.1f", "minmaxoffang", "deg"),
                        (degrees(vsavgmaxoffang), "%.1f", "avgmaxoffang", "deg"),
                        (degrees(vsmaxoffangsd), "%.2f", "maxoffangsd", "deg"))
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
         else:
             vsortdirs = [Vec3(0.0, 1.0, 0.0)]
             vsmaxoffangs = [pi + 1e-6]
@@ -581,13 +582,13 @@ class Clouds (object):
                             ts.gvwhaxislen.addData4f(hx, hy, hz1, hz2)
                     ts.qvspecs[kl].append((qtpos, ts.nverts))
                     ts.nverts += 4
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
         if timeit:
             t2 = time()
             dbgval(1, "clouds-create-vertices",
                    (t2 - t1, "%.3f", "time", "s"))
             t1 = t2
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
 
         # Create tiles.
         for tilespecs1 in tilespecs:
@@ -606,13 +607,13 @@ class Clouds (object):
                                 gtris1.closePrimitive()
                                 gtris1.addVertices(kv0 + 0, kv0 + 2, kv0 + 3)
                                 gtris1.closePrimitive()
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
         if timeit:
             t2 = time()
             dbgval(1, "clouds-create-triangles",
                    (t2 - t1, "%.3f", "time", "s"))
             t1 = t2
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
 
         # Finalize tiles.
         clroot = NodePath("clouds")
@@ -636,13 +637,13 @@ class Clouds (object):
                         ltile = NodePath(tnode)
                         tlod.addSwitch(tileradius * (kl + 1), tileradius * kl)
                         ltile.reparentTo(ijtile)
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
         if timeit:
             t2 = time()
             dbgval(1, "clouds-create-tiles",
                    (t2 - t1, "%.3f", "time", "s"))
             t1 = t2
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
 
         # Create cloud bounds if requested.
         clbroot = NodePath("bounds")
@@ -714,21 +715,21 @@ class Clouds (object):
                     cblod.addSwitch(tileradius * (numlods + 1), 0.0)
                     cbtile.reparentTo(cblnd)
 
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
             if timeit:
                 t2 = time()
                 dbgval(1, "clouds-create-bounds",
                        (t2 - t1, "%.3f", "time", "s"))
                 t1 = t2
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
 
-# @cache-key-end: terrain-generation
+# @cache-key-end: clouds-generation
         if timeit:
             t2 = time()
             dbgval(1, "clouds-cumulative",
                    (t2 - t0, "%.3f", "time", "s"))
             t1 = t2
-# @cache-key-start: terrain-generation
+# @cache-key-start: clouds-generation
 
         celldata = (numtilesx, numtilesy, tilesizex, tilesizey, numlods,
                     offsetz)
