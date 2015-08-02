@@ -30,7 +30,7 @@ from src.core.shader import make_shdfunc_fogbln, make_shdfunc_fogapl
 from src.core.shader import make_shdfunc_sunbln
 from src.core.shader import make_frag_outputs
 from src.core.shader import printsh
-from src.core.terrain import read_pnm_map, interpolate_unit_map
+from src.core.table import UnitGrid2
 from src.core.transl import *
 
 
@@ -257,11 +257,11 @@ class Clouds (object):
 
         # Load cloud map.
         if isinstance(cloudmap, basestring):
-            cloudmap = read_pnm_map(PNMImage(full_path("data", cloudmap)))
+            cloudmap = UnitGrid2(full_path("data", cloudmap))
         elif isinstance(cloudmap, PNMImage):
-            cloudmap = read_pnm_map(cloudmap)
+            cloudmap = UnitGrid2(cloudmap)
         elif cloudmap is None:
-            cloudmap = [[0.0]]
+            cloudmap = UnitGrid2(0.0)
 
         # Derive any non-initialized cloudmap data.
         if isinstance(quadsize, (int, float)):
@@ -321,14 +321,14 @@ class Clouds (object):
             xcu = randgen.uniform(0.0, 1.0)
             ycu = randgen.uniform(0.0, 1.0)
             # Quick check to avoid nsmpxy**2 samplings on coarser cloud maps.
-            if interpolate_unit_map(cloudmap, xcu, ycu, periodic=True) == 0.0:
+            if cloudmap(xcu, ycu, periodic=True) == 0.0:
                 continue
             avggu = 0.0
             for ip in xrange(nsmpxy):
                 xpu = xcu + dxypu0 + dxypu * ip
                 for jp in xrange(nsmpxy):
                     ypu = ycu + dxypu0 + dxypu * jp
-                    gu = interpolate_unit_map(cloudmap, xpu, ypu, periodic=True)
+                    gu = cloudmap(xpu, ypu, periodic=True)
                     avggu += min(max(gu * fgu0 + fgu1, 0.0), 1.0)
             avggu /= nsmpxy**2
             if avggu < minavggu:
