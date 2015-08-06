@@ -15,12 +15,17 @@ mod_sfex := $(mod_suff).$(mod_ext)
 
 all: \
     misc$(mod_sfex) \
+    table$(mod_sfex) \
     fire$(mod_sfex) \
     trail$(mod_sfex) \
 
 misc$(mod_sfex): misc.h misc.cpp typeinit.h
 	$(build_module) misc$(mod_suff) misc.h MISC \
         misc.cpp
+
+table$(mod_sfex): table.h table.cpp typeinit.h
+	$(build_module) table$(mod_suff) table.h TABLE \
+        table.cpp
 
 fire$(mod_sfex): fire.h fire.cpp typeinit.h misc.h misc$(mod_sfex)
 	$(build_module) fire$(mod_suff) fire.h FIRE \

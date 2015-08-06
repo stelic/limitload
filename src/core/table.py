@@ -5,6 +5,8 @@ from bisect import bisect
 
 from pandac.PandaModules import PNMImage, Point2D
 
+from src import USE_COMPILED
+
 
 class Table1 (object):
     """
@@ -329,3 +331,5 @@ class UnitGrid2 (object):
         return i, j
 
 
+if USE_COMPILED:
+    from table_c import *
