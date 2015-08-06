@@ -130,6 +130,7 @@ def _get_interp_indices (seq, val):
     return il, ir
 
 
+# :also-compiled:
 class UnitGrid2 (object):
 
     def __init__ (self, grid):
