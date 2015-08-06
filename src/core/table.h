@@ -13,7 +13,7 @@
         #define EXPORT
         #define EXTERN
     #elif defined(WINMSVC)
-        #ifdef BUILDING_FIRE
+        #ifdef BUILDING_TABLE
             #define EXPORT __declspec(dllexport)
             #define EXTERN
         #else
