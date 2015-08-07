@@ -961,6 +961,68 @@ class S200 (Rocket):
         self.exhaust_trails.append(exhaust2)
 
 
+class N9m33 (Rocket):
+
+    species = "9m33"
+    longdes = _("Fakel 9M33 Osa")
+    shortdes = _("9M33")
+    against = ["plane", "heli"]
+    mass = 170.0
+    diameter = 0.210
+    maxg = 20.0
+    vmaxalt = 12000.0
+    minspeed = 600.0
+    minspeed1 = 600.0
+    maxspeed = 800.0
+    maxspeed1 = 1000.0
+    maxthracc = 400.0
+    maxthracc1 = 500.0
+    maxvdracc = 2.0
+    maxvdracc1 = 1.0
+    maxflighttime = 18.0
+    minlaunchdist = 300.0
+    hitforce = 8.0
+    expforce = 40.0
+    seeker = "sarh"
+    flightmodes = ["intercept"]
+    maxoffbore = radians(20.0)
+    locktime = 3.0
+    decoyresist = 0.55
+    rcs = 0.00008
+    hitboxdata = [(Point3(0.0, 0.0, 0.0), 1.6)]
+    modelpath = ["models/weapons/missile_9m33.egg"]
+    texture = "models/weapons/missile_9m33_tex.png"
+    normalmap = "models/weapons/missile_9m33_nm.png"
+
+    def __init__ (self, world, name, side,
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
+
+        Rocket.__init__(self, world=world, name=name, side=side,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
+                        target=target, offset=offset)
+
+        exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.50, 0.0),
+                               radius0=0.40, radius1=1.10, length=12.0,
+                               speed=20.0, poolsize=18,
+                               color=rocketexhaustcolor,
+                               ltoff=True,
+                               texture="images/particles/exhaust03.png",
+                               glowmap=rocketexhaustglowmap,
+                               dbin=0,
+                               freezedist=200.0, hidedist=2000.0,
+                               loddirang=20, loddirskip=6)
+        self.exhaust_trails.append(exhaust1)
+        exhaust2 = PolyTrail(parent=self, pos=Point3(0.0, -1.70, 0.0),
+                             radius0=0.60, radius1=3.00, lifespan=2.5,
+                             color=rockettrailcolor,
+                             texture="images/particles/exhaust06.png",
+                             glowmap=rockettrailglowmap,
+                             dirlit=rockettraildirlit,
+                             dbin=3)
+        self.exhaust_trails.append(exhaust2)
+
+
 class Igla (Rocket):
 
     species = "igla"
@@ -1324,6 +1386,130 @@ class Rim156 (Rocket):
                                loddirang=20, loddirskip=6)
         self.exhaust_trails.append(exhaust1)
         exhaust2 = PolyTrail(parent=self, pos=Point3(0.0, -3.6, 0.0),
+                             radius0=0.60, radius1=3.00, lifespan=2.5,
+                             color=rockettrailcolor,
+                             texture="images/particles/exhaust06.png",
+                             glowmap=rockettrailglowmap,
+                             dirlit=rockettraildirlit,
+                             dbin=3)
+        self.exhaust_trails.append(exhaust2)
+
+
+class Rapier (Rocket):
+
+    species = "rapier"
+    longdes = _("BAe Rapier")
+    shortdes = _("Rapier")
+    against = ["plane", "heli"]
+    mass = 45.0
+    diameter = 0.133
+    maxg = 22.0
+    vmaxalt = 12000.0
+    minspeed = 600.0
+    minspeed1 = 600.0
+    maxspeed = 800.0
+    maxspeed1 = 950.0
+    maxthracc = 300.0
+    maxthracc1 = 400.0
+    maxvdracc = 2.0
+    maxvdracc1 = 1.0
+    maxflighttime = 12.0
+    minlaunchdist = 300.0
+    hitforce = 3.0
+    expforce = 25.0
+    seeker = "tv"
+    flightmodes = ["intercept"]
+    maxoffbore = radians(18.0)
+    locktime = 2.0
+    decoyresist = 0.5
+    rcs = 0.00004
+    hitboxdata = [(Point3(0.0, 0.0, 0.0), 1.6)]
+    modelpath = ["models/weapons/missile_rapier.egg"]
+    texture = "models/weapons/missile_rapier_tex.png"
+    normalmap = "models/weapons/missile_rapier_nm.png"
+
+    def __init__ (self, world, name, side,
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
+
+        Rocket.__init__(self, world=world, name=name, side=side,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
+                        target=target, offset=offset)
+
+        exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.06, 0.0),
+                               radius0=0.40, radius1=1.10, length=12.0,
+                               speed=20.0, poolsize=18,
+                               color=rocketexhaustcolor,
+                               ltoff=True,
+                               texture="images/particles/exhaust03.png",
+                               glowmap=rocketexhaustglowmap,
+                               dbin=0,
+                               freezedist=200.0, hidedist=2000.0,
+                               loddirang=20, loddirskip=6)
+        self.exhaust_trails.append(exhaust1)
+        exhaust2 = PolyTrail(parent=self, pos=Point3(0.0, -1.26, 0.0),
+                             radius0=0.60, radius1=3.00, lifespan=2.5,
+                             color=rockettrailcolor,
+                             texture="images/particles/exhaust06.png",
+                             glowmap=rockettrailglowmap,
+                             dirlit=rockettraildirlit,
+                             dbin=3)
+        self.exhaust_trails.append(exhaust2)
+
+
+class Roland (Rocket):
+
+    species = "roland"
+    longdes = _("Euromissile Roland")
+    shortdes = _("Roland")
+    against = ["plane", "heli"]
+    mass = 67.0
+    diameter = 0.160
+    maxg = 22.0
+    vmaxalt = 12000.0
+    minspeed = 500.0
+    minspeed1 = 500.0
+    maxspeed = 700.0
+    maxspeed1 = 900.0
+    maxthracc = 300.0
+    maxthracc1 = 400.0
+    maxvdracc = 2.0
+    maxvdracc1 = 1.0
+    maxflighttime = 14.0
+    minlaunchdist = 300.0
+    hitforce = 3.0
+    expforce = 30.0
+    seeker = "sarh"
+    flightmodes = ["intercept"]
+    maxoffbore = radians(20.0)
+    locktime = 3.0
+    decoyresist = 0.5
+    rcs = 0.00005
+    hitboxdata = [(Point3(0.0, 0.0, 0.0), 1.6)]
+    modelpath = ["models/weapons/missile_roland.egg"]
+    texture = "models/weapons/missile_roland_tex.png"
+    normalmap = "models/weapons/missile_roland_nm.png"
+
+    def __init__ (self, world, name, side,
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
+
+        Rocket.__init__(self, world=world, name=name, side=side,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
+                        target=target, offset=offset)
+
+        exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.13, 0.0),
+                               radius0=0.40, radius1=1.10, length=12.0,
+                               speed=20.0, poolsize=18,
+                               color=rocketexhaustcolor,
+                               ltoff=True,
+                               texture="images/particles/exhaust03.png",
+                               glowmap=rocketexhaustglowmap,
+                               dbin=0,
+                               freezedist=200.0, hidedist=2000.0,
+                               loddirang=20, loddirskip=6)
+        self.exhaust_trails.append(exhaust1)
+        exhaust2 = PolyTrail(parent=self, pos=Point3(0.0, -1.33, 0.0),
                              radius0=0.60, radius1=3.00, lifespan=2.5,
                              color=rockettrailcolor,
                              texture="images/particles/exhaust06.png",
