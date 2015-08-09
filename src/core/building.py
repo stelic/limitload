@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 
 from pandac.PandaModules import VBase2, VBase2D, Vec3, Point2, Point3
+from pandac.PandaModules import NodePath
 
 from src import pycv
 from src.core.body import Body
