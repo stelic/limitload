@@ -961,11 +961,11 @@ class S200 (Rocket):
         self.exhaust_trails.append(exhaust2)
 
 
-class N9m33 (Rocket):
+class Osa (Rocket):
 
-    species = "9m33"
+    species = "osa"
     longdes = _("Fakel 9M33 Osa")
-    shortdes = _("9M33")
+    shortdes = _("Osa")
     against = ["plane", "heli"]
     mass = 170.0
     diameter = 0.210
@@ -990,9 +990,9 @@ class N9m33 (Rocket):
     decoyresist = 0.55
     rcs = 0.00008
     hitboxdata = [(Point3(0.0, 0.0, 0.0), 1.6)]
-    modelpath = ["models/weapons/missile_9m33.egg"]
-    texture = "models/weapons/missile_9m33_tex.png"
-    normalmap = "models/weapons/missile_9m33_nm.png"
+    modelpath = ["models/weapons/missile_osa.egg"]
+    texture = "models/weapons/missile_osa_tex.png"
+    normalmap = "models/weapons/missile_osa_nm.png"
 
     def __init__ (self, world, name, side,
                   pos=None, hpr=None, speed=None, dropvel=None,
