@@ -9,9 +9,6 @@
 
 #include <misc.h>
 
-#define POW2(x) ((x) * (x))
-#define POW3(x) ((x) * (x) * (x))
-
 static void _init_misc ()
 {
     static bool initialized = false;

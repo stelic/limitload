@@ -167,6 +167,9 @@ RANDVEC(fx_randvec)
 
 END_PUBLISH
 
+#define POW2(x) ((x) * (x))
+#define POW3(x) ((x) * (x) * (x))
+
 class EXPORT RandomBase : public TypedObject
 {
 PUBLISHED:
