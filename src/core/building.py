@@ -72,7 +72,11 @@ class Building (Body):
         pos1 = Point3(pos[0], pos[1], z1)
 
         if self.castshadow:
-            if isinstance(self.modelpath, basestring) and self.castshadow:
+            if (len(self.modelpath) == 2 and
+                isinstance(self.modelpath[0], NodePath) and
+                isinstance(self.modelpath[1], basestring)):
+                shdmodind = 0
+            elif isinstance(self.modelpath, basestring):
                 shdmodind = 0
             elif self.modelpath:
                 shdmodind = min(len(self.modelpath) - 1, 1)
