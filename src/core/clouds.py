@@ -321,14 +321,14 @@ class Clouds (object):
             xcu = randgen.uniform(0.0, 1.0)
             ycu = randgen.uniform(0.0, 1.0)
             # Quick check to avoid nsmpxy**2 samplings on coarser cloud maps.
-            if cloudmap(xcu, ycu, periodic=True) == 0.0:
+            if cloudmap(xcu, ycu, tol=0.0, periodic=True) == 0.0:
                 continue
             avggu = 0.0
             for ip in xrange(nsmpxy):
                 xpu = xcu + dxypu0 + dxypu * ip
                 for jp in xrange(nsmpxy):
                     ypu = ycu + dxypu0 + dxypu * jp
-                    gu = cloudmap(xpu, ypu, periodic=True)
+                    gu = cloudmap(xpu, ypu, tol=0.0, periodic=True)
                     avggu += min(max(gu * fgu0 + fgu1, 0.0), 1.0)
             avggu /= nsmpxy**2
             if avggu < minavggu:
