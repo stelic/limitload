@@ -396,3 +396,34 @@ LVecBase3 HaltonDistrib::next3 ()
     return LVecBase3(r1, r2, r3);
 }
 
+
+std::vector<int> dec_lst_int (ENC_LST_INT enc_lst)
+{
+    std::vector<int> lst(enc_lst.size());
+    for (int i = 0; i < lst.size(); ++i) {
+        lst[i] = enc_lst[i];
+    }
+    return lst;
+}
+
+std::vector<bool> dec_lst_bool (ENC_LST_BOOL enc_lst)
+{
+    std::vector<bool> lst(enc_lst.size());
+    for (int i = 0; i < lst.size(); ++i) {
+        lst[i] = (enc_lst[i] == 0 ? false : true);
+    }
+    return lst;
+}
+
+#include <sstream>
+std::vector<std::string> dec_lst_string (ENC_LST_STRING enc_lst)
+{
+    std::vector<std::string> lst;
+    std::istringstream iss(enc_lst);
+    std::string el;
+    while (std::getline(iss, el, '\x04')) {
+        lst.push_back(el);
+    }
+    return lst;
+}
+

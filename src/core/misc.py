@@ -3828,5 +3828,32 @@ class HaltonDistrib (object):
         return VBase3(r1, r2, r3)
 
 
+from pandac.PandaModules import PointerToArrayInt
+def enc_lst_int (lst):
+    enc_lst = PointerToArrayInt()
+    for el in lst:
+        enc_lst.pushBack(el)
+    return enc_lst
+def dec_lst_int (enc_lst):
+    lst = list(enc_lst)
+    return lst
+
+from pandac.PandaModules import PointerToArrayInt
+def enc_lst_bool (lst):
+    enc_lst = PointerToArrayInt()
+    for el in lst:
+        enc_lst.pushBack(el)
+    return enc_lst
+def dec_lst_bool (enc_lst):
+    lst = map(bool, enc_lst)
+    return lst
+
+def enc_lst_string (lst):
+    enc_lst = "\x04".join(lst)
+    return enc_lst
+def dec_lst_string (enc_lst):
+    return enc_lst.split("\x04")
+
+
 if USE_COMPILED:
     from misc_c import *
