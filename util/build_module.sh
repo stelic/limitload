@@ -69,7 +69,7 @@ elif test $build_env = winmsvc; then
 
     mod_srcs=$(echo "$mod_srcs" | sed 's/\.pyd\b/.lib/g')
     panda_core_lib_real=${panda_core_lib/.pyd/.lib}
-    cl -O2 -EHsc -wd4275 -LD \
+    cl -O2 -EHsc -wd4275 -LD -MD \
         -I "$python_inc_dir" -I "$eigen_inc_dir" -I "$panda_inc_dir" -I . \
         -D WINMSVC \
         $mod_name-module.cpp $mod_name-igate.cpp $mod_srcs \
