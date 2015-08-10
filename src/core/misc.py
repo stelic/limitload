@@ -3828,9 +3828,9 @@ class HaltonDistrib (object):
         return VBase3(r1, r2, r3)
 
 
-from pandac.PandaModules import PointerToArrayInt
+from pandac.PandaModules import PTAInt
 def enc_lst_int (lst):
-    enc_lst = PointerToArrayInt()
+    enc_lst = PTAInt()
     for el in lst:
         enc_lst.pushBack(el)
     return enc_lst
@@ -3838,9 +3838,9 @@ def dec_lst_int (enc_lst):
     lst = list(enc_lst)
     return lst
 
-from pandac.PandaModules import PointerToArrayInt
+from pandac.PandaModules import PTAInt
 def enc_lst_bool (lst):
-    enc_lst = PointerToArrayInt()
+    enc_lst = PTAInt()
     for el in lst:
         enc_lst.pushBack(el)
     return enc_lst
