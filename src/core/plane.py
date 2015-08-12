@@ -2864,7 +2864,10 @@ class Plane (Body):
         adjextra = 0.0
 
         # Form-up direction.
-        dfpos = ptod(pos_from_horiz(l, tformpos)) - pos
+        fpos = ptod(pos_from_horiz(l, tformpos))
+        min_otr_alt = 50.0
+        fpos[2] = max(fpos[2], w.elevation(fpos) + min_otr_alt)
+        dfpos = fpos - pos
         fdist = dfpos.length()
         #lpos1 = lpos + lvel * adt + lacc * (0.5 * adt**2)
         #rlpos1 = l.node.getRelativePoint(l.node, vtof(lpos1 - lpos))
