@@ -3849,10 +3849,16 @@ def dec_lst_bool (enc_lst):
     return lst
 
 def enc_lst_string (lst):
-    enc_lst = "\x04".join(lst)
+    if lst:
+        enc_lst = "\x04".join(lst) + "\x04"
+    else:
+        enc_lst = ""
     return enc_lst
 def dec_lst_string (enc_lst):
-    return enc_lst.split("\x04")
+    if enc_lst:
+        return enc_lst[:-1].split("\x04")
+    else:
+        return []
 
 
 if USE_COMPILED:
