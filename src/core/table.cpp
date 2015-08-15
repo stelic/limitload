@@ -34,6 +34,13 @@ UnitGrid2::UnitGrid2 (const PNMImage &pnm)
     _init_rest();
 }
 
+UnitGrid2::UnitGrid2 (double v)
+{
+    _grid.push_back(std::vector<double>(1));
+    _grid[0][0] = v;
+    _init_rest();
+}
+
 void UnitGrid2::_init_rest ()
 {
     _num_x = _grid.size();

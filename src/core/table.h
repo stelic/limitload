@@ -34,6 +34,7 @@ PUBLISHED:
 
     UnitGrid2 (const std::string &pnm_path);
     UnitGrid2 (const PNMImage &pnm);
+    UnitGrid2 (double v);
     ~UnitGrid2 ();
 
     int num_x () const;
