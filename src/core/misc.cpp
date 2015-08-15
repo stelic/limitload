@@ -203,6 +203,11 @@ double todeg (double a)
     return a * (180.0 / M_PI);
 }
 
+double stime ()
+{
+    return double(clock()) / CLOCKS_PER_SEC;
+}
+
 INITIALIZE_TYPE_HANDLE(RandomBase)
 
 // According to random.WichmannHill from Python standard library.
@@ -392,7 +397,6 @@ LVecBase3 HaltonDistrib::next3 ()
     _index += 1;
     return LVecBase3(r1, r2, r3);
 }
-
 
 std::vector<int> dec_lst_int (ENC_LST_INT enc_lst)
 {

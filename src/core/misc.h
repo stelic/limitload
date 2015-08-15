@@ -170,6 +170,8 @@ END_PUBLISH
 #define POW2(x) ((x) * (x))
 #define POW3(x) ((x) * (x) * (x))
 
+double stime ();
+
 class EXPORT RandomBase : public TypedObject
 {
 PUBLISHED:
