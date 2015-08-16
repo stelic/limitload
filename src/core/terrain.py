@@ -12,6 +12,7 @@ from time import time
 
 from pandac.PandaModules import Point2, Point2D, Point3, Point3D
 from pandac.PandaModules import Vec2D, Vec3, Vec3D, Vec4
+from pandac.PandaModules import LVector3i
 from pandac.PandaModules import QuatD
 from pandac.PandaModules import Texture, TextureStage
 from pandac.PandaModules import GeomVertexArrayFormat, InternalName
@@ -29,6 +30,8 @@ from src.core.misc import get_cache_key_section, key_to_hex
 from src.core.misc import is_inside_poly, is_inside_convex_poly
 from src.core.misc import make_image
 from src.core.misc import report, dbgval
+from src.core.misc import enc_lst_string, dec_lst_string
+from src.core.misc import enc_lst_bool, dec_lst_bool
 from src.core.planedyn import GROUND
 from src.core.shader import make_shdfunc_amblit, make_shdfunc_dirlit
 from src.core.shader import make_shdfunc_pntlit, printsh
@@ -250,7 +253,7 @@ class Terrain (object):
         self._offsety = offsety
 
         # Extract cut masks.
-        cutmasks = []
+        cutmaskpaths = []
         levints = [False]
         for ic, cutspec in enumerate(cuts):
             if ic == 0 and cutspec.cutmask is not None:
@@ -266,10 +269,22 @@ class Terrain (object):
                     cutmask, levint = cutspec.cutmask, True
                 else:
                     cutmask, levint = cutspec.cutmask
-                cutmasks.append(cutmask)
+                cutmaskpath = full_path("data", cutmask)
+                cutmaskpaths.append(cutmaskpath)
                 levints.append(levint)
 
-        heightmap, haveheightmap = ("", False) if heightmap is None else (heightmap, True)
+        haveheightmappath = False
+        heightmappath = ""
+        havehmdatapath = False
+        hmdatapath = ""
+        if heightmap:
+            heightmappath = full_path("data", heightmap)
+            haveheightmappath = True
+            hmdata = heightmap[:heightmap.rfind(".")] + ".dat"
+            if path_exists("data", hmdata):
+                hmdatapath = real_path("data", hmdata)
+                havehmdatapath = True
+
         maxsizexa, maxsizexb, havemaxsizex = (0.0, 0.0, False) if maxsizex is None else (maxsizexa, maxsizexb, True)
         maxsizey, havemaxsizey = (0.0, False) if maxsizey is None else (maxsizey, True)
         centerx, havecenterx = (0.0, False) if centerx is None else (centerx, True)
@@ -282,14 +297,14 @@ class Terrain (object):
         self._geom = TerrainGeom(
             name,
             sizex, sizey, offsetx, offsety,
-            heightmap, haveheightmap,
+            heightmappath, haveheightmappath, hmdatapath, havehmdatapath,
             maxsizexa, maxsizexb, havemaxsizex, maxsizey, havemaxsizey,
             centerx, havecenterx, centery, havecentery,
             mingray, havemingray, maxgray, havemaxgray,
             minheight, haveminheight, maxheight, havemaxheight,
             numtilesx, numtilesy,
             celldensity, periodic,
-            cutmasks, levints)
+            enc_lst_string(cutmaskpaths), enc_lst_bool(levints))
 
         self._numquadsx = self._geom.num_quads_x()
         self._numquadsy = self._geom.num_quads_y()
@@ -1366,7 +1381,15 @@ void main ()
 
     def height (self, x, y, flush=False):
 
-        p, c, z, n = self._geom.interpolate_z(x, y, self._pos, wnorm=True)
+        norm = Vec3D()
+        pcz = Vec3D()
+        tvinds = LVector3i()
+        self._geom.interpolate_z(x, y, self._pos,
+                                 pcz,
+                                 norm=norm, wnorm=True,
+                                 tvinds=tvinds, wtvinds=False)
+        p, c, z = pcz; c = int(c)
+        n = norm
         t = self._ground_type_by_cut[c]
 
         z, n, t = self._mod_height_virtsurf(x, y, z, n, t, flush=flush)
@@ -1376,7 +1399,14 @@ void main ()
 
     def height_q (self, x, y, flush=False): # shortcut for performance
 
-        p, c, z = self._geom.interpolate_z(x, y, self._pos, wnorm=False)
+        norm = Vec3D()
+        pcz = Vec3D()
+        tvinds = LVector3i()
+        self._geom.interpolate_z(x, y, self._pos,
+                                 pcz,
+                                 norm=norm, wnorm=False,
+                                 tvinds=tvinds, wtvinds=False)
+        p, c, z = pcz; c = int(c)
         n = None
         t = None
 
@@ -1394,7 +1424,7 @@ void main ()
 
         if z < self._geom.max_z():
             q = self._geom.quad_index_for_xy(x - self._pos_x, y - self._pos_y)
-            if q is not None:
+            if q >= 0:
                 # height(x, y) is very expensive,
                 # execute it only if quad_max_z check passes.
                 return z < self._geom.quad_max_z(q) and z < self.height_q(x, y)
@@ -1503,18 +1533,22 @@ void main ()
                     set_texture(tile, extras=mod_texstack, clamp=False)
 
 
+# :also-compiled:
 class TerrainGeom (object):
 
     def __init__ (self, name,
                   sizex, sizey, offsetx, offsety,
-                  heightmap, haveheightmap,
+                  heightmappath, haveheightmappath, hmdatapath, havehmdatapath,
                   maxsizexa, maxsizexb, havemaxsizex, maxsizey, havemaxsizey,
                   centerx, havecenterx, centery, havecentery,
                   mingray, havemingray, maxgray, havemaxgray,
                   minheight, haveminheight, maxheight, havemaxheight,
                   numtilesx, numtilesy,
                   celldensity, periodic,
-                  cutmasks, levints):
+                  cutmaskpaths, levints):
+
+        cutmaskpaths = dec_lst_string(cutmaskpaths)
+        levints = dec_lst_bool(levints)
 
         timeit = False
 
@@ -1524,7 +1558,8 @@ class TerrainGeom (object):
         carg = AutoProps(
             sizex=sizex, sizey=sizey,
             offsetx=offsetx, offsety=offsety,
-            heightmap=heightmap, haveheightmap=haveheightmap,
+            heightmappath=heightmappath, haveheightmappath=haveheightmappath,
+            hmdatapath=hmdatapath, havehmdatapath=havehmdatapath,
             maxsizexa=maxsizexa, maxsizexb=maxsizexb, havemaxsizex=havemaxsizex,
             maxsizey=maxsizey, havemaxsizey=havemaxsizey,
             centerx=centerx, havecenterx=havecenterx,
@@ -1535,19 +1570,18 @@ class TerrainGeom (object):
             maxheight=maxheight, havemaxheight=havemaxheight,
             numtilesx=numtilesx, numtilesy=numtilesy,
             celldensity=celldensity, periodic=periodic,
-            cutmasks=cutmasks, levints=levints,
+            cutmaskpaths=cutmaskpaths, levints=levints,
         )
         ret = None
         keyhx = None
         if name:
             tname = name
             fckey = []
-            fckey.extend(cutmasks)
+            fckey.extend(cutmaskpaths)
             ecarg = AutoProps()
-            if haveheightmap:
-                fckey.append(heightmap)
-                hmdatapath = TerrainGeom._hmdata_path(heightmap)
-                if path_exists("data", hmdatapath):
+            if haveheightmappath:
+                fckey.append(heightmappath)
+                if havehmdatapath:
                     ecarg.hmdatapath = hmdatapath
                     fckey.append(hmdatapath)
             this_path = internal_path("data", __file__)
@@ -1725,24 +1759,18 @@ class TerrainGeom (object):
                 return None
 
 
-    @staticmethod
-    def _hmdata_path (heightmap):
-
-        return heightmap[:heightmap.rfind(".")] + ".dat"
-
-
     _gvformat = None
 
     @staticmethod
     def _construct (sizex, sizey, offsetx, offsety,
-                    heightmap, haveheightmap,
+                    heightmappath, haveheightmappath, hmdatapath, havehmdatapath,
                     maxsizexa, maxsizexb, havemaxsizex, maxsizey, havemaxsizey,
                     centerx, havecenterx, centery, havecentery,
                     mingray, havemingray, maxgray, havemaxgray,
                     minheight, haveminheight, maxheight, havemaxheight,
                     numtilesx, numtilesy,
                     celldensity, periodic,
-                    cutmasks, levints):
+                    cutmaskpaths, levints):
 
 # @cache-key-end: terrain-generation
         report(_("Constructing terrain."))
@@ -1758,9 +1786,8 @@ class TerrainGeom (object):
 
         # Load the height map.
         flats = []
-        if haveheightmap:
-            hmdatapath = TerrainGeom._hmdata_path(heightmap)
-            if path_exists("data", hmdatapath):
+        if haveheightmappath:
+            if havehmdatapath:
                 ret = TerrainGeom._read_heightmap_data(hmdatapath)
                 # Conctructor arguments override read data.
                 sxa, sxb, sy, mnz, mxz, mng, mxg, flats = ret
@@ -1783,7 +1810,7 @@ class TerrainGeom (object):
                 if not havemaxheight:
                     maxheight = mxz
                     havemaxheight = True
-            heightmap = UnitGrid2(full_path("data", heightmap))
+            heightmap = UnitGrid2(heightmappath)
         else:
             heightmap = UnitGrid2(0.0)
 
@@ -1842,11 +1869,10 @@ class TerrainGeom (object):
 # @cache-key-start: terrain-generation
 
         # Load cut masks.
-        cutmasks_new = []
-        for cutmask in cutmasks:
-            cutmask = UnitGrid2(full_path("data", cutmask))
-            cutmasks_new.append(cutmask)
-        cutmasks = cutmasks_new
+        cutmasks = []
+        for cutmaskpath in cutmaskpaths:
+            cutmask = UnitGrid2(cutmaskpath)
+            cutmasks.append(cutmask)
 
 # @cache-key-end: terrain-generation
         if timeit:
@@ -2263,13 +2289,13 @@ class TerrainGeom (object):
 
         # Add global links for cut interface triangles.
         nquads = numquadsx * numquadsy
-        quadmap1 = array("l", [-1] * nquads)
-        quadmap2 = array("l", [-1] * nquads)
-        quadmap = (quadmap1, quadmap2)
+        qm1 = array("l", [-1] * nquads)
+        qm2 = array("l", [-1] * nquads)
+        quadmap = (qm1, qm2)
         for (i, j), (itri1, itri2) in intquadlinks:
             q = i * numquadsy + j
-            quadmap1[q] = itri1
-            quadmap2[q] = itri2
+            qm1[q] = itri1
+            qm2[q] = itri2
 
 # @cache-key-end: terrain-generation
         if timeit:
@@ -2295,7 +2321,7 @@ class TerrainGeom (object):
         for i in xrange(numquadsx):
             for j in xrange(numquadsy):
                 q = i * numquadsy + j
-                if quadmap1[q] >= 0: # interface quad
+                if qm1[q] >= 0: # interface quad
                     continue
                 # Indices of vertices.
                 k1 = i * (numquadsy + 1) + j
@@ -2317,8 +2343,8 @@ class TerrainGeom (object):
                     tri1s[k] = k2; tri2s[k] = k3; tri3s[k] = k4; trics[k] = c
                     tri1s[k + 1] = k2; tri2s[k + 1] = k4; tri3s[k + 1] = k1; trics[k + 1] = c
                 # Quad to triangle links.
-                quadmap1[q] = k
-                quadmap2[q] = k + 2
+                qm1[q] = k
+                qm2[q] = k + 2
                 k += 2
 
         # Add cut interface triangles.
@@ -2851,7 +2877,7 @@ class TerrainGeom (object):
         rhlen0 = 2 * sqrt(quadsizex**2 + quadsizey**2)
         dhrlen = 0.11 * rhlen0
 
-        refpt = Vt()
+        refpt = Vt(0.0, 0.0, 0.0)
 
         lenv = len(cvinds)
         vertxs, vertys, vertzs = verts
@@ -3490,18 +3516,29 @@ class TerrainGeom (object):
 
     def quad_index_for_xy (self, x, y):
 
-        return TerrainGeom._quad_index_for_xy(
+        q = TerrainGeom._quad_index_for_xy(
             self._sizex, self._sizey, self._offsetx, self._offsety,
             self._numquadsx, self._numquadsy,
             x, y)
+        if q is None:
+            q = -1
+        return q
 
 
-    def interpolate_z (self, x1, y1, ref1, wnorm=False, wtvinds=False):
+    def interpolate_z (self, x1, y1, ref1,
+                       pcz,
+                       norm=None, wnorm=False,
+                       tvinds=None, wtvinds=False):
 
-        return TerrainGeom._interpolate_z(
+        ret = TerrainGeom._interpolate_z(
             self._sizex, self._sizey, self._offsetx, self._offsety,
             self._numquadsx, self._numquadsy,
             self._verts, self._tris, self._quadmap,
             x1, y1, ref1, wnorm, wtvinds)
+        pcz[0], pcz[1], pcz[2] = ret.pop(0), ret.pop(0), ret.pop(0)
+        if wnorm:
+            norm[0], norm[1], norm[2] = ret.pop(0)
+        if wtvinds:
+            tvinds[0], tvinds[1], tvinds[2] = ret.pop(0)
 
 
