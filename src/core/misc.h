@@ -290,12 +290,12 @@ void EXPORT add_tri (GeomVertexWriter *gvwvertex, GeomVertexWriter *gvwcolor,
 
 #include <vector>
 #include <pta_int.h>
-typedef CPTA_int ENC_LST_INT;
+typedef PTA_int ENC_LST_INT;
 std::vector<int> EXPORT dec_lst_int (ENC_LST_INT enc_lst);
 
 #include <vector>
 #include <pta_int.h>
-typedef CPTA_int ENC_LST_BOOL;
+typedef PTA_int ENC_LST_BOOL;
 std::vector<bool> EXPORT dec_lst_bool (ENC_LST_BOOL enc_lst);
 
 #include <vector>
