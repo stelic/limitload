@@ -18,6 +18,7 @@ all: \
     table$(mod_sfex) \
     fire$(mod_sfex) \
     trail$(mod_sfex) \
+    terrain$(mod_sfex) \
 
 misc$(mod_sfex): misc.h misc.cpp typeinit.h
 	$(build_module) misc$(mod_suff) misc.h MISC \
@@ -34,6 +35,11 @@ fire$(mod_sfex): fire.h fire.cpp typeinit.h misc.h misc$(mod_sfex)
 trail$(mod_sfex): trail.h trail.cpp typeinit.h misc.h misc$(mod_sfex)
 	$(build_module) trail$(mod_suff) trail.h TRAIL \
         trail.cpp misc$(mod_sfex)
+
+terrain$(mod_sfex): terrain.h terrain.cpp typeinit.h table.h table$(mod_sfex) \
+                    misc.h misc$(mod_sfex)
+	$(build_module) terrain$(mod_suff) terrain.h TERRAIN \
+        terrain.cpp table$(mod_sfex) misc$(mod_sfex)
 
 clean:
 	rm -f *-igate.cpp *.in *-module.cpp

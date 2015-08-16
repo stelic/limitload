@@ -24,7 +24,7 @@ from pandac.PandaModules import Shader, Triangulator
 
 from src import join_path, path_exists, path_dirname
 from src import internal_path, real_path, full_path
-from src import GLSL_PROLOGUE
+from src import USE_COMPILED, GLSL_PROLOGUE
 from src.core.misc import AutoProps, unitv, clamp, set_texture
 from src.core.misc import get_cache_key_section, key_to_hex
 from src.core.misc import is_inside_poly, is_inside_convex_poly
@@ -294,6 +294,10 @@ class Terrain (object):
         minheight, haveminheight = (0.0, False) if minheight is None else (minheight, True)
         maxheight, havemaxheight = (0.0, False) if maxheight is None else (maxheight, True)
 
+        if USE_COMPILED:
+            report(_("Constructing terrain."))
+            # For Python version reported from within TerrainGeom,
+            # because it may either construct or read from cache.
         self._geom = TerrainGeom(
             name,
             sizex, sizey, offsetx, offsety,
@@ -3542,3 +3546,5 @@ class TerrainGeom (object):
             tvinds[0], tvinds[1], tvinds[2] = ret.pop(0)
 
 
+if USE_COMPILED:
+    from terrain_c import *
