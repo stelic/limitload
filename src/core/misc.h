@@ -288,6 +288,51 @@ void EXPORT add_tri (GeomVertexWriter *gvwvertex, GeomVertexWriter *gvwcolor,
                      const P3f &p2, const V3f &n2, const V4f &c2, const V2f &t2,
                      const P3f &p3, const V3f &n3, const V4f &c3, const V2f &t3);
 
+class EXPORT MiniConfigParser
+{
+public:
+
+    MiniConfigParser (const std::string &fpath);
+    ~MiniConfigParser ();
+
+    std::string file_path () const;
+
+    bool has_section (const std::string &section) const;
+    bool has_option (const std::string &section, const std::string &option) const;
+    std::vector<std::string> sections () const;
+    std::vector<std::string> options (const std::string &section) const;
+
+    std::string get_string (const std::string &section, const std::string &option) const;
+    std::string get_string (const std::string &section, const std::string &option,
+                            const std::string &defval) const;
+
+    int get_int (const std::string &section, const std::string &option) const;
+    int get_int (const std::string &section, const std::string &option,
+                 int defval) const;
+
+    double get_real (const std::string &section, const std::string &option) const;
+    double get_real (const std::string &section, const std::string &option,
+                     double defval) const;
+
+private:
+
+    std::string _path;
+    std::map<std::string, std::map<std::string, std::string> > _section_map;
+
+    static void _parse_file (
+        const std::string &fpath,
+        std::map<std::string, std::map<std::string, std::string> > &section_map);
+
+    void _get_string (const std::string &section, const std::string &option,
+                      bool mustexist, std::string &value, bool &exists) const;
+
+    int _get_int (const std::string &section, const std::string &option,
+                  int *defval) const;
+
+    double _get_real (const std::string &section, const std::string &option,
+                      double *defval) const;
+};
+
 #include <vector>
 #include <pta_int.h>
 typedef PTA_int ENC_LST_INT;

@@ -4,6 +4,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <sstream>
 
 #include <lquaternion.h>
 
@@ -396,6 +397,297 @@ LVecBase3 HaltonDistrib::next3 ()
     double r3 = _get_r(5, _index);
     _index += 1;
     return LVecBase3(r1, r2, r3);
+}
+
+MiniConfigParser::MiniConfigParser (const std::string &fpath)
+: _path(fpath)
+{
+    _parse_file(fpath, _section_map);
+}
+
+MiniConfigParser::~MiniConfigParser ()
+{
+}
+
+static std::string trim (const std::string &s)
+{
+    const char *ws = " \t\r\n";
+    int pos1 = s.find_first_not_of(ws);
+    if (pos1 == std::string::npos) {
+        return "";
+    }
+    int pos2 = s.find_last_not_of(ws);
+    if (pos2 == std::string::npos) {
+        pos2 = s.length() - 1;
+    }
+    return s.substr(pos1, pos2 - pos1 + 1);
+}
+
+void MiniConfigParser::_parse_file (
+    const std::string &fpath,
+    std::map<std::string, std::map<std::string, std::string> > &section_map)
+{
+    std::ifstream ifs(fpath.c_str());
+    std::string line;
+    const char *cmcs = ";#";
+    int lno = 0;
+    int pos;
+    std::string current_section;
+    while (std::getline(ifs, line)) {
+        ++lno;
+        // Strip comment.
+        pos = line.find_first_of(cmcs);
+        if (pos != std::string::npos) {
+            line.erase(pos);
+        }
+        // Skip empty line.
+        line = trim(line);
+        if (line.length() == 0) {
+            continue;
+        }
+        if (line[0] == '[') {
+            // Parse section.
+            if (line[line.length() - 1] != ']') {
+                fprintf(stderr,
+                    "Invalid section syntax in file '%s' line %d.\n",
+                    fpath.c_str(), lno);
+                std::exit(1);
+            }
+            std::string section = trim(line.substr(1, line.length() - 2));
+            if (section.length() == 0) {
+                fprintf(stderr,
+                    "Empty section name in file '%s' line %d.\n",
+                    fpath.c_str(), lno);
+                std::exit(1);
+            }
+            if (section_map.find(section) != section_map.end()) {
+                fprintf(stderr,
+                    "Repeated section name '%s' in file '%s' line %d.\n",
+                    section.c_str(), fpath.c_str(), lno);
+                std::exit(1);
+            }
+            section_map[section] = std::map<std::string, std::string>();
+            current_section = section;
+        } else {
+            // Parse option.
+            if (current_section.length() == 0) {
+                fprintf(stderr,
+                    "Option before section in file '%s' line %d.\n",
+                    fpath.c_str(), lno);
+                std::exit(1);
+            }
+            pos = line.find("=");
+            if (pos == std::string::npos) {
+                fprintf(stderr,
+                    "Invalid option syntax in file '%s' line %d.\n",
+                    fpath.c_str(), lno);
+                std::exit(1);
+            }
+            std::string option = trim(line.substr(0, pos));
+            std::string value = trim(line.substr(pos + 1));
+            if (option.length() == 0) {
+                fprintf(stderr,
+                    "Empty option name in file '%s' line %d.\n",
+                    fpath.c_str(), lno);
+                std::exit(1);
+            }
+            std::map<std::string, std::string> &option_map = section_map[current_section];
+            if (option_map.find(option) != option_map.end()) {
+                fprintf(stderr,
+                    "Repeated option name '%s' in file '%s' line %d.\n",
+                    option.c_str(), fpath.c_str(), lno);
+                std::exit(1);
+            }
+            option_map[option] = value;
+        }
+    }
+}
+
+std::string MiniConfigParser::file_path () const
+{
+    return _path;
+}
+
+bool MiniConfigParser::has_section (const std::string &section) const
+{
+    bool exists = false;
+    std::map<std::string, std::map<std::string, std::string> >::const_iterator
+        option_map_it = _section_map.find(section);
+    if (option_map_it != _section_map.end()) {
+        exists = true;
+    }
+    return exists;
+}
+
+bool MiniConfigParser::has_option (const std::string &section, const std::string &option) const
+{
+    bool exists = false;
+    std::map<std::string, std::map<std::string, std::string> >::const_iterator
+        option_map_it = _section_map.find(section);
+    if (option_map_it != _section_map.end()) {
+        const std::map<std::string, std::string> &option_map = option_map_it->second;
+        std::map<std::string, std::string>::const_iterator
+            value_it = option_map.find(option);
+        if (value_it != option_map.end()) {
+            exists = true;
+        }
+    }
+    return exists;
+}
+
+std::vector<std::string> MiniConfigParser::sections () const
+{
+    std::vector<std::string> keys;
+    for (std::map<std::string, std::map<std::string, std::string> >::const_iterator
+        it = _section_map.begin(); it != _section_map.end(); ++it) {
+        keys.push_back(it->first);
+    }
+    return keys;
+}
+
+std::vector<std::string> MiniConfigParser::options (const std::string &section) const
+{
+    std::vector<std::string> keys;
+    std::map<std::string, std::map<std::string, std::string> >::const_iterator
+        option_map_it = _section_map.find(section);
+    if (option_map_it != _section_map.end()) {
+        const std::map<std::string, std::string> &option_map = option_map_it->second;
+        for (std::map<std::string, std::string>::const_iterator
+            it = option_map.begin(); it != option_map.end(); ++it) {
+            keys.push_back(it->first);
+        }
+    } else {
+        fprintf(stderr,
+            "Missing section '%s' in file '%s'.\n",
+            section.c_str(), _path.c_str());
+        std::exit(1);
+    }
+    return keys;
+}
+
+void MiniConfigParser::_get_string (
+    const std::string &section, const std::string &option, bool mustexist,
+    std::string &value, bool &exists) const
+{
+    exists = false;
+    std::map<std::string, std::map<std::string, std::string> >::const_iterator
+        option_map_it = _section_map.find(section);
+    if (option_map_it != _section_map.end()) {
+        const std::map<std::string, std::string> &option_map = option_map_it->second;
+        std::map<std::string, std::string>::const_iterator
+            value_it = option_map.find(option);
+        if (value_it != option_map.end()) {
+            value = value_it->second;
+            exists = true;
+        } else if (mustexist) {
+            fprintf(stderr,
+                "Missing option '%s' in section '%s' in file '%s'.\n",
+                option.c_str(), section.c_str(), _path.c_str());
+            std::exit(1);
+        }
+    } else if (mustexist) {
+        fprintf(stderr,
+            "Missing section '%s' in file '%s'.\n",
+            section.c_str(), _path.c_str());
+        std::exit(1);
+    }
+}
+
+std::string MiniConfigParser::get_string (const std::string &section,
+                                          const std::string &option) const
+{
+    std::string value; bool exists;
+    _get_string(section, option, true, value, exists);
+    return value;
+}
+
+std::string MiniConfigParser::get_string (const std::string &section,
+                                          const std::string &option,
+                                          const std::string &defval) const
+{
+    std::string value; bool exists;
+    _get_string(section, option, false, value, exists);
+    if (exists) {
+        return value;
+    } else {
+        return defval;
+    }
+}
+
+int MiniConfigParser::get_int (
+    const std::string &section, const std::string &option) const
+{
+    return _get_int(section, option, NULL);
+}
+
+int MiniConfigParser::get_int (
+    const std::string &section, const std::string &option,
+    int defval) const
+{
+    return _get_int(section, option, &defval);
+}
+
+int MiniConfigParser::_get_int (
+    const std::string &section, const std::string &option,
+    int *defval) const
+{
+    bool mustexist = (defval == NULL);
+    std::string str_value; bool exists;
+    _get_string(section, option, mustexist, str_value, exists);
+    if (exists) {
+        int value;
+        std::istringstream iss(str_value);
+        iss >> value;
+        if (iss.good() || !iss.eof()) {
+            fprintf(stderr,
+                "Cannot convert option '%s' value '%s' to integer "
+                "in section '%s' in file '%s'.\n",
+                option.c_str(), str_value.c_str(), section.c_str(),
+                _path.c_str());
+            std::exit(1);
+        }
+        return value;
+    } else {
+        return *defval;
+    }
+}
+
+double MiniConfigParser::get_real (
+    const std::string &section, const std::string &option) const
+{
+    return _get_real(section, option, NULL);
+}
+
+double MiniConfigParser::get_real (
+    const std::string &section, const std::string &option,
+    double defval) const
+{
+    return _get_real(section, option, &defval);
+}
+
+double MiniConfigParser::_get_real (
+    const std::string &section, const std::string &option,
+    double *defval) const
+{
+    bool mustexist = (defval == NULL);
+    std::string str_value; bool exists;
+    _get_string(section, option, mustexist, str_value, exists);
+    if (exists) {
+        double value;
+        std::istringstream iss(str_value);
+        iss >> value;
+        if (iss.good() || !iss.eof()) {
+            fprintf(stderr,
+                "Cannot convert option '%s' value '%s' to real "
+                "in section '%s' in file '%s'.\n",
+                option.c_str(), str_value.c_str(), section.c_str(),
+                _path.c_str());
+            std::exit(1);
+        }
+        return value;
+    } else {
+        return *defval;
+    }
 }
 
 std::vector<int> dec_lst_int (ENC_LST_INT enc_lst)
