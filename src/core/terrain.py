@@ -3183,6 +3183,8 @@ class TerrainGeom (object):
             # There is nothing from this cut on this tile.
             return NodePath(tname)
         tilevinds = sorted(set(tilevinds))
+        nvinds = len(tilevinds)
+        ntinds = len(tiletinds)
         for lt, l in enumerate(tilevinds):
             tilevertmap[l] = lt
 
@@ -3201,6 +3203,7 @@ class TerrainGeom (object):
 
         # Construct graphics vertices.
         gvdata = GeomVertexData("data", gvformat, Geom.UHStatic)
+        gvdata.uncleanSetNumRows(nvinds)
         gvwvertex = GeomVertexWriter(gvdata, InternalName.getVertex())
         gvwnormal = GeomVertexWriter(gvdata, InternalName.getNormal())
         gvwtangent = GeomVertexWriter(gvdata, InternalName.getTangent())
@@ -3225,12 +3228,18 @@ class TerrainGeom (object):
 
         # Construct graphics triangles.
         gtris = GeomTriangles(Geom.UHStatic)
+        gvdtris = gtris.modifyVertices()
+        gvdtris.uncleanSetNumRows(ntinds * 3)
+        gvwtris = GeomVertexWriter(gvdtris, 0)
         tri1s, tri2s, tri3s = tris[:3]
         for k in tiletinds:
             l1, l2, l3 = (tri1s[k], tri2s[k], tri3s[k])
             lt1, lt2, lt3 = tilevertmap[l1], tilevertmap[l2], tilevertmap[l3]
-            gtris.addVertices(lt1, lt2, lt3)
-            gtris.closePrimitive()
+            #gtris.addVertices(lt1, lt2, lt3)
+            gvwtris.addData1i(lt1)
+            gvwtris.addData1i(lt2)
+            gvwtris.addData1i(lt3)
+            #gtris.closePrimitive()
 
         # Construct tile skirt.
         if True:
@@ -3318,10 +3327,16 @@ class TerrainGeom (object):
                                     gvwtexcoord.addData2f(u, v)
                                 # Add triangles.
                                 ltd = ltc + 1
-                                gtris.addVertices(ltb, lta, ltc)
-                                gtris.closePrimitive()
-                                gtris.addVertices(ltb, ltc, ltd)
-                                gtris.closePrimitive()
+                                #gtris.addVertices(ltb, lta, ltc)
+                                gvwtris.addData1i(ltb)
+                                gvwtris.addData1i(lta)
+                                gvwtris.addData1i(ltc)
+                                #gtris.closePrimitive()
+                                #gtris.addVertices(ltb, ltc, ltd)
+                                gvwtris.addData1i(ltb)
+                                gvwtris.addData1i(ltc)
+                                gvwtris.addData1i(ltd)
+                                #gtris.closePrimitive()
                                 ltc += 2
 
         # Construct the mesh.
@@ -3330,7 +3345,7 @@ class TerrainGeom (object):
         gnode = GeomNode(tname)
         gnode.addGeom(geom)
         node = NodePath(gnode)
-        node.flattenStrong()
+        #node.flattenStrong()
 
         return node
 
