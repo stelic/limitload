@@ -24,7 +24,13 @@ INITIALIZE_TYPE_HANDLE(UnitGrid2)
 
 UnitGrid2::UnitGrid2 (const std::string &pnm_path)
 {
-    _grid = _grid_from_pnm(PNMImage(pnm_path));
+    PNMImage img(pnm_path);
+    if (!img.is_valid()) {
+        fprintf(stderr,
+            "Cannot read image file '%s'.\n", pnm_path.c_str());
+        std::exit(1);
+    }
+    _grid = _grid_from_pnm(img);
     _init_rest();
 }
 
