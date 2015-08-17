@@ -18,7 +18,6 @@
 #include <lvector3.h>
 #include <lvector4.h>
 #include <triangulator.h>
-#include <geomEnums.h>
 
 #include <terrain.h>
 #include <table.h>
@@ -1970,7 +1969,7 @@ NodePath TerrainGeom::_make_tile (
     // would change it automatically if needed. Since it is not used,
     // change manually.
     if (nvinds >= 1 << 16) {
-        gtris->set_index_type(GeomEnums::NT_uint32);
+        gtris->set_index_type(Geom::NT_uint32);
     }
     GeomVertexArrayData *gvdtris = gtris->modify_vertices();
     gvdtris->unclean_set_num_rows(ntinds * 3);
