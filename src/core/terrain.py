@@ -3261,6 +3261,11 @@ class TerrainGeom (object):
 
         # Construct graphics triangles.
         gtris = GeomTriangles(Geom.UHStatic)
+        # Default index column type is NTUint16, and add_vertices()
+        # would change it automatically if needed. Since it is not used,
+        # change manually.
+        if nvinds >= 1 << 16:
+            gtris.setIndexType(Geom.NTUint32)
         gvdtris = gtris.modifyVertices()
         gvdtris.uncleanSetNumRows(ntinds * 3)
         gvwtris = GeomVertexWriter(gvdtris, 0)
