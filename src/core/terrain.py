@@ -218,7 +218,7 @@ class Terrain (object):
                   tiledivx=None, tiledivy=None,
                   cuts=[], pntlit=0, sunblend=(),
                   wshadows=None,
-                  pos=Point3()):
+                  pos=None):
 
         if maxheight is None:
             maxheight = minheight
@@ -320,6 +320,9 @@ class Terrain (object):
         tileroot = self._geom.tile_root()
 
         self.node = world.node.attachNewNode("terrain")
+        if pos is None:
+            pos = Point3()
+        pos = Point3(pos)
         self.node.setPos(pos)
         self._pos = pos
         self._pos_x, self._pos_y = pos[0], pos[1]
