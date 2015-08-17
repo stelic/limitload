@@ -18,6 +18,7 @@
 #include <lvector3.h>
 #include <lvector4.h>
 #include <triangulator.h>
+#include <geomEnums.h>
 
 #include <terrain.h>
 #include <table.h>
@@ -1965,6 +1966,12 @@ NodePath TerrainGeom::_make_tile (
 
     // Construct graphics triangles.
     PT(GeomTriangles) gtris = new GeomTriangles(Geom::UH_static);
+    // Default index column type is NT_uint16, and add_vertices()
+    // would change it automatically if needed. Since it is not used,
+    // change manually.
+    if (nvinds >= 1 << 16) {
+        gtris->set_index_type(GeomEnums::NT_uint32);
+    }
     GeomVertexArrayData *gvdtris = gtris->modify_vertices();
     gvdtris->unclean_set_num_rows(ntinds * 3);
     GeomVertexWriter *gvwtris = new GeomVertexWriter(gvdtris, 0);
