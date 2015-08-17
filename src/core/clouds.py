@@ -44,7 +44,7 @@ class Clouds (object):
                   wtilesizex=40000.0, wtilesizey=40000.0,
                   vsortbase=2, vsortdivs=0,
                   loddists=None, lodredfac=0.5, lodaccum=False,
-                  maxnumquads=None, randseed=None, cloudbound=False,
+                  maxnumquads=None, randseed=None,
                   sunblend=(), moonblend=(),
                   name=None):
 
@@ -73,7 +73,7 @@ class Clouds (object):
             cloudmap=cloudmap, mingray=mingray, maxgray=maxgray,
             clouddens=clouddens, vsortbase=vsortbase, vsortdivs=vsortdivs,
             numlods=numlods, lodredfac=lodredfac, lodaccum=lodaccum,
-            maxnumquads=maxnumquads, randseed=randseed, cloudbound=cloudbound,
+            maxnumquads=maxnumquads, randseed=randseed,
         )
         ret = None
         keyhx = None
@@ -121,7 +121,7 @@ class Clouds (object):
 
         numtilesx, numtilesy, tilesizex, tilesizey, numlods, offsetz = celldata
         vsortdirs, vsmaxoffangs, vsnbinds = vsortdata
-        clroot, clbroot = geomdata
+        clroot, = geomdata
 
         self._cloudshape = cloudshape
 
@@ -129,9 +129,6 @@ class Clouds (object):
         clroot.reparentTo(self.node)
         clroot.setPos(0.0, 0.0, offsetz)
         self.world.add_altbin_node(clroot)
-        cloudbound = clbroot.getChildren().isEmpty()
-        if cloudbound:
-            clbroot.reparentTo(self.node)
 
         # Setup view direction handling.
         self._vsortdirs = list(enumerate(vsortdirs))
@@ -194,17 +191,6 @@ class Clouds (object):
         self.node.setShaderInput(self._shdinp.sunlfacn, 1.0)
         self.node.setShaderInput(self._shdinp.moonlfacn, 1.0)
 
-        if cloudbound:
-            # Initialize LOD handling per bounds tile.
-            for cbtile in clbroot.getChildren():
-                cblod = cbtile.node()
-                cblod.setSwitch(0, outvisradius, 0.0)
-
-            # Setup bounds tile rendering.
-            btexture = base.load_texture("data", "images/ui/red.png")
-            clbroot.setTexture(btexture)
-            clbroot.setRenderModeWireframe()
-
         # Update states.
         self._updwait_vsortdir = 0.0
         self._updperiod_vsortdir = 0.267
@@ -222,7 +208,6 @@ class Clouds (object):
 
 # @cache-key-start: clouds-generation
     _gvformat = {}
-    _bgvformat = None
 
     @staticmethod
     def _construct (sizex, sizey, wtilesizex, wtilesizey,
@@ -230,7 +215,7 @@ class Clouds (object):
                     quaddens, quadsize, texuvparts,
                     cloudshape, cloudmap, mingray, maxgray, clouddens,
                     vsortbase, vsortdivs, numlods, lodredfac, lodaccum,
-                    maxnumquads, randseed, cloudbound):
+                    maxnumquads, randseed):
 
 # @cache-key-end: clouds-generation
         report(_("Constructing clouds."))
@@ -645,84 +630,6 @@ class Clouds (object):
             t1 = t2
 # @cache-key-start: clouds-generation
 
-        # Create cloud bounds if requested.
-        clbroot = NodePath("bounds")
-        if cloudbound:
-            if cloudshape not in (0,):
-                raise StandardError(
-                    "Cloud bounds not yet implemented "
-                    "for cloud shape '%s'." % cloudshape)
-
-            # Vertex format for bounds textures.
-            bgvformat = Clouds._bgvformat
-            if bgvformat is None:
-                bgvarray = GeomVertexArrayFormat()
-                bgvarray.addColumn(InternalName.getVertex(), 3,
-                                   Geom.NTFloat32, Geom.CPoint)
-                bgvarray.addColumn(InternalName.getTexcoord(), 2,
-                                   Geom.NTFloat32, Geom.CTexcoord)
-                bgvformat = GeomVertexFormat()
-                bgvformat.addArray(bgvarray)
-                bgvformat = GeomVertexFormat.registerFormat(bgvformat)
-                Clouds._bgvformat = bgvformat
-
-            # Setup writers.
-            for it in xrange(numtilesx):
-                for jt in xrange(numtilesy):
-                    ts = tilespecs[it][jt]
-                    ts.bgvdata = GeomVertexData("bound", bgvformat, Geom.UHStatic)
-                    ts.bgvwvertex = GeomVertexWriter(ts.bgvdata, InternalName.getVertex())
-                    ts.bgvwtexcoord = GeomVertexWriter(ts.bgvdata, InternalName.getTexcoord())
-                    ts.bgtris = GeomTriangles(Geom.UHStatic)
-
-            # Construct bound nodes.
-            for cloudspec in cloudspecs:
-                cpos, cwidth, cheight1, cheight2 = cloudspec[:4]
-                it = min(max(int((cpos[0] - offsetx) / tilesizex), 0), numtilesx - 1)
-                jt = min(max(int((cpos[1] - offsety) / tilesizey), 0), numtilesy - 1)
-                ts = tilespecs[it][jt]
-                bpos = cpos - ts.pos
-                Dome._add_dome(gvwvertex=ts.bgvwvertex, gvwnormal=None,
-                               gvwcolor=None, gvwtexcoord=ts.bgvwtexcoord,
-                               gtris=ts.bgtris,
-                               pos=bpos, rot=Vec3(),
-                               rad=(0.5 * cwidth), ang=(0.5 * pi),
-                               nbprsegs=6, extang=0.0,
-                               uoff=0.0, voff=0.0, expalpha=0.0,
-                               eggfac=(cheight1 / (0.5 * cwidth)))
-                Dome._add_dome(gvwvertex=ts.bgvwvertex, gvwnormal=None,
-                               gvwcolor=None, gvwtexcoord=ts.bgvwtexcoord,
-                               gtris=ts.bgtris,
-                               pos=bpos, rot=Vec3(),
-                               rad=(0.5 * cwidth), ang=(0.5 * pi),
-                               nbprsegs=6, extang=0.0,
-                               uoff=0.0, voff=0.0, expalpha=0.0,
-                               eggfac=(cheight2 / (0.5 * cwidth)))
-
-            # Distribute bound nodes over tiles.
-            for it in xrange(numtilesx):
-                for jt in xrange(numtilesy):
-                    ts = tilespecs[it][jt]
-                    cbname = "cbound-i%d-j%d" % (it, jt)
-                    cblod = LODNode(cbname)
-                    cblnd = clbroot.attachNewNode(cblod)
-                    cblnd.setPos(ts.pos)
-                    cbgeom = Geom(ts.bgvdata)
-                    cbgeom.addPrimitive(ts.bgtris)
-                    cbgnode = GeomNode(bname)
-                    cbgnode.addGeom(bgeom)
-                    cbtile = NodePath(cbgnode)
-                    cblod.addSwitch(tileradius * (numlods + 1), 0.0)
-                    cbtile.reparentTo(cblnd)
-
-# @cache-key-end: clouds-generation
-            if timeit:
-                t2 = time()
-                dbgval(1, "clouds-create-bounds",
-                       (t2 - t1, "%.3f", "time", "s"))
-                t1 = t2
-# @cache-key-start: clouds-generation
-
 # @cache-key-end: clouds-generation
         if timeit:
             t2 = time()
@@ -734,7 +641,7 @@ class Clouds (object):
         celldata = (numtilesx, numtilesy, tilesizex, tilesizey, numlods,
                     offsetz)
         vsortdata = (vsortdirs, vsmaxoffangs, vsnbinds)
-        geomdata = (clroot, clbroot)
+        geomdata = (clroot,)
         return celldata, vsortdata, geomdata
 
 

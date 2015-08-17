@@ -863,7 +863,6 @@ def create_terrain_1 (world, terraintype, visradius,
                          wtilesizex=320000, wtilesizey=320000,
                          vsortbase=2, vsortdivs=0,
                          maxnumquads=100000, randseed=cloudseed,
-                         cloudbound=False,
                          sunblend=sunblend, moonblend=moonblend,
                          name=(terraintype + "-clouds-cumulus"))
         # cumulus.node.analyze()
@@ -885,7 +884,6 @@ def create_terrain_1 (world, terraintype, visradius,
                          wtilesizex=320000, wtilesizey=320000,
                          vsortbase=2, vsortdivs=0,
                          maxnumquads=100000, randseed=cloudseed,
-                         cloudbound=False,
                          sunblend=sunblend, moonblend=moonblend,
                          name=(terraintype + "-clouds-stratus"))
         # stratus.node.analyze()
@@ -912,7 +910,6 @@ def create_terrain_1 (world, terraintype, visradius,
                         wtilesizex=320000, wtilesizey=320000,
                         vsortbase=2, vsortdivs=0,
                         maxnumquads=100000, randseed=cloudseed,
-                        cloudbound=False,
                         sunblend=sunblend, moonblend=moonblend,
                         name=(terraintype + "-clouds-cirrus"))
         # cirrus.node.analyze()
