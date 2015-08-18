@@ -4,7 +4,6 @@ from array import array
 import cPickle as pickle
 from math import pi, degrees, ceil, sqrt, sin, cos, acos, atan2
 import os
-from random import Random
 from shutil import rmtree
 from time import time
 
@@ -23,7 +22,7 @@ from src import internal_path, real_path, full_path
 from src import GLSL_PROLOGUE
 from src.core.misc import AutoProps, SimpleProps, v3t4, set_texture
 from src.core.misc import get_cache_key_section, key_to_hex, intl01v
-#from src.core.misc import Random
+from src.core.misc import Random
 from src.core.misc import report, dbgval
 from src.core.shader import make_shdfunc_amblit
 from src.core.shader import make_shdfunc_fogbln, make_shdfunc_fogapl
@@ -48,8 +47,6 @@ class Clouds (object):
                   sunblend=(), moonblend=(),
                   name=None):
 
-        timeit = False
-
         sizex = float(sizex)
         sizey = float(sizey)
         wtilesizex = float(wtilesizex)
@@ -60,75 +57,100 @@ class Clouds (object):
 
         if not loddists:
             loddists = []
+
+        if name is None:
+            name = ""
+
+        # Derive any non-initialized cloudmap data.
+        if isinstance(quadsize, (int, float)):
+            minquadsize, maxquadsize = quadsize, quadsize
+        else:
+            minquadsize, maxquadsize = quadsize
+        if mingray is None:
+            mingray = 0
+        if maxgray is None:
+            maxgray = 255
+        if isinstance(altitude, (int, float)):
+            minaltitude, maxaltitude = float(altitude), float(altitude)
+        else:
+            minaltitude, maxaltitude = map(float, altitude)
+        if isinstance(cloudwidth, (int, float)):
+            mincloudwidth, maxcloudwidth = float(cloudwidth), float(cloudwidth)
+        else:
+            mincloudwidth, maxcloudwidth = map(float, cloudwidth)
+        if isinstance(cloudheight1, (int, float)):
+            mincloudheight1, maxcloudheight1 = float(cloudheight1), float(cloudheight1)
+        else:
+            mincloudheight1, maxcloudheight1 = map(float, cloudheight1)
+        if isinstance(cloudheight2, (int, float)):
+            mincloudheight2, maxcloudheight2 = float(cloudheight2), float(cloudheight2)
+        else:
+            mincloudheight2, maxcloudheight2 = map(float, cloudheight2)
+        cloudheight1 = sorted((mincloudheight1, maxcloudheight1))
+        if cloudheight1[0] >= 0.0 or cloudheight1[1] >= 0.0:
+            raise StandardError(
+                "Parameter '%s' must be smaller than zero." % "cloudheight1")
+        cloudheight2 = sorted((mincloudheight2, maxcloudheight2))
+        if cloudheight2[0] <= 0.0 or cloudheight2[1] <= 0.0:
+            raise StandardError(
+                "Parameter '%s' must be greater than zero." % "cloudheight2")
+
+        if not isinstance(texuvparts, TexUVParts):
+            texuvparts1 = TexUVParts()
+            for uoff, voff, ulen, vlen in texuvparts:
+                texuvparts1.add_part(Vec4(uoff, voff, ulen, vlen))
+            texuvparts = texuvparts1
+
+        cloudmappath = ""
+        havecloudmappath = False
+        if cloudmap:
+            cloudmappath = full_path("data", cloudmap)
+            havecloudmappath = True
+
         numlods = len(loddists) + 1
 
-# @cache-key-start: clouds-generation
-        carg = AutoProps(
-            sizex=sizex, sizey=sizey,
-            wtilesizex=wtilesizex, wtilesizey=wtilesizey,
-            altitude=altitude, cloudwidth=cloudwidth,
-            cloudheight1=cloudheight1, cloudheight2=cloudheight2,
-            quaddens=quaddens, quadsize=quadsize, texuvparts=texuvparts,
-            cloudshape=cloudshape,
-            cloudmap=cloudmap, mingray=mingray, maxgray=maxgray,
-            clouddens=clouddens, vsortbase=vsortbase, vsortdivs=vsortdivs,
-            numlods=numlods, lodredfac=lodredfac, lodaccum=lodaccum,
-            maxnumquads=maxnumquads, randseed=randseed,
-        )
-        ret = None
-        keyhx = None
-        if name and isinstance(cloudmap, basestring):
-            tname = name
-            fckey = [cloudmap]
-            this_path = internal_path("data", __file__)
-            key = (sorted(carg.props()),
-                   get_cache_key_section(this_path.replace(".pyc", ".py"),
-                                         "clouds-generation"))
-            keyhx = key_to_hex(key, fckey)
-# @cache-key-end: clouds-generation
-            if timeit:
-                t1 = time()
-# @cache-key-start: clouds-generation
-            ret = self._load_from_cache(tname, keyhx)
-# @cache-key-end: clouds-generation
-            if timeit:
-                t2 = time()
-                dbgval(1, "clouds-load-from-cache",
-                       (t2 - t1, "%.3f", "time", "s"))
-# @cache-key-start: clouds-generation
-        if not ret:
-            if timeit:
-                t1 = time()
-            ret = Clouds._construct(**dict(carg.props()))
-            celldata, vsortdata, geomdata = ret
-            if keyhx is not None:
-# @cache-key-end: clouds-generation
-                if timeit:
-                    t1 = time()
-# @cache-key-start: clouds-generation
-                Clouds._write_to_cache(tname, keyhx, celldata, vsortdata, geomdata)
-# @cache-key-end: clouds-generation
-                if timeit:
-                    t2 = time()
-                    dbgval(1, "clouds-write-to-cache",
-                           (t2 - t1, "%.3f", "time", "s"))
-# @cache-key-start: clouds-generation
-        else:
-            celldata, vsortdata, geomdata = ret
-# @cache-key-end: clouds-generation
+        if maxnumquads is None:
+            maxnumquads = 0
+
+        self._geom = CloudsGeom(
+            name,
+            sizex, sizey,
+            wtilesizex, wtilesizey,
+            minaltitude, maxaltitude, mincloudwidth, maxcloudwidth,
+            mincloudheight1, maxcloudheight1, mincloudheight2, maxcloudheight2,
+            quaddens, minquadsize, maxquadsize,
+            texuvparts, cloudshape,
+            cloudmappath, havecloudmappath, mingray, maxgray,
+            clouddens, vsortbase, vsortdivs,
+            numlods, lodredfac, lodaccum,
+            maxnumquads, randseed)
+
+        numtilesx = self._geom.num_tiles_x()
+        numtilesy = self._geom.num_tiles_y()
+        tilesizex = self._geom.tile_size_x()
+        tilesizey = self._geom.tile_size_y()
+        numlods = self._geom.num_lods()
+        offsetz = self._geom.offset_z()
+        tileroot = self._geom.tile_root()
+
+        vsortdirs = []
+        vsmaxoffangs = []
+        vsnbinds = []
+        for i in xrange(self._geom.num_visual_sort_dirs()):
+            vsortdirs.append(self._geom.visual_sort_dir(i))
+            vsmaxoffangs.append(self._geom.max_visual_sort_dir_offset_angle(i))
+            vsnbinds1 = []
+            for j in xrange(self._geom.num_neighbor_visual_sort_dirs(i)):
+                vsnbinds1.append(self._geom.visual_sort_dir_neighbor_index(i, j))
+            vsnbinds.append(vsnbinds1)
 
         self.world = world
-
-        numtilesx, numtilesy, tilesizex, tilesizey, numlods, offsetz = celldata
-        vsortdirs, vsmaxoffangs, vsnbinds = vsortdata
-        clroot, = geomdata
-
         self._cloudshape = cloudshape
 
         self.node = world.node.attachNewNode("clouds")
-        clroot.reparentTo(self.node)
-        clroot.setPos(0.0, 0.0, offsetz)
-        self.world.add_altbin_node(clroot)
+        tileroot.reparentTo(self.node)
+        tileroot.setPos(0.0, 0.0, offsetz)
+        self.world.add_altbin_node(tileroot)
 
         # Setup view direction handling.
         self._vsortdirs = list(enumerate(vsortdirs))
@@ -153,7 +175,7 @@ class Clouds (object):
         # and collect data for loop.
         self._vtilings = []
         cvsind = self._vsortdir_index
-        for vtiling in clroot.getChildren():
+        for vtiling in tileroot.getChildren():
             self._vtilings.append(vtiling)
             for ijtile in vtiling.getChildren():
                 tlod = ijtile.node()
@@ -163,11 +185,11 @@ class Clouds (object):
         self._vtilings[cvsind].show()
 
         # Setup tile rendering.
-        clroot.setDepthWrite(False)
-        clroot.setTransparency(TransparencyAttrib.MAlpha)
-        clroot.setAntialias(AntialiasAttrib.MNone)
+        tileroot.setDepthWrite(False)
+        tileroot.setTransparency(TransparencyAttrib.MAlpha)
+        tileroot.setAntialias(AntialiasAttrib.MNone)
         if self._cloudshape == 1:
-            clroot.setTwoSided(True)
+            tileroot.setTwoSided(True)
         if isinstance(glowmap, Vec4):
             glow = glowmap
             glowmap = None
@@ -184,8 +206,8 @@ class Clouds (object):
         shdinp = SimpleProps(**dict(self.world.shdinp.items() + self._shdinp.items()))
         shader = Clouds._make_shader(self._cloudshape, shdinp, glow,
                                      sunblend, moonblend)
-        clroot.setShader(shader)
-        set_texture(clroot, texture=texture, glowmap=glowmap,
+        tileroot.setShader(shader)
+        set_texture(tileroot, texture=texture, glowmap=glowmap,
                     filtr=False, clamp=True)
         self.node.setShaderInput(self._shdinp.amblfacn, 1.0)
         self.node.setShaderInput(self._shdinp.sunlfacn, 1.0)
@@ -205,536 +227,6 @@ class Clouds (object):
         self.alive = True
         base.taskMgr.add(self._loop, "clouds-loop")
 
-
-# @cache-key-start: clouds-generation
-    _gvformat = {}
-
-    @staticmethod
-    def _construct (sizex, sizey, wtilesizex, wtilesizey,
-                    altitude, cloudwidth, cloudheight1, cloudheight2,
-                    quaddens, quadsize, texuvparts,
-                    cloudshape, cloudmap, mingray, maxgray, clouddens,
-                    vsortbase, vsortdivs, numlods, lodredfac, lodaccum,
-                    maxnumquads, randseed):
-
-# @cache-key-end: clouds-generation
-        report(_("Constructing clouds."))
-        timeit = False
-# @cache-key-start: clouds-generation
-
-# @cache-key-end: clouds-generation
-        if timeit:
-            t0 = time()
-            t1 = t0
-# @cache-key-start: clouds-generation
-
-        randgen = Random(randseed)
-
-        # Derive cell data.
-        def derive_cell_data (size, wtilesize):
-            numtiles = int(ceil(size / wtilesize))
-            tilesize = size / numtiles
-            return numtiles, tilesize
-        ret = derive_cell_data(sizex, wtilesizex)
-        numtilesx, tilesizex = ret
-        ret = derive_cell_data(sizey, wtilesizey)
-        numtilesy, tilesizey = ret
-
-        # Load cloud map.
-        if isinstance(cloudmap, basestring):
-            cloudmap = UnitGrid2(full_path("data", cloudmap))
-        elif isinstance(cloudmap, PNMImage):
-            cloudmap = UnitGrid2(cloudmap)
-        elif cloudmap is None:
-            cloudmap = UnitGrid2(0.0)
-
-        # Derive any non-initialized cloudmap data.
-        if isinstance(quadsize, (int, float)):
-            quadsize = (quadsize, quadsize)
-        if mingray is None:
-            mingray = 0
-        if maxgray is None:
-            maxgray = 255
-        if isinstance(altitude, (int, float)):
-            altitude = (altitude, altitude)
-        altitude = map(float, altitude)
-        if isinstance(cloudwidth, (int, float)):
-            cloudwidth = (cloudwidth, cloudwidth)
-        cloudwidth = map(float, cloudwidth)
-        if isinstance(cloudheight1, (int, float)):
-            cloudheight1 = (cloudheight1, cloudheight1)
-        cloudheight1 = map(float, cloudheight1)
-        if isinstance(cloudheight2, (int, float)):
-            cloudheight2 = (cloudheight2, cloudheight2)
-        cloudheight2 = map(float, cloudheight2)
-
-        cloudheight1 = sorted(cloudheight1)
-        if cloudheight1[0] >= 0.0 or cloudheight1[1] >= 0.0:
-            raise StandardError(
-                "Parameter '%s' must be smaller than zero." % "cloudheight1")
-        cloudheight2 = sorted(cloudheight2)
-        if cloudheight2[0] <= 0.0 or cloudheight2[1] <= 0.0:
-            raise StandardError(
-                "Parameter '%s' must be greater than zero." % "cloudheight2")
-
-        # Distribute clouds.
-        mingu = float(mingray) / 255
-        maxgu = float(maxgray) / 255
-        fgu0 = 1.0 / (maxgu - mingu)
-        fgu1 = -mingu * fgu0
-        mincloudwidth, maxcloudwidth = cloudwidth
-        sizex = numtilesx * tilesizex
-        sizey = numtilesy * tilesizey
-        midsize = 0.5 * (sizex + sizey)
-        ntc = int(((midsize / maxcloudwidth) * clouddens)**2)
-        nsmpxy = 5
-        dxypu = (maxcloudwidth / midsize) / nsmpxy
-        dxypu0 = -0.5 * (dxypu * nsmpxy)
-        cloudspecs = []
-        cloudvol = []
-        minavggu = 0.1
-        offsetx = -0.5 * sizex
-        offsety = -0.5 * sizey
-        minaltitude, maxaltitude = altitude
-        offsetz = 0.5 * (minaltitude + maxaltitude)
-        # ...+ offsetz will be set at top node, for proper altitude binning.
-        dz1 = minaltitude - offsetz
-        dz2 = maxaltitude - offsetz
-        mincloudheight1, maxcloudheight1 = cloudheight1[0], cloudheight1[1]
-        mincloudheight2, maxcloudheight2 = cloudheight2[0], cloudheight2[1]
-        for kc in xrange(ntc):
-            xcu = randgen.uniform(0.0, 1.0)
-            ycu = randgen.uniform(0.0, 1.0)
-            # Quick check to avoid nsmpxy**2 samplings on coarser cloud maps.
-            if cloudmap(xcu, ycu, tol=0.0, periodic=True) == 0.0:
-                continue
-            avggu = 0.0
-            for ip in xrange(nsmpxy):
-                xpu = xcu + dxypu0 + dxypu * ip
-                for jp in xrange(nsmpxy):
-                    ypu = ycu + dxypu0 + dxypu * jp
-                    gu = cloudmap(xpu, ypu, tol=0.0, periodic=True)
-                    avggu += min(max(gu * fgu0 + fgu1, 0.0), 1.0)
-            avggu /= nsmpxy**2
-            if avggu < minavggu:
-                continue
-            cwidth = randgen.uniform(mincloudwidth, maxcloudwidth) * avggu
-            cheight1 = randgen.uniform(mincloudheight1, maxcloudheight1) * avggu
-            cheight2 = randgen.uniform(mincloudheight2, maxcloudheight2) * avggu
-            xc = xcu * sizex + offsetx
-            yc = ycu * sizey + offsety
-            zc = randgen.uniform(dz1, dz2) * avggu
-            pc = Point3(xc, yc, zc)
-            cquads = [0] * numlods
-            cloudspecs.append((pc, cwidth, cheight1, cheight2, cquads))
-            if cloudshape == 0:
-                cvol = (1.333 * pi) * (0.5 * cwidth)**2 * (0.5 * (cheight2 - cheight1))
-            elif cloudshape == 1:
-                cvol = pi * (0.5 * cwidth)**2 * (cheight2 - cheight1)
-            cloudvol.append(cvol)
-# @cache-key-end: clouds-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "clouds-distribute",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-# @cache-key-start: clouds-generation
-
-        # Number of quads per LOD level.
-        sumcloudvol = sum(cloudvol)
-        if quaddens > 0.0:
-            numquads = int(quaddens * sumcloudvol)
-        else:
-            numquads = int(-quaddens)
-        if maxnumquads is not None:
-            numquads = min(numquads, maxnumquads)
-        quaddens1 = numquads / sumcloudvol if sumcloudvol > 0.0 else 0.0
-        if lodaccum:
-            plrfac = [lodredfac**kl for kl in xrange(numlods)]
-            sumplrfac = sum(plrfac)
-            plqfac = [x / sumplrfac for x in plrfac]
-            numquads = [int(numquads * x) for x in plqfac]
-        else:
-            numquads = [numquads]
-            for kl in xrange(1, numlods):
-                numquads.append(int(numquads[-1] * lodredfac))
-
-        # Distribute quads among clouds.
-        numclouds = len(cloudspecs)
-        for kl in xrange(numlods):
-            cloudvol_m = array("d", cloudvol)
-            numquads_m = numquads[kl]
-            while True:
-                if numquads_m <= 0:
-                    break
-                sumcloudvol = sum(cloudvol_m)
-                midcloudvol = 0.9 * (min(cloudvol_m) + max(cloudvol_m))
-                numquads_ms = 0
-                for kc in xrange(numclouds):
-                    cq = int(numquads_m * (cloudvol_m[kc] / sumcloudvol))
-                    if cq == 0 and cloudvol_m[kc] > midcloudvol:
-                        cq += 1
-                    cq = min(cq, numquads_m - numquads_ms)
-                    cloudspecs[kc][4][kl] += cq
-                    numquads_ms += cq
-                    if numquads_ms == numquads_m:
-                        break
-                    cloudvol_m[kc] -= (cq * sumcloudvol) / numquads_m
-                    cloudvol_m[kc] = max(cloudvol_m[kc], 0.0)
-                numquads_m -= numquads_ms
-        # Eliminate zero-quad clouds.
-        cloudspecs_m = []
-        refkl = numlods - 1
-        for cloudspec in cloudspecs:
-            if cloudspec[4][refkl] > 0:
-                cloudspecs_m.append(cloudspec)
-            else:
-                for kl in xrange(numlods):
-                    numquads[kl] -= cloudspec[4][kl]
-        cloudspecs = cloudspecs_m
-        numclouds = len(cloudspecs)
-# @cache-key-end: clouds-generation
-        if timeit:
-            if lodaccum:
-                cqs1 = [0] * numclouds
-            for kl in reversed(xrange(numlods)):
-                cqs1na = [cs[4][kl] for cs in cloudspecs]
-                nqs1na = sum(cqs1na)
-                if lodaccum:
-                    cqs1 = [x + y for x, y in zip(cqs1, cqs1na)]
-                else:
-                    cqs1 = cqs1na
-                nqs1 = sum(cqs1)
-                dbgval(1, "clouds-quads-in-lod",
-                       (kl, "%d", "lod"),
-                       (quaddens1 * 1e9, "%.1f", "quaddens", "1/km^3"),
-                       (nqs1, "%d", "numquads"),
-                       (nqs1na, "%d", "numquads1"),
-                       (min(cqs1), "%d", "minqpc"),
-                       (max(cqs1), "%d", "maxqpc"),
-                       (float(nqs1) / numclouds, "%.2f", "avgqpc"))
-        if timeit:
-            t2 = time()
-            dbgval(1, "clouds-distribute-quads",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-# @cache-key-start: clouds-generation
-
-        # Create view direction sorting data.
-        if vsortbase >= 0:
-            ret = geodesic_sphere(base=vsortbase, numdivs=vsortdivs)
-            vsortdirs, vsmaxoffangs, vsnbinds = ret[2:5]
-# @cache-key-end: clouds-generation
-            if timeit:
-                vsavgmaxoffang = sum(vsmaxoffangs) / len(vsortdirs)
-                vsmaxoffangsd = (sum((ma - vsavgmaxoffang)**2 for ma in vsmaxoffangs) /
-                                 (len(vsortdirs) - 1))**0.5
-                dbgval(1, "clouds-view-sorting",
-                       (len(vsortdirs), "%d", "numvsortdirs"),
-                       (degrees(max(vsmaxoffangs)), "%.1f", "maxmaxoffang", "deg"),
-                       (degrees(min(vsmaxoffangs)), "%.1f", "minmaxoffang", "deg"),
-                       (degrees(vsavgmaxoffang), "%.1f", "avgmaxoffang", "deg"),
-                       (degrees(vsmaxoffangsd), "%.2f", "maxoffangsd", "deg"))
-# @cache-key-start: clouds-generation
-        else:
-            vsortdirs = [Vec3(0.0, 1.0, 0.0)]
-            vsmaxoffangs = [pi + 1e-6]
-            vsnbinds = [[]]
-        numvsortdirs = len(vsortdirs)
-
-        # Vertex format for cloud textures.
-        gvformat = Clouds._gvformat.get(cloudshape)
-        if gvformat is None:
-            gvarray = GeomVertexArrayFormat()
-            gvarray.addColumn(InternalName.getVertex(), 3,
-                              Geom.NTFloat32, Geom.CPoint)
-            gvarray.addColumn(InternalName.getTexcoord(), 2,
-                              Geom.NTFloat32, Geom.CTexcoord)
-            if cloudshape == 0:
-                gvarray.addColumn(InternalName.make("offcenter"), 3,
-                                Geom.NTFloat32, Geom.CVector)
-                gvarray.addColumn(InternalName.make("grpoffcenter"), 3,
-                                Geom.NTFloat32, Geom.CVector)
-                gvarray.addColumn(InternalName.make("haxislen"), 4,
-                                Geom.NTFloat32, Geom.CVector)
-            gvformat = GeomVertexFormat()
-            gvformat.addArray(gvarray)
-            gvformat = GeomVertexFormat.registerFormat(gvformat)
-            Clouds._gvformat[cloudshape] = gvformat
-
-        # Initialize tiles.
-        class Data: pass
-        tilespecs = []
-        for it in xrange(numtilesx):
-            tilespecs1 = []
-            tilespecs.append(tilespecs1)
-            for jt in xrange(numtilesy):
-                ts = Data()
-                ts.pos = Point3(offsetx + (it + 0.5) * tilesizex,
-                                offsety + (jt + 0.5) * tilesizey,
-                                0.0)
-                ts.gvdata = GeomVertexData("cloud", gvformat, Geom.UHStatic)
-                ts.gvwvertex = GeomVertexWriter(ts.gvdata, InternalName.getVertex())
-                ts.gvwtexcoord = GeomVertexWriter(ts.gvdata, InternalName.getTexcoord())
-                if cloudshape == 0:
-                    ts.gvwoffcenter = GeomVertexWriter(ts.gvdata, "offcenter")
-                    ts.gvwgrpoffcenter = GeomVertexWriter(ts.gvdata, "grpoffcenter")
-                    ts.gvwhaxislen = GeomVertexWriter(ts.gvdata, "haxislen")
-                ts.gtris = [[GeomTriangles(Geom.UHStatic) for kl in xrange(numlods)]
-                            for kv in xrange(numvsortdirs)]
-                ts.qvspecs = [[] for kl in xrange(numlods)]
-                ts.nverts = 0
-                tilespecs1.append(ts)
-
-        # Create quads.
-        minquadsize, maxquadsize = quadsize
-        minquadsizes, maxquadsizes = [], []
-        qszplod = float(maxquadsize - minquadsize) / (numlods // 2 + 1)
-        for kl in xrange(numlods):
-            minquadsizes.append(minquadsize + qszplod * kl)
-            maxquadsizes.append(maxquadsize)
-        if cloudshape == 0:
-            vfw = Vec3(0.0, 1.0, 0.0)
-            vup = Vec3(0.0, 0.0, 1.0)
-        elif cloudshape == 1:
-            vfw = Vec3(0.0, 0.0, 1.0)
-            vup = Vec3(0.0, 1.0, 0.0)
-        vrt = vfw.cross(vup)
-        rot = Quat()
-        krt_kup = ((+1, -1), (-1, -1), (-1, +1), (+1, +1))
-        for ic, cloudspec in enumerate(cloudspecs):
-            cpos, cwidth, cheight1, cheight2, cquads = cloudspec
-            assert cheight1 < 0.0 and cheight2 > 0.0
-            hx = 0.5 * cwidth
-            hy = 0.5 * cwidth
-            hz1 = -cheight1
-            hz2 = cheight2
-            for kl in xrange(numlods):
-                lminquadsize = minquadsizes[kl]
-                lmaxquadsize = maxquadsizes[kl]
-                dhsz = 0.5 * (lminquadsize - minquadsize)
-                lhx = max(hx + dhsz, 0.0)
-                lhy = max(hy + dhsz, 0.0)
-                lhz1 = max(hz1 + dhsz, 0.0)
-                lhz2 = max(hz2 + dhsz, 0.0)
-                lcqspecs = []
-                kq = 0
-                while kq < cquads[kl]:
-                    qoff = Point3(randgen.uniform(-lhx, lhx),
-                                  randgen.uniform(-lhy, lhy),
-                                  randgen.uniform(-lhz1, lhz2))
-                    if cloudshape == 0:
-                        rad = qoff.length()
-                        tht = atan2(qoff[1], qoff[0])
-                        phi = acos(qoff[2] / rad)
-                        stht, ctht = sin(tht), cos(tht)
-                        sphi, cphi = sin(phi), cos(phi)
-                        hz = hz1 if qoff[2] < 0.0 else hz2
-                        rad0 = 1.0 / sqrt(ctht**2 * sphi**2 / hx**2 +
-                                          stht**2 * sphi**2 / hy**2 +
-                                          cphi**2 / hz**2)
-                        inside = (rad <= rad0)
-                    elif cloudshape == 1:
-                        rad = qoff.getXy().length()
-                        rad0 = sqrt(hx**2 + hy**2)
-                        inside = (rad <= rad0)
-                    if inside:
-                        qsz = randgen.uniform(lminquadsize, lmaxquadsize)
-                        lcqspecs.append((qoff, qsz))
-                        kq += 1
-                for qoff, qsz in lcqspecs:
-                    qpos = cpos + qoff
-                    it = min(max(int((qpos[0] - offsetx) / tilesizex), 0), numtilesx - 1)
-                    jt = min(max(int((qpos[1] - offsety) / tilesizey), 0), numtilesy - 1)
-                    ts = tilespecs[it][jt]
-                    qtpos = qpos - ts.pos
-                    ang = randgen.uniform(-pi, pi)
-                    rot.setFromAxisAngleRad(ang, vfw)
-                    drt = Vec3(rot.xform(vrt)) * (0.5 * qsz)
-                    dup = Vec3(rot.xform(vup)) * (0.5 * qsz)
-                    uoff, voff, ulen, vlen = randgen.choice(texuvparts)
-                    for krt, kup in krt_kup:
-                        poff = drt * krt + dup * kup
-                        ts.gvwvertex.addData3f(*(qtpos + poff))
-                        qpoff = qoff + poff
-                        qprad = qpoff.length()
-                        klu = (1 - krt) / 2; klv = (1 + kup) / 2
-                        ts.gvwtexcoord.addData2f(uoff + ulen * klu,
-                                                 voff + vlen * klv)
-                        if cloudshape == 0:
-                            ts.gvwoffcenter.addData3f(*poff)
-                            ts.gvwgrpoffcenter.addData3f(*qoff)
-                            ts.gvwhaxislen.addData4f(hx, hy, hz1, hz2)
-                    ts.qvspecs[kl].append((qtpos, ts.nverts))
-                    ts.nverts += 4
-# @cache-key-end: clouds-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "clouds-create-vertices",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-# @cache-key-start: clouds-generation
-
-        # Create tiles.
-        for tilespecs1 in tilespecs:
-            for ts in tilespecs1:
-                for vd, gtris in zip(vsortdirs, ts.gtris):
-                    for qvspecs in ts.qvspecs:
-                        qvspecs.sort(key=lambda qs: -(qs[0].dot(vd)))
-                    for kl, gtris1 in enumerate(gtris):
-                        if lodaccum:
-                            qvspecs = ts.qvspecs[kl:]
-                        else:
-                            qvspecs = [ts.qvspecs[kl]]
-                        for qvspecs1 in qvspecs:
-                            for qtpos, kv0 in qvspecs1:
-                                gtris1.addVertices(kv0 + 0, kv0 + 1, kv0 + 2)
-                                gtris1.closePrimitive()
-                                gtris1.addVertices(kv0 + 0, kv0 + 2, kv0 + 3)
-                                gtris1.closePrimitive()
-# @cache-key-end: clouds-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "clouds-create-triangles",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-# @cache-key-start: clouds-generation
-
-        # Finalize tiles.
-        clroot = NodePath("clouds")
-        tileradius = 0.5 * sqrt(tilesizex**2 + tilesizey**2)
-        tiles = []
-        for kv in xrange(numvsortdirs):
-            vtiling = clroot.attachNewNode("tiling-v%d" % kv)
-            for it in xrange(numtilesx):
-                for jt in xrange(numtilesy):
-                    ts = tilespecs[it][jt]
-                    tlod = LODNode("tile-v%d-i%d-j%d" % (kv, it, jt))
-                    ijtile = vtiling.attachNewNode(tlod)
-                    ijtile.setPos(ts.pos)
-                    for kl in xrange(numlods):
-                        tname = "tile-v%d-i%d-j%d-l%d" % (kv, it, jt, kl)
-                        gtris = ts.gtris[kv][kl]
-                        tgeom = Geom(ts.gvdata)
-                        tgeom.addPrimitive(gtris)
-                        tnode = GeomNode(tname)
-                        tnode.addGeom(tgeom)
-                        ltile = NodePath(tnode)
-                        tlod.addSwitch(tileradius * (kl + 1), tileradius * kl)
-                        ltile.reparentTo(ijtile)
-# @cache-key-end: clouds-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "clouds-create-tiles",
-                   (t2 - t1, "%.3f", "time", "s"))
-            t1 = t2
-# @cache-key-start: clouds-generation
-
-# @cache-key-end: clouds-generation
-        if timeit:
-            t2 = time()
-            dbgval(1, "clouds-cumulative",
-                   (t2 - t0, "%.3f", "time", "s"))
-            t1 = t2
-# @cache-key-start: clouds-generation
-
-        celldata = (numtilesx, numtilesy, tilesizex, tilesizey, numlods,
-                    offsetz)
-        vsortdata = (vsortdirs, vsmaxoffangs, vsnbinds)
-        geomdata = (clroot,)
-        return celldata, vsortdata, geomdata
-
-
-    _cache_pdir = "clouds"
-
-    @staticmethod
-    def _cache_key_path (tname):
-
-        return join_path(Clouds._cache_pdir, tname, "clouds.key")
-
-
-    @staticmethod
-    def _cache_celldata_path (tname):
-
-        return join_path(Clouds._cache_pdir, tname, "celldata.pkl")
-
-
-    @staticmethod
-    def _cache_vsortdata_path (tname):
-
-        return join_path(Clouds._cache_pdir, tname, "vsortdata.pkl")
-
-
-    @staticmethod
-    def _cache_geomdata_path (tname):
-
-        return join_path(Clouds._cache_pdir, tname, "geomdata.bam")
-
-
-    @staticmethod
-    def _load_from_cache (tname, keyhx):
-
-        keypath = Clouds._cache_key_path(tname)
-        if not path_exists("cache", keypath):
-            return None
-        okeyhx = open(real_path("cache", keypath), "rb").read()
-        if okeyhx != keyhx:
-            return None
-
-        celldatapath = Clouds._cache_celldata_path(tname)
-        if not path_exists("cache", celldatapath):
-            return None
-        fh = open(real_path("cache", celldatapath), "rb")
-        celldata = pickle.load(fh)
-        fh.close()
-
-        vsortdatapath = Clouds._cache_vsortdata_path(tname)
-        if not path_exists("cache", vsortdatapath):
-            return None
-        fh = open(real_path("cache", vsortdatapath), "rb")
-        vsortdata = pickle.load(fh)
-        fh.close()
-
-        geomdatapath = Clouds._cache_geomdata_path(tname)
-        if not path_exists("cache", geomdatapath):
-            return None
-        geomroot = base.load_model("cache", geomdatapath, cache=False)
-        geomdata = geomroot.getChildren().getPaths()
-
-        return celldata, vsortdata, geomdata
-
-
-    @staticmethod
-    def _write_to_cache (tname, keyhx, celldata, vsortdata, geomdata):
-
-        keypath = Clouds._cache_key_path(tname)
-
-        cdirpath = path_dirname(keypath)
-        if path_exists("cache", cdirpath):
-            rmtree(real_path("cache", cdirpath))
-        os.makedirs(real_path("cache", cdirpath))
-
-        geomdatapath = Clouds._cache_geomdata_path(tname)
-        geomroot = NodePath("root")
-        for np in geomdata:
-            np.reparentTo(geomroot)
-        base.write_model_bam(geomroot, "cache", geomdatapath)
-
-        vsortdatapath = Clouds._cache_vsortdata_path(tname)
-        fh = open(real_path("cache", vsortdatapath), "wb")
-        pickle.dump(vsortdata, fh, -1)
-        fh.close()
-
-        celldatapath = Clouds._cache_celldata_path(tname)
-        fh = open(real_path("cache", celldatapath), "wb")
-        pickle.dump(celldata, fh, -1)
-        fh.close()
-
-        fh = open(real_path("cache", keypath), "wb")
-        fh.write(keyhx)
-        fh.close()
-
-# @cache-key-end: clouds-generation
 
     def destroy (self):
 
@@ -1174,47 +666,805 @@ void main ()
         return task.cont
 
 
+class CloudsGeom (object):
+
+    def __init__ (self, name,
+                  sizex, sizey,
+                  wtilesizex, wtilesizey,
+                  minaltitude, maxaltitude, mincloudwidth, maxcloudwidth,
+                  mincloudheight1, maxcloudheight1,
+                  mincloudheight2, maxcloudheight2,
+                  quaddens, minquadsize, maxquadsize,
+                  texuvparts, cloudshape,
+                  cloudmappath, havecloudmappath, mingray, maxgray,
+                  clouddens, vsortbase, vsortdivs,
+                  numlods, lodredfac, lodaccum,
+                  maxnumquads, randseed):
+
+        texuvparts = [texuvparts.part(i) for i in xrange(texuvparts.num_parts())]
+
+        timeit = False
+
 # @cache-key-start: clouds-generation
-# base: 0 tetrahedron, 1 octahedron, 2 icosahedron
-def geodesic_sphere (base=2, numdivs=0, radius=1.0,
-                     gvwvertex=None, gvwnormal=None, gvwcolor=None,
-                     gtris=None):
+        carg = AutoProps(
+            sizex=sizex, sizey=sizey,
+            wtilesizex=wtilesizex, wtilesizey=wtilesizey,
+            minaltitude=minaltitude, maxaltitude=maxaltitude,
+            mincloudwidth=mincloudwidth, maxcloudwidth=maxcloudwidth,
+            mincloudheight1=mincloudheight1, maxcloudheight1=maxcloudheight1,
+            mincloudheight2=mincloudheight2, maxcloudheight2=maxcloudheight2,
+            quaddens=quaddens, minquadsize=minquadsize, maxquadsize=maxquadsize,
+            texuvparts=texuvparts, cloudshape=cloudshape,
+            cloudmappath=cloudmappath, havecloudmappath=havecloudmappath,
+            mingray=mingray, maxgray=maxgray,
+            clouddens=clouddens, vsortbase=vsortbase, vsortdivs=vsortdivs,
+            numlods=numlods, lodredfac=lodredfac, lodaccum=lodaccum,
+            maxnumquads=maxnumquads, randseed=randseed,
+        )
+        ret = None
+        keyhx = None
+        if name and havecloudmappath:
+            tname = name
+            fckey = [cloudmappath]
+            this_path = internal_path("data", __file__)
+            key = (sorted(carg.props()),
+                   get_cache_key_section(this_path.replace(".pyc", ".py"),
+                                         "clouds-generation"))
+            keyhx = key_to_hex(key, fckey)
+# @cache-key-end: clouds-generation
+            if timeit:
+                t1 = time()
+# @cache-key-start: clouds-generation
+            ret = self._load_from_cache(tname, keyhx)
+# @cache-key-end: clouds-generation
+            if timeit and ret:
+                t2 = time()
+                dbgval(1, "clouds-load-from-cache",
+                       (t2 - t1, "%.3f", "time", "s"))
+# @cache-key-start: clouds-generation
+        if not ret:
+            if timeit:
+                t1 = time()
+            ret = CloudsGeom._construct(**dict(carg.props()))
+            celldata, vsortdata, geomdata = ret
+            if keyhx is not None:
+# @cache-key-end: clouds-generation
+                if timeit:
+                    t1 = time()
+# @cache-key-start: clouds-generation
+                CloudsGeom._write_to_cache(tname, keyhx, celldata, vsortdata, geomdata)
+# @cache-key-end: clouds-generation
+                if timeit:
+                    t2 = time()
+                    dbgval(1, "clouds-write-to-cache",
+                           (t2 - t1, "%.3f", "time", "s"))
+# @cache-key-start: clouds-generation
+        else:
+            celldata, vsortdata, geomdata = ret
 
-    if gvwvertex is not None:
-        gvwioff = gvwvertex.getWriteRow()
-    else:
-        gvwioff = 0
-    numverts = [0]
-    numtris = [0]
-    norms = []
-    tris = []
-    edgesplits = {}
+        numtilesx, numtilesy, tilesizex, tilesizey, numlods, offsetz = celldata
+        vsortdirs, vsmaxoffangs, vsnbinds = vsortdata
+        tileroot, = geomdata
 
-    if gvwcolor is not None:
-        col = Vec4(1.0, 1.0, 1.0, 1.0)
+        self._numtilesx, self._numtilesy = numtilesx, numtilesy
+        self._tilesizex, self._tilesizey = tilesizex, tilesizey
+        self._numlods = numlods
+        self._offsetz = offsetz
 
-    def add_vert (v, n):
+        self._vsortdirs = vsortdirs
+        self._vsmaxoffangs = vsmaxoffangs
+        self._vsnbinds = vsnbinds
 
-        norms.append(n)
-        if gvwvertex is not None:
-            gvwvertex.addData3f(*v)
-        if gvwnormal is not None:
-            gvwnormal.addData3f(*n)
-        if gvwcolor is not None:
-            gvwcolor.addData4f(*col)
+        self._tileroot = tileroot
 
-    def add_tri (i1, i2, i3):
 
-        tris.append((i1, i2, i3))
-        numtris[0] += 1
-        if gtris is not None:
-            gtris.addVertices(gvwioff + i1, gvwioff + i2, gwvioff + i3)
-            gtris.closePrimitive()
+    _gvformat = {}
 
-    def split_triangle (i1, i2, i3, v1, v2, v3, numdivs):
+    @staticmethod
+    def _construct (sizex, sizey, wtilesizex, wtilesizey,
+                    minaltitude, maxaltitude, mincloudwidth, maxcloudwidth,
+                    mincloudheight1, maxcloudheight1,
+                    mincloudheight2, maxcloudheight2,
+                    quaddens, minquadsize, maxquadsize,
+                    texuvparts, cloudshape,
+                    cloudmappath, havecloudmappath, mingray, maxgray,
+                    clouddens, vsortbase, vsortdivs,
+                    numlods, lodredfac, lodaccum,
+                    maxnumquads, randseed):
+
+# @cache-key-end: clouds-generation
+        report(_("Constructing clouds."))
+        timeit = False
+# @cache-key-start: clouds-generation
+
+# @cache-key-end: clouds-generation
+        if timeit:
+            t0 = time()
+            t1 = t0
+# @cache-key-start: clouds-generation
+
+        randgen = Random(randseed)
+
+        # Derive cell data.
+        ret = CloudsGeom._derive_cell_data(sizex, wtilesizex)
+        numtilesx, tilesizex = ret
+        ret = CloudsGeom._derive_cell_data(sizey, wtilesizey)
+        numtilesy, tilesizey = ret
+
+        # Load cloud map.
+        if havecloudmappath:
+            cloudmap = UnitGrid2(cloudmappath)
+        else:
+            cloudmap = UnitGrid2(0.0)
+
+        # Distribute clouds.
+        mingu = float(mingray) / 255
+        maxgu = float(maxgray) / 255
+        fgu0 = 1.0 / (maxgu - mingu)
+        fgu1 = -mingu * fgu0
+        sizex = numtilesx * tilesizex
+        sizey = numtilesy * tilesizey
+        midsize = 0.5 * (sizex + sizey)
+        ntc = int(((midsize / maxcloudwidth) * clouddens)**2)
+        nsmpxy = 5
+        dxypu = (maxcloudwidth / midsize) / nsmpxy
+        dxypu0 = -0.5 * (dxypu * nsmpxy)
+        cloudspecs = []
+        cloudvol = []
+        minavggu = 0.1
+        offsetx = -0.5 * sizex
+        offsety = -0.5 * sizey
+        offsetz = 0.5 * (minaltitude + maxaltitude)
+        # ...+ offsetz will be set at top node, for proper altitude binning.
+        dz1 = minaltitude - offsetz
+        dz2 = maxaltitude - offsetz
+        for kc in xrange(ntc):
+            xcu = randgen.uniform(0.0, 1.0)
+            ycu = randgen.uniform(0.0, 1.0)
+            # Quick check to avoid nsmpxy**2 samplings on coarser cloud maps.
+            if cloudmap(xcu, ycu, tol=0.0, periodic=True) == 0.0:
+                continue
+            avggu = 0.0
+            for ip in xrange(nsmpxy):
+                xpu = xcu + dxypu0 + dxypu * ip
+                for jp in xrange(nsmpxy):
+                    ypu = ycu + dxypu0 + dxypu * jp
+                    gu = cloudmap(xpu, ypu, tol=0.0, periodic=True)
+                    avggu += min(max(gu * fgu0 + fgu1, 0.0), 1.0)
+            avggu /= nsmpxy**2
+            if avggu < minavggu:
+                continue
+            cwidth = randgen.uniform(mincloudwidth, maxcloudwidth) * avggu
+            cheight1 = randgen.uniform(mincloudheight1, maxcloudheight1) * avggu
+            cheight2 = randgen.uniform(mincloudheight2, maxcloudheight2) * avggu
+            xc = xcu * sizex + offsetx
+            yc = ycu * sizey + offsety
+            zc = randgen.uniform(dz1, dz2) * avggu
+            pc = Point3(xc, yc, zc)
+            cquads = [0] * numlods
+            cloudspecs.append((pc, cwidth, cheight1, cheight2, cquads))
+            if cloudshape == 0:
+                cvol = (1.333 * pi) * (0.5 * cwidth)**2 * (0.5 * (cheight2 - cheight1))
+            elif cloudshape == 1:
+                cvol = pi * (0.5 * cwidth)**2 * (cheight2 - cheight1)
+            cloudvol.append(cvol)
+# @cache-key-end: clouds-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "clouds-distribute",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+# @cache-key-start: clouds-generation
+
+        # Number of quads per LOD level.
+        sumcloudvol = sum(cloudvol)
+        if quaddens > 0.0:
+            numquads = int(quaddens * sumcloudvol)
+        else:
+            numquads = int(-quaddens)
+        if maxnumquads > 0:
+            numquads = min(numquads, maxnumquads)
+        quaddens1 = numquads / sumcloudvol if sumcloudvol > 0.0 else 0.0
+        if lodaccum:
+            plrfac = [lodredfac**kl for kl in xrange(numlods)]
+            sumplrfac = sum(plrfac)
+            plqfac = [x / sumplrfac for x in plrfac]
+            numquads = [int(numquads * x) for x in plqfac]
+        else:
+            numquads = [numquads]
+            for kl in xrange(1, numlods):
+                numquads.append(int(numquads[-1] * lodredfac))
+
+        # Distribute quads among clouds.
+        numclouds = len(cloudspecs)
+        for kl in xrange(numlods):
+            cloudvol_m = array("d", cloudvol)
+            numquads_m = numquads[kl]
+            while True:
+                if numquads_m <= 0:
+                    break
+                sumcloudvol = sum(cloudvol_m)
+                midcloudvol = 0.9 * (min(cloudvol_m) + max(cloudvol_m))
+                numquads_ms = 0
+                for kc in xrange(numclouds):
+                    cq = int(numquads_m * (cloudvol_m[kc] / sumcloudvol))
+                    if cq == 0 and cloudvol_m[kc] > midcloudvol:
+                        cq += 1
+                    cq = min(cq, numquads_m - numquads_ms)
+                    cloudspecs[kc][4][kl] += cq
+                    numquads_ms += cq
+                    if numquads_ms == numquads_m:
+                        break
+                    cloudvol_m[kc] -= (cq * sumcloudvol) / numquads_m
+                    cloudvol_m[kc] = max(cloudvol_m[kc], 0.0)
+                numquads_m -= numquads_ms
+        # Eliminate zero-quad clouds.
+        cloudspecs_m = []
+        refkl = numlods - 1
+        for cloudspec in cloudspecs:
+            if cloudspec[4][refkl] > 0:
+                cloudspecs_m.append(cloudspec)
+            else:
+                for kl in xrange(numlods):
+                    numquads[kl] -= cloudspec[4][kl]
+        cloudspecs = cloudspecs_m
+        numclouds = len(cloudspecs)
+# @cache-key-end: clouds-generation
+        if timeit:
+            if lodaccum:
+                cqs1 = [0] * numclouds
+            for kl in reversed(xrange(numlods)):
+                cqs1na = [cs[4][kl] for cs in cloudspecs]
+                nqs1na = sum(cqs1na)
+                if lodaccum:
+                    cqs1 = [x + y for x, y in zip(cqs1, cqs1na)]
+                else:
+                    cqs1 = cqs1na
+                nqs1 = sum(cqs1)
+                dbgval(1, "clouds-quads-in-lod",
+                       (kl, "%d", "lod"),
+                       (quaddens1 * 1e9, "%.1f", "quaddens", "1/km^3"),
+                       (nqs1, "%d", "numquads"),
+                       (nqs1na, "%d", "numquads1"),
+                       (min(cqs1), "%d", "minqpc"),
+                       (max(cqs1), "%d", "maxqpc"),
+                       (float(nqs1) / numclouds, "%.2f", "avgqpc"))
+        if timeit:
+            t2 = time()
+            dbgval(1, "clouds-distribute-quads",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+# @cache-key-start: clouds-generation
+
+        # Create view direction sorting data.
+        gds = GeodesicSphere(base=vsortbase, numdivs=vsortdivs)
+        vsortdirs = []
+        vsmaxoffangs = []
+        vsnbinds = []
+        for i in xrange(gds.num_vertices()):
+            vsortdirs.append(gds.normal(i))
+            vsmaxoffangs.append(gds.max_offset_angle(i))
+            vsnbinds1 = []
+            for j in xrange(gds.num_neighbor_vertices(i)):
+                vsnbinds1.append(gds.neighbor_vertex_index(i, j))
+            vsnbinds.append(vsnbinds1)
+# @cache-key-end: clouds-generation
+        if timeit:
+            vsavgmaxoffang = sum(vsmaxoffangs) / len(vsortdirs)
+            vsmaxoffangsd = (sum((ma - vsavgmaxoffang)**2 for ma in vsmaxoffangs) /
+                             (len(vsortdirs) - 1))**0.5
+            dbgval(1, "clouds-view-sorting",
+                   (len(vsortdirs), "%d", "numvsortdirs"),
+                   (degrees(max(vsmaxoffangs)), "%.1f", "maxmaxoffang", "deg"),
+                   (degrees(min(vsmaxoffangs)), "%.1f", "minmaxoffang", "deg"),
+                   (degrees(vsavgmaxoffang), "%.1f", "avgmaxoffang", "deg"),
+                   (degrees(vsmaxoffangsd), "%.2f", "maxoffangsd", "deg"))
+# @cache-key-start: clouds-generation
+        numvsortdirs = len(vsortdirs)
+
+        # Vertex format for cloud textures.
+        gvformat = CloudsGeom._gvformat.get(cloudshape)
+        if gvformat is None:
+            gvarray = GeomVertexArrayFormat()
+            gvarray.addColumn(InternalName.getVertex(), 3,
+                              Geom.NTFloat32, Geom.CPoint)
+            gvarray.addColumn(InternalName.getTexcoord(), 2,
+                              Geom.NTFloat32, Geom.CTexcoord)
+            if cloudshape == 0:
+                gvarray.addColumn(InternalName.make("offcenter"), 3,
+                                Geom.NTFloat32, Geom.CVector)
+                gvarray.addColumn(InternalName.make("grpoffcenter"), 3,
+                                Geom.NTFloat32, Geom.CVector)
+                gvarray.addColumn(InternalName.make("haxislen"), 4,
+                                Geom.NTFloat32, Geom.CVector)
+            gvformat = GeomVertexFormat()
+            gvformat.addArray(gvarray)
+            gvformat = GeomVertexFormat.registerFormat(gvformat)
+            CloudsGeom._gvformat[cloudshape] = gvformat
+
+        # Initialize tiles.
+        class Data: pass
+        tilespecs = []
+        for it in xrange(numtilesx):
+            tilespecs1 = []
+            tilespecs.append(tilespecs1)
+            for jt in xrange(numtilesy):
+                ts = Data()
+                ts.pos = Point3(offsetx + (it + 0.5) * tilesizex,
+                                offsety + (jt + 0.5) * tilesizey,
+                                0.0)
+                ts.gvdata = GeomVertexData("cloud", gvformat, Geom.UHStatic)
+                ts.gvwvertex = GeomVertexWriter(ts.gvdata, InternalName.getVertex())
+                ts.gvwtexcoord = GeomVertexWriter(ts.gvdata, InternalName.getTexcoord())
+                if cloudshape == 0:
+                    ts.gvwoffcenter = GeomVertexWriter(ts.gvdata, "offcenter")
+                    ts.gvwgrpoffcenter = GeomVertexWriter(ts.gvdata, "grpoffcenter")
+                    ts.gvwhaxislen = GeomVertexWriter(ts.gvdata, "haxislen")
+                ts.gtris = [[GeomTriangles(Geom.UHStatic) for kl in xrange(numlods)]
+                            for kv in xrange(numvsortdirs)]
+                ts.qvspecs = [[] for kl in xrange(numlods)]
+                ts.nverts = 0
+                tilespecs1.append(ts)
+
+        # Create quads.
+        minquadsizes, maxquadsizes = [], []
+        qszplod = float(maxquadsize - minquadsize) / (numlods // 2 + 1)
+        for kl in xrange(numlods):
+            minquadsizes.append(minquadsize + qszplod * kl)
+            maxquadsizes.append(maxquadsize)
+        if cloudshape == 0:
+            vfw = Vec3(0.0, 1.0, 0.0)
+            vup = Vec3(0.0, 0.0, 1.0)
+        elif cloudshape == 1:
+            vfw = Vec3(0.0, 0.0, 1.0)
+            vup = Vec3(0.0, 1.0, 0.0)
+        vrt = vfw.cross(vup)
+        rot = Quat()
+        krt_kup = ((+1, -1), (-1, -1), (-1, +1), (+1, +1))
+        for ic, cloudspec in enumerate(cloudspecs):
+            cpos, cwidth, cheight1, cheight2, cquads = cloudspec
+            assert cheight1 < 0.0 and cheight2 > 0.0
+            hx = 0.5 * cwidth
+            hy = 0.5 * cwidth
+            hz1 = -cheight1
+            hz2 = cheight2
+            for kl in xrange(numlods):
+                lminquadsize = minquadsizes[kl]
+                lmaxquadsize = maxquadsizes[kl]
+                dhsz = 0.5 * (lminquadsize - minquadsize)
+                lhx = max(hx + dhsz, 0.0)
+                lhy = max(hy + dhsz, 0.0)
+                lhz1 = max(hz1 + dhsz, 0.0)
+                lhz2 = max(hz2 + dhsz, 0.0)
+                lcqspecs = []
+                kq = 0
+                while kq < cquads[kl]:
+                    qoff = Point3(randgen.uniform(-lhx, lhx),
+                                  randgen.uniform(-lhy, lhy),
+                                  randgen.uniform(-lhz1, lhz2))
+                    if cloudshape == 0:
+                        rad = qoff.length()
+                        tht = atan2(qoff[1], qoff[0])
+                        phi = acos(qoff[2] / rad)
+                        stht, ctht = sin(tht), cos(tht)
+                        sphi, cphi = sin(phi), cos(phi)
+                        hz = hz1 if qoff[2] < 0.0 else hz2
+                        rad0 = 1.0 / sqrt(ctht**2 * sphi**2 / hx**2 +
+                                          stht**2 * sphi**2 / hy**2 +
+                                          cphi**2 / hz**2)
+                        inside = (rad <= rad0)
+                    elif cloudshape == 1:
+                        rad = qoff.getXy().length()
+                        rad0 = sqrt(hx**2 + hy**2)
+                        inside = (rad <= rad0)
+                    if inside:
+                        qsz = randgen.uniform(lminquadsize, lmaxquadsize)
+                        lcqspecs.append((qoff, qsz))
+                        kq += 1
+                for qoff, qsz in lcqspecs:
+                    qpos = cpos + qoff
+                    it = min(max(int((qpos[0] - offsetx) / tilesizex), 0), numtilesx - 1)
+                    jt = min(max(int((qpos[1] - offsety) / tilesizey), 0), numtilesy - 1)
+                    ts = tilespecs[it][jt]
+                    qtpos = qpos - ts.pos
+                    ang = randgen.uniform(-pi, pi)
+                    rot.setFromAxisAngleRad(ang, vfw)
+                    drt = Vec3(rot.xform(vrt)) * (0.5 * qsz)
+                    dup = Vec3(rot.xform(vup)) * (0.5 * qsz)
+                    uoff, voff, ulen, vlen = randgen.choice(texuvparts)
+                    for krt, kup in krt_kup:
+                        poff = drt * krt + dup * kup
+                        ts.gvwvertex.addData3f(*(qtpos + poff))
+                        qpoff = qoff + poff
+                        qprad = qpoff.length()
+                        klu = (1 - krt) / 2; klv = (1 + kup) / 2
+                        ts.gvwtexcoord.addData2f(uoff + ulen * klu,
+                                                 voff + vlen * klv)
+                        if cloudshape == 0:
+                            ts.gvwoffcenter.addData3f(*poff)
+                            ts.gvwgrpoffcenter.addData3f(*qoff)
+                            ts.gvwhaxislen.addData4f(hx, hy, hz1, hz2)
+                    ts.qvspecs[kl].append((qtpos, ts.nverts))
+                    ts.nverts += 4
+# @cache-key-end: clouds-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "clouds-create-vertices",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+# @cache-key-start: clouds-generation
+
+        # Create tiles.
+        for tilespecs1 in tilespecs:
+            for ts in tilespecs1:
+                for vd, gtris in zip(vsortdirs, ts.gtris):
+                    for qvspecs in ts.qvspecs:
+                        qvspecs.sort(key=lambda qs: -(qs[0].dot(vd)))
+                    for kl, gtris1 in enumerate(gtris):
+                        if lodaccum:
+                            qvspecs = ts.qvspecs[kl:]
+                        else:
+                            qvspecs = [ts.qvspecs[kl]]
+                        for qvspecs1 in qvspecs:
+                            for qtpos, kv0 in qvspecs1:
+                                gtris1.addVertices(kv0 + 0, kv0 + 1, kv0 + 2)
+                                gtris1.closePrimitive()
+                                gtris1.addVertices(kv0 + 0, kv0 + 2, kv0 + 3)
+                                gtris1.closePrimitive()
+# @cache-key-end: clouds-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "clouds-create-triangles",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+# @cache-key-start: clouds-generation
+
+        # Finalize tiles.
+        tileroot = NodePath("clouds")
+        tileradius = 0.5 * sqrt(tilesizex**2 + tilesizey**2)
+        tiles = []
+        for kv in xrange(numvsortdirs):
+            vtiling = tileroot.attachNewNode("tiling-v%d" % kv)
+            for it in xrange(numtilesx):
+                for jt in xrange(numtilesy):
+                    ts = tilespecs[it][jt]
+                    tlod = LODNode("tile-v%d-i%d-j%d" % (kv, it, jt))
+                    ijtile = vtiling.attachNewNode(tlod)
+                    ijtile.setPos(ts.pos)
+                    for kl in xrange(numlods):
+                        tname = "tile-v%d-i%d-j%d-l%d" % (kv, it, jt, kl)
+                        gtris = ts.gtris[kv][kl]
+                        tgeom = Geom(ts.gvdata)
+                        tgeom.addPrimitive(gtris)
+                        tnode = GeomNode(tname)
+                        tnode.addGeom(tgeom)
+                        ltile = NodePath(tnode)
+                        tlod.addSwitch(tileradius * (kl + 1), tileradius * kl)
+                        ltile.reparentTo(ijtile)
+# @cache-key-end: clouds-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "clouds-create-tiles",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+# @cache-key-start: clouds-generation
+
+# @cache-key-end: clouds-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "clouds-cumulative",
+                   (t2 - t0, "%.3f", "time", "s"))
+            t1 = t2
+# @cache-key-start: clouds-generation
+
+        celldata = (numtilesx, numtilesy, tilesizex, tilesizey, numlods,
+                    offsetz)
+        vsortdata = (vsortdirs, vsmaxoffangs, vsnbinds)
+        geomdata = (tileroot,)
+        return celldata, vsortdata, geomdata
+
+
+    @staticmethod
+    def _derive_cell_data (size, wtilesize):
+        numtiles = int(ceil(size / wtilesize))
+        tilesize = size / numtiles
+        return numtiles, tilesize
+
+
+    _cache_pdir = "clouds"
+
+    @staticmethod
+    def _cache_key_path (tname):
+
+        return join_path(CloudsGeom._cache_pdir, tname, "clouds.key")
+
+
+    @staticmethod
+    def _cache_celldata_path (tname):
+
+        return join_path(CloudsGeom._cache_pdir, tname, "celldata.pkl")
+
+
+    @staticmethod
+    def _cache_vsortdata_path (tname):
+
+        return join_path(CloudsGeom._cache_pdir, tname, "vsortdata.pkl")
+
+
+    @staticmethod
+    def _cache_geomdata_path (tname):
+
+        return join_path(CloudsGeom._cache_pdir, tname, "geomdata.bam")
+
+
+    @staticmethod
+    def _load_from_cache (tname, keyhx):
+
+        keypath = CloudsGeom._cache_key_path(tname)
+        if not path_exists("cache", keypath):
+            return None
+        okeyhx = open(real_path("cache", keypath), "rb").read()
+        if okeyhx != keyhx:
+            return None
+
+        celldatapath = CloudsGeom._cache_celldata_path(tname)
+        if not path_exists("cache", celldatapath):
+            return None
+        fh = open(real_path("cache", celldatapath), "rb")
+        celldata = pickle.load(fh)
+        fh.close()
+
+        vsortdatapath = CloudsGeom._cache_vsortdata_path(tname)
+        if not path_exists("cache", vsortdatapath):
+            return None
+        fh = open(real_path("cache", vsortdatapath), "rb")
+        vsortdata = pickle.load(fh)
+        fh.close()
+
+        geomdatapath = CloudsGeom._cache_geomdata_path(tname)
+        if not path_exists("cache", geomdatapath):
+            return None
+        geomroot = base.load_model("cache", geomdatapath, cache=False)
+        geomdata = geomroot.getChildren().getPaths()
+
+        return celldata, vsortdata, geomdata
+
+
+    @staticmethod
+    def _write_to_cache (tname, keyhx, celldata, vsortdata, geomdata):
+
+        keypath = CloudsGeom._cache_key_path(tname)
+
+        cdirpath = path_dirname(keypath)
+        if path_exists("cache", cdirpath):
+            rmtree(real_path("cache", cdirpath))
+        os.makedirs(real_path("cache", cdirpath))
+
+        geomdatapath = CloudsGeom._cache_geomdata_path(tname)
+        geomroot = NodePath("root")
+        for np in geomdata:
+            np.reparentTo(geomroot)
+        base.write_model_bam(geomroot, "cache", geomdatapath)
+
+        vsortdatapath = CloudsGeom._cache_vsortdata_path(tname)
+        fh = open(real_path("cache", vsortdatapath), "wb")
+        pickle.dump(vsortdata, fh, -1)
+        fh.close()
+
+        celldatapath = CloudsGeom._cache_celldata_path(tname)
+        fh = open(real_path("cache", celldatapath), "wb")
+        pickle.dump(celldata, fh, -1)
+        fh.close()
+
+        fh = open(real_path("cache", keypath), "wb")
+        fh.write(keyhx)
+        fh.close()
+# @cache-key-end: clouds-generation
+
+
+    def num_tiles_x (self):
+
+        return self._numtilesx
+
+
+    def num_tiles_y (self):
+
+        return self._numtilesy
+
+
+    def tile_size_x (self):
+
+        return self._tilesizex
+
+
+    def tile_size_y (self):
+
+        return self._tilesizey
+
+
+    def num_lods (self):
+
+        return self._numlods
+
+
+    def offset_z (self):
+
+        return self._offsetz
+
+
+    def tile_root (self):
+
+        return self._tileroot
+
+
+    def num_visual_sort_dirs (self):
+
+        return len(self._vsortdirs)
+
+
+    def visual_sort_dir (self, i):
+
+        return self._vsortdirs[i]
+
+
+    def max_visual_sort_dir_offset_angle (self, i):
+
+        return self._vsmaxoffangs[i]
+
+
+    def num_neighbor_visual_sort_dirs (self, i):
+
+        return len(self._vsnbinds[i])
+
+
+    def visual_sort_dir_neighbor_index (self, i, j):
+
+        return self._vsnbinds[i][j]
+
+
+# @cache-key-start: clouds-generation
+class GeodesicSphere (object):
+
+    # base: 0 tetrahedron, 1 octahedron, 2 icosahedron
+    def __init__ (self, base=2, numdivs=0, radius=1.0):
+
+        if base >= 0:
+            ret = GeodesicSphere._construct(base, numdivs, radius)
+            verts, norms, tris, maxoffangs, nbinds = ret
+            self._verts = verts
+            self._norms = norms
+            self._tris = tris
+            self._maxoffangs = maxoffangs
+            self._nbinds = nbinds
+        else:
+            self._verts = [Vec3(0.0, 1.0, 0.0)]
+            self._norms = [Vec3(0.0, 1.0, 0.0)]
+            self._tris = []
+            self._maxoffangs = [pi + 1e-6]
+            self._nbinds = [[]]
+
+
+    @staticmethod
+    def _construct (base, numdivs, radius):
+
+        verts = []
+        norms = []
+        tris = []
+        edgesplits = {}
+
+        # Create canonical polyhedron points.
+        if base == 0: # tetrahedron
+            phi = 1.0 / sqrt(2.0)
+            ps = []
+            for k1 in (-1, 1):
+                p1 = Point3(k1 * 1.0, 0.0, -phi)
+                p2 = Point3(0.0, k1 * 1.0, phi)
+                ps.extend((p1, p2))
+        elif base == 1: # octahedron
+            ps = []
+            for k1 in (-1, 1):
+                p1 = Point3(k1 * 1.0, 0.0, 0.0)
+                p2 = Point3(0.0, k1 * 1.0, 0.0)
+                p3 = Point3(0.0, 0.0, k1 * 1.0)
+                ps.extend((p1, p2, p3))
+        elif base == 2: # icosahedron
+            phi = 0.5 * (1.0 + sqrt(5.0))
+            ps = []
+            for k1, k2 in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+                p1 = Point3(0.0, k1 * 1.0, k2 * phi)
+                p2 = Point3(k1 * 1.0, k2 * phi, 0.0)
+                p3 = Point3(k2 * phi, 0.0, k1 * 1.0)
+                ps.extend((p1, p2, p3))
+        else:
+            raise StandardError("Expected base in (0, 1, 2), got %d." % base)
+
+        # Create base vertices and normals from canonical points.
+        for p in ps:
+            n = Vec3(p)
+            n.normalize()
+            v = Point3(n * radius)
+            verts.append(v)
+            norms.append(n)
+
+        # Brute force assembly of triangle-faced regular polyhedron.
+        # Determine edge length as minimum distance between two vertices.
+        # Go through each vertex, collecting all neighboring vertices as those
+        # at edge lenght distance, and making all combinations of triangles
+        # between the center vertex and neighboring verticess at edge lenght
+        # from one another. Accept only triangles whose normal dot product
+        # with center vertex normal is positive. First vertex index
+        # of triangle must be the smallest. Add such triangles to a set,
+        # so that non-unique triangles are ignored.
+        nbvs = len(norms)
+        iis = range(nbvs)
+        l = radius * 2
+        for i in xrange(nbvs - 1):
+            for j in xrange(i + 1, nbvs):
+                d = (verts[i] - verts[j]).length()
+                l = min(l, d)
+        btris = set()
+        for ic, vc in enumerate(verts):
+            ins = []
+            for i, v in enumerate(verts):
+                if i != ic and (v - vc).length() < l * 1.001:
+                    ins.append(i)
+            nins = len(ins)
+            nc = norms[ic]
+            for k1 in xrange(nins - 1):
+                i1 = ins[k1]
+                v1 = verts[i1]
+                for k2 in xrange(k1 + 1, nins):
+                    i2 = ins[k2]
+                    v2 = verts[i2]
+                    if (v1 - v2).length() < l * 1.001:
+                        btri = [ic, i1, i2]
+                        btri.sort()
+                        v1s, v2s, v3s = verts[btri[0]], verts[btri[1]], verts[btri[2]]
+                        nt = (v2s - v1s).cross(v3s - v1s)
+                        nt.normalize()
+                        if nt.dot(nc) < 0.0:
+                            btri[1], btri[2] = btri[2], btri[1]
+                        btri = tuple(btri)
+                        btris.add(btri)
+
+        # Subdivide basic triangles.
+        split_triangle = GeodesicSphere._split_triangle
+        for btri in sorted(btris):
+            i1, i2, i3 = btri
+            split_triangle(radius, verts, norms, tris, edgesplits,
+                           i1, i2, i3, verts[i1], verts[i2], verts[i3], numdivs)
+
+        # For each vertex, compute maximum half-angle between its normal and
+        # neighboring normals. To this end, for each vertex nearest
+        # neighbors must be determined.
+        nbinds = []
+        maxoffangs = []
+        for ic, nc in enumerate(norms):
+            ins = set()
+            nt1 = 0
+            for tri in tris:
+                if ic in tri:
+                    nt1 += 1
+                    ins.update(tri)
+            ins.remove(ic)
+            ins = sorted(ins)
+            nbinds.append(ins)
+            maxoffang = 0.0
+            for i in ins:
+                n = norms[i]
+                offang = 0.5 * acos(min(max(nc.dot(n), -1.0), 1.0))
+                maxoffang = max(maxoffang, offang)
+            maxoffangs.append(maxoffang)
+
+        return verts, norms, tris, maxoffangs, nbinds
+
+
+    @staticmethod
+    def _split_triangle (radius, verts, norms, tris, edgesplits,
+                         i1, i2, i3, v1, v2, v3, numdivs):
 
         if numdivs == 0:
-            add_tri(i1, i2, i3)
+            tris.append((i1, i2, i3))
         else:
             n12 = (v1 + v2) * 0.5
             n12.normalize()
@@ -1236,125 +1486,84 @@ def geodesic_sphere (base=2, numdivs=0, radius=1.0,
                     ia, ib = ib, ia
                 iab = edgesplits.get((ia, ib))
                 if iab is None:
-                    iab = numverts[0]
-                    numverts[0] += 1
+                    iab = len(verts)
                     edgesplits[(ia, ib)] = iab
-                    add_vert(v, n)
+                    verts.append(v)
+                    norms.append(n)
                 eis.append(iab)
             i12, i23, i31 = eis
 
-            split_triangle(i1, i12, i31, v1, v12, v31, numdivs - 1)
-            split_triangle(i2, i23, i12, v2, v23, v12, numdivs - 1)
-            split_triangle(i3, i31, i23, v3, v31, v23, numdivs - 1)
-            split_triangle(i12, i23, i31, v12, v23, v31, numdivs - 1)
+            st = GeodesicSphere._split_triangle
+            split_triangle(radius, verts, norms, tris, edgesplits,
+                           i1, i12, i31, v1, v12, v31, numdivs - 1)
+            split_triangle(radius, verts, norms, tris, edgesplits,
+                           i2, i23, i12, v2, v23, v12, numdivs - 1)
+            split_triangle(radius, verts, norms, tris, edgesplits,
+                           i3, i31, i23, v3, v31, v23, numdivs - 1)
+            split_triangle(radius, verts, norms, tris, edgesplits,
+                           i12, i23, i31, v12, v23, v31, numdivs - 1)
 
-    # Create canonical polyhedron points.
-    if base == 0: # tetrahedron
-        phi = 1.0 / sqrt(2.0)
-        ps = []
-        for k1 in (-1, 1):
-            p1 = Point3(k1 * 1.0, 0.0, -phi)
-            p2 = Point3(0.0, k1 * 1.0, phi)
-            ps.extend((p1, p2))
-    elif base == 1: # octahedron
-        ps = []
-        for k1 in (-1, 1):
-            p1 = Point3(k1 * 1.0, 0.0, 0.0)
-            p2 = Point3(0.0, k1 * 1.0, 0.0)
-            p3 = Point3(0.0, 0.0, k1 * 1.0)
-            ps.extend((p1, p2, p3))
-    elif base == 2: # icosahedron
-        phi = 0.5 * (1.0 + sqrt(5.0))
-        ps = []
-        for k1, k2 in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
-            p1 = Point3(0.0, k1 * 1.0, k2 * phi)
-            p2 = Point3(k1 * 1.0, k2 * phi, 0.0)
-            p3 = Point3(k2 * phi, 0.0, k1 * 1.0)
-            ps.extend((p1, p2, p3))
-    else:
-        raise StandardError("Expected base in (0, 1, 2), got %d." % base)
 
-    # Create base vertices and normals from canonical points.
-    vs = []
-    ns = []
-    for p in ps:
-        n = Vec3(p)
-        n.normalize()
-        ns.append(n)
-        v = Point3(n * radius)
-        vs.append(v)
-        add_vert(v, n)
+    def num_vertices (self):
 
-    # Brute force assembly of triangle-faced regular polyhedron.
-    # Determine edge length as minimum distance between two vertices.
-    # Go through each vertex, collecting all neighboring vertices as those
-    # at edge lenght distance, and making all combinations of triangles
-    # between the center vertex and neighboring verticess at edge lenght
-    # from one another. Accept only triangles whose normal dot product
-    # with center vertex normal is positive. First vertex index
-    # of triangle must be the smallest. Add such triangles to a set,
-    # so that non-unique triangles are ignored.
-    nbvs = len(ns)
-    iis = range(nbvs)
-    l = radius * 2
-    for i in xrange(nbvs - 1):
-        for j in xrange(i + 1, nbvs):
-            d = (vs[i] - vs[j]).length()
-            l = min(l, d)
-    btris = set()
-    for ic, vc in enumerate(vs):
-        ins = []
-        for i, v in enumerate(vs):
-            if i != ic and (v - vc).length() < l * 1.001:
-                ins.append(i)
-        nins = len(ins)
-        nc = ns[ic]
-        for k1 in xrange(nins - 1):
-            i1 = ins[k1]
-            v1 = vs[i1]
-            for k2 in xrange(k1 + 1, nins):
-                i2 = ins[k2]
-                v2 = vs[i2]
-                if (v1 - v2).length() < l * 1.001:
-                    btri = [ic, i1, i2]
-                    btri.sort()
-                    v1s, v2s, v3s = vs[btri[0]], vs[btri[1]], vs[btri[2]]
-                    nt = (v2s - v1s).cross(v3s - v1s)
-                    nt.normalize()
-                    if nt.dot(nc) < 0.0:
-                        btri[1], btri[2] = btri[2], btri[1]
-                    btri = tuple(btri)
-                    btris.add(btri)
+        return len(self._verts)
 
-    # Subdivide basic triangles.
-    numverts[0] = len(vs)
-    for btri in sorted(btris):
-        i1, i2, i3 = btri
-        split_triangle(i1, i2, i3, vs[i1], vs[i2], vs[i3], numdivs)
 
-    # For each vertex, compute maximum half-angle between its normal and
-    # neighboring normals. To this end, for each vertex nearest
-    # neighbors must be determined.
-    nbinds = []
-    maxoffangs = []
-    for ic, nc in enumerate(norms):
-        ins = set()
-        nt1 = 0
-        for tri in tris:
-            if ic in tri:
-                nt1 += 1
-                ins.update(tri)
-        ins.remove(ic)
-        ins = sorted(ins)
-        nbinds.append(ins)
-        maxoffang = 0.0
-        for i in ins:
-            n = norms[i]
-            offang = 0.5 * acos(min(max(nc.dot(n), -1.0), 1.0))
-            maxoffang = max(maxoffang, offang)
-        maxoffangs.append(maxoffang)
+    def vertex (self, i):
 
-    return len(norms), len(tris), norms, maxoffangs, nbinds
+        return self._verts[i]
+
+
+    def normal (self, i):
+
+        return self._norms[i]
+
+
+    def max_offset_angle (self, i):
+
+        return self._maxoffangs[i]
+
+
+    def num_neighbor_vertices (self, i):
+
+        return len(self._nbinds[i])
+
+
+    def neighbor_vertex_index (self, i, j):
+
+        return self._nbinds[i][j]
+
+
+    def num_tris (self):
+
+        return len(self._tris)
+
+
+    def tri (self, i):
+
+        return self._tris[i]
+
+
+class TexUVParts (object):
+
+    def __init__ (self):
+
+        self._parts = []
+
+
+    def add_part (self, part):
+
+        self._parts.append(part)
+
+
+    def num_parts (self):
+
+        return len(self._parts)
+
+
+    def part (self, i):
+
+        return self._parts[i]
 # @cache-key-end: clouds-generation
 
 
