@@ -7,7 +7,7 @@ import os
 from shutil import rmtree
 from time import time
 
-from pandac.PandaModules import Vec3, Vec4, Point3, Quat
+from pandac.PandaModules import Vec2, Vec3, Vec4, Point3, Quat
 from pandac.PandaModules import NodePath, LODNode
 from pandac.PandaModules import Texture, PNMImage
 from pandac.PandaModules import TransparencyAttrib, AntialiasAttrib
@@ -1009,6 +1009,12 @@ class CloudsGeom (object):
                             for kv in xrange(numvsortdirs)]
                 ts.qvspecs = [[] for kl in xrange(numlods)]
                 ts.nverts = 0
+                ts.verts = []
+                ts.texuvs = []
+                if cloudshape == 0:
+                    ts.offcs = []
+                    ts.grpoffcs = []
+                    ts.hxyz12s = []
                 tilespecs1.append(ts)
 
         # Create quads.
@@ -1079,18 +1085,33 @@ class CloudsGeom (object):
                     uoff, voff, ulen, vlen = randgen.choice(texuvparts)
                     for krt, kup in krt_kup:
                         poff = drt * krt + dup * kup
-                        ts.gvwvertex.addData3f(*(qtpos + poff))
+                        ts.verts.append(qtpos + poff)
                         qpoff = qoff + poff
                         qprad = qpoff.length()
                         klu = (1 - krt) / 2; klv = (1 + kup) / 2
-                        ts.gvwtexcoord.addData2f(uoff + ulen * klu,
-                                                 voff + vlen * klv)
+                        ts.texuvs.append(Vec2(uoff + ulen * klu, voff + vlen * klv))
                         if cloudshape == 0:
-                            ts.gvwoffcenter.addData3f(*poff)
-                            ts.gvwgrpoffcenter.addData3f(*qoff)
-                            ts.gvwhaxislen.addData4f(hx, hy, hz1, hz2)
+                            ts.offcs.append(poff)
+                            ts.grpoffcs.append(qoff)
+                            ts.hxyz12s.append(Vec4(hx, hy, hz1, hz2))
                     ts.qvspecs[kl].append((qtpos, ts.nverts))
                     ts.nverts += 4
+        for it in xrange(numtilesx):
+            for jt in xrange(numtilesy):
+                ts = tilespecs[it][jt]
+                ts.gvdata.uncleanSetNumRows(ts.nverts)
+                for kx in xrange(ts.nverts):
+                    vert = ts.verts[kx]
+                    ts.gvwvertex.addData3f(vert[0], vert[1], vert[2])
+                    texuv = ts.texuvs[kx]
+                    ts.gvwtexcoord.addData2f(texuv[0], texuv[1])
+                    if cloudshape == 0:
+                        offc = ts.offcs[kx]
+                        ts.gvwoffcenter.addData3f(offc[0], offc[1], offc[2])
+                        grpoffc = ts.grpoffcs[kx]
+                        ts.gvwgrpoffcenter.addData3f(grpoffc[0], grpoffc[1], grpoffc[2])
+                        hxyz12 = ts.hxyz12s[kx]
+                        ts.gvwhaxislen.addData4f(hxyz12[0], hxyz12[1], hxyz12[2], hxyz12[3])
 # @cache-key-end: clouds-generation
         if timeit:
             t2 = time()
@@ -1100,9 +1121,9 @@ class CloudsGeom (object):
 # @cache-key-start: clouds-generation
 
         # Create tiles.
-        for tilespecs1 in tilespecs:
-            for ts in tilespecs1:
-                for vd, gtris in zip(vsortdirs, ts.gtris):
+        for it, tilespecs1 in enumerate(tilespecs):
+            for jt, ts in enumerate(tilespecs1):
+                for kv, (vd, gtris) in enumerate(zip(vsortdirs, ts.gtris)):
                     for qvspecs in ts.qvspecs:
                         qvspecs.sort(key=lambda qs: -(qs[0].dot(vd)))
                     for kl, gtris1 in enumerate(gtris):
@@ -1110,12 +1131,27 @@ class CloudsGeom (object):
                             qvspecs = ts.qvspecs[kl:]
                         else:
                             qvspecs = [ts.qvspecs[kl]]
+                        # Default index column type is NTUint16, and
+                        # addVertices() would change it automatically
+                        # if needed. Since it is not used, change manually.
+                        if ts.nverts >= 1 << 16:
+                            gtris1.setIndexType(Geom.NTUint32)
+                        ntinds1 = sum(map(len, qvspecs)) * 2
+                        gvdtris1 = gtris1.modifyVertices()
+                        gvdtris1.uncleanSetNumRows(ntinds1 * 3)
+                        gvwtris1 = GeomVertexWriter(gvdtris1, 0)
                         for qvspecs1 in qvspecs:
                             for qtpos, kv0 in qvspecs1:
-                                gtris1.addVertices(kv0 + 0, kv0 + 1, kv0 + 2)
-                                gtris1.closePrimitive()
-                                gtris1.addVertices(kv0 + 0, kv0 + 2, kv0 + 3)
-                                gtris1.closePrimitive()
+                                #gtris1.addVertices(kv0 + 0, kv0 + 1, kv0 + 2)
+                                gvwtris1.addData1i(kv0 + 0)
+                                gvwtris1.addData1i(kv0 + 1)
+                                gvwtris1.addData1i(kv0 + 2)
+                                #gtris1.closePrimitive()
+                                #gtris1.addVertices(kv0 + 0, kv0 + 2, kv0 + 3)
+                                gvwtris1.addData1i(kv0 + 0)
+                                gvwtris1.addData1i(kv0 + 2)
+                                gvwtris1.addData1i(kv0 + 3)
+                                #gtris1.closePrimitive()
 # @cache-key-end: clouds-generation
         if timeit:
             t2 = time()

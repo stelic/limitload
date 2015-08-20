@@ -590,13 +590,18 @@ void CloudsGeom::_construct (
         for (int jt = 0; jt < numtilesy; ++jt) {
             TileSpec &ts = tilespecs[it][jt];
             ts.gvdata->unclean_set_num_rows(ts.nverts);
-            for (int kv = 0; kv < ts.nverts; ++kv) {
-                ts.gvwvertex->add_data3f(ts.verts[kv][0], ts.verts[kv][1], ts.verts[kv][2]);
-                ts.gvwtexcoord->add_data2f(ts.texuvs[kv][0], ts.texuvs[kv][1]);
+            for (int kx = 0; kx < ts.nverts; ++kx) {
+                const LPoint3 &vert = ts.verts[kx];
+                ts.gvwvertex->add_data3f(vert[0], vert[1], vert[2]);
+                const LVector2 &texuv = ts.texuvs[kx];
+                ts.gvwtexcoord->add_data2f(texuv[0], texuv[1]);
                 if (cloudshape == 0) {
-                    ts.gvwoffcenter->add_data3f(ts.offcs[kv][0], ts.offcs[kv][1], ts.offcs[kv][2]);
-                    ts.gvwgrpoffcenter->add_data3f(ts.grpoffcs[kv][0], ts.grpoffcs[kv][1], ts.grpoffcs[kv][2]);
-                    ts.gvwhaxislen->add_data4f(ts.hxyz12s[kv][0], ts.hxyz12s[kv][1], ts.hxyz12s[kv][2], ts.hxyz12s[kv][3]);
+                    const LVector3 &offc = ts.offcs[kx];
+                    ts.gvwoffcenter->add_data3f(offc[0], offc[1], offc[2]);
+                    const LVector3 &grpoffc = ts.grpoffcs[kx];
+                    ts.gvwgrpoffcenter->add_data3f(grpoffc[0], grpoffc[1], grpoffc[2]);
+                    const LVector4 &hxyz12 = ts.hxyz12s[kx];
+                    ts.gvwhaxislen->add_data4f(hxyz12[0], hxyz12[1], hxyz12[2], hxyz12[3]);
                 }
             }
         }
@@ -631,9 +636,9 @@ void CloudsGeom::_construct (
                         qvspecs.push_back(ts.qvspecs[kl]);
                     }
                     PT(GeomTriangles) gtris1 = gtris[kl];
-                    // Default index column type is NT_uint16, and add_vertices()
-                    // would change it automatically if needed. Since it is not used,
-                    // change manually.
+                    // Default index column type is NT_uint16, and
+                    // add_vertices() would change it automatically
+                    // if needed. Since it is not used, change manually.
                     if (ts.nverts >= 1 << 16) {
                         gtris1->set_index_type(Geom::NT_uint32);
                     }
