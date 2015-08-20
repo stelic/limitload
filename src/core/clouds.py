@@ -19,7 +19,7 @@ from pandac.PandaModules import Shader
 
 from src import join_path, path_exists, path_dirname
 from src import internal_path, real_path, full_path
-from src import GLSL_PROLOGUE
+from src import USE_COMPILED, GLSL_PROLOGUE
 from src.core.misc import AutoProps, SimpleProps, v3t4, set_texture
 from src.core.misc import get_cache_key_section, key_to_hex, intl01v
 from src.core.misc import Random
@@ -111,7 +111,13 @@ class Clouds (object):
 
         if maxnumquads is None:
             maxnumquads = 0
+        if randseed is None:
+            randseed = -1
 
+        if USE_COMPILED:
+            report(_("Constructing clouds."))
+            # For Python version reported from within CloudsGeom,
+            # because it may either construct or read from cache.
         self._geom = CloudsGeom(
             name,
             sizex, sizey,
@@ -666,6 +672,7 @@ void main ()
         return task.cont
 
 
+# :also-compiled:
 class CloudsGeom (object):
 
     def __init__ (self, name,
@@ -802,8 +809,6 @@ class CloudsGeom (object):
         maxgu = float(maxgray) / 255
         fgu0 = 1.0 / (maxgu - mingu)
         fgu1 = -mingu * fgu0
-        sizex = numtilesx * tilesizex
-        sizey = numtilesy * tilesizey
         midsize = 0.5 * (sizex + sizey)
         ntc = int(((midsize / maxcloudwidth) * clouddens)**2)
         nsmpxy = 5
@@ -937,7 +942,7 @@ class CloudsGeom (object):
 # @cache-key-start: clouds-generation
 
         # Create view direction sorting data.
-        gds = GeodesicSphere(base=vsortbase, numdivs=vsortdivs)
+        gds = GeodesicSphere(base=vsortbase, numdivs=vsortdivs, radius=1.0)
         vsortdirs = []
         vsmaxoffangs = []
         vsnbinds = []
@@ -1122,7 +1127,6 @@ class CloudsGeom (object):
         # Finalize tiles.
         tileroot = NodePath("clouds")
         tileradius = 0.5 * sqrt(tilesizex**2 + tilesizey**2)
-        tiles = []
         for kv in xrange(numvsortdirs):
             vtiling = tileroot.attachNewNode("tiling-v%d" % kv)
             for it in xrange(numtilesx):
@@ -1322,9 +1326,10 @@ class CloudsGeom (object):
         return self._vsnbinds[i][j]
 
 
-# @cache-key-start: clouds-generation
+# :also-compiled:
 class GeodesicSphere (object):
 
+# @cache-key-start: clouds-generation
     # base: 0 tetrahedron, 1 octahedron, 2 icosahedron
     def __init__ (self, base=2, numdivs=0, radius=1.0):
 
@@ -1396,7 +1401,6 @@ class GeodesicSphere (object):
         # of triangle must be the smallest. Add such triangles to a set,
         # so that non-unique triangles are ignored.
         nbvs = len(norms)
-        iis = range(nbvs)
         l = radius * 2
         for i in xrange(nbvs - 1):
             for j in xrange(i + 1, nbvs):
@@ -1502,6 +1506,7 @@ class GeodesicSphere (object):
                            i3, i31, i23, v3, v31, v23, numdivs - 1)
             split_triangle(radius, verts, norms, tris, edgesplits,
                            i12, i23, i31, v12, v23, v31, numdivs - 1)
+# @cache-key-end: clouds-generation
 
 
     def num_vertices (self):
@@ -1544,6 +1549,7 @@ class GeodesicSphere (object):
         return self._tris[i]
 
 
+# :also-compiled:
 class TexUVParts (object):
 
     def __init__ (self):
@@ -1564,6 +1570,7 @@ class TexUVParts (object):
     def part (self, i):
 
         return self._parts[i]
-# @cache-key-end: clouds-generation
 
 
+if USE_COMPILED:
+    from clouds_c import *
