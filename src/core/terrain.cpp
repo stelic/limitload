@@ -159,42 +159,42 @@ NodePath TerrainGeom::tile_root ()
     return _tileroot;
 }
 
-int TerrainGeom::num_quads_x ()
+int TerrainGeom::num_quads_x () const
 {
     return _numquadsx;
 }
 
-int TerrainGeom::num_quads_y ()
+int TerrainGeom::num_quads_y () const
 {
     return _numquadsy;
 }
 
-int TerrainGeom::num_tiles_x ()
+int TerrainGeom::num_tiles_x () const
 {
     return _numtilesx;
 }
 
-int TerrainGeom::num_tiles_y ()
+int TerrainGeom::num_tiles_y () const
 {
     return _numtilesy;
 }
 
-int TerrainGeom::tile_size_x ()
+int TerrainGeom::tile_size_x () const
 {
     return _tilesizex;
 }
 
-int TerrainGeom::tile_size_y ()
+int TerrainGeom::tile_size_y () const
 {
     return _tilesizey;
 }
 
-int TerrainGeom::num_cuts ()
+int TerrainGeom::num_cuts () const
 {
     return _numcuts;
 }
 
-double TerrainGeom::max_z ()
+double TerrainGeom::max_z () const
 {
     return _maxz;
 }
@@ -204,7 +204,7 @@ void TerrainGeom::update_max_z (double z)
     _maxz = fmax(_maxz, z);
 }
 
-double TerrainGeom::quad_max_z (int q)
+double TerrainGeom::quad_max_z (int q) const
 {
     return _maxqzs[q];
 }

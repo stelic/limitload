@@ -82,16 +82,16 @@ PUBLISHED:
         LVector3i &tvinds, bool wtvinds) const;
 
     NodePath tile_root ();
-    int num_quads_x ();
-    int num_quads_y ();
-    int num_tiles_x ();
-    int num_tiles_y ();
-    int tile_size_x ();
-    int tile_size_y ();
-    int num_cuts ();
-    double max_z ();
+    int num_quads_x () const;
+    int num_quads_y () const;
+    int num_tiles_x () const;
+    int num_tiles_y () const;
+    int tile_size_x () const;
+    int tile_size_y () const;
+    int num_cuts () const;
+    double max_z () const;
     void update_max_z (double z);
-    double quad_max_z (int q);
+    double quad_max_z (int q) const;
     void update_quad_max_z (int q, double z);
 
 private:
