@@ -68,11 +68,9 @@ PUBLISHED:
     int num_lods () const;
     double offset_z () const;
     NodePath tile_root ();
-    int num_visual_sort_dirs () const;
-    LVector3 visual_sort_dir (int i) const;
-    double max_visual_sort_dir_offset_angle (int i) const;
-    int num_neighbor_visual_sort_dirs (int i) const;
-    int visual_sort_dir_neighbor_index (int i, int j) const;
+
+    int update_visual_sort_dir_index (
+        const LVector3 &camdir, int vsind0) const;
 
 private:
 

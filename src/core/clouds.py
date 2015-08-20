@@ -19,7 +19,7 @@ from pandac.PandaModules import Shader
 
 from src import join_path, path_exists, path_dirname
 from src import internal_path, real_path, full_path
-from src import USE_COMPILED, GLSL_PROLOGUE
+from src import pycv, USE_COMPILED, GLSL_PROLOGUE
 from src.core.misc import AutoProps, SimpleProps, v3t4, set_texture
 from src.core.misc import get_cache_key_section, key_to_hex, intl01v
 from src.core.misc import Random
@@ -139,17 +139,6 @@ class Clouds (object):
         offsetz = self._geom.offset_z()
         tileroot = self._geom.tile_root()
 
-        vsortdirs = []
-        vsmaxoffangs = []
-        vsnbinds = []
-        for i in xrange(self._geom.num_visual_sort_dirs()):
-            vsortdirs.append(self._geom.visual_sort_dir(i))
-            vsmaxoffangs.append(self._geom.max_visual_sort_dir_offset_angle(i))
-            vsnbinds1 = []
-            for j in xrange(self._geom.num_neighbor_visual_sort_dirs(i)):
-                vsnbinds1.append(self._geom.visual_sort_dir_neighbor_index(i, j))
-            vsnbinds.append(vsnbinds1)
-
         self.world = world
         self._cloudshape = cloudshape
 
@@ -157,14 +146,6 @@ class Clouds (object):
         tileroot.reparentTo(self.node)
         tileroot.setPos(0.0, 0.0, offsetz)
         self.world.add_altbin_node(tileroot)
-
-        # Setup view direction handling.
-        self._vsortdirs = list(enumerate(vsortdirs))
-        self._vsmaxoffangs = vsmaxoffangs
-        self._vsnbvdirs = [(  [(i, vsortdirs[i])]
-                            + [(j, vsortdirs[j]) for j in vsnbinds1])
-                           for i, vsnbinds1 in enumerate(vsnbinds)]
-        self._vsortdir_index = 0
 
         # Setup LOD handling.
         tileradius = 0.5 * sqrt(tilesizex**2 + tilesizey**2)
@@ -180,7 +161,6 @@ class Clouds (object):
         # Initialize view direction and LOD handling per tile,
         # and collect data for loop.
         self._vtilings = []
-        cvsind = self._vsortdir_index
         for vtiling in tileroot.getChildren():
             self._vtilings.append(vtiling)
             for ijtile in vtiling.getChildren():
@@ -188,7 +168,8 @@ class Clouds (object):
                 for kl in xrange(numlods):
                     tlod.setSwitch(kl, actloddists[kl + 1], actloddists[kl])
             vtiling.hide()
-        self._vtilings[cvsind].show()
+        self._vsortdir_index = 0
+        self._vtilings[self._vsortdir_index].show()
 
         # Setup tile rendering.
         tileroot.setDepthWrite(False)
@@ -221,7 +202,7 @@ class Clouds (object):
 
         # Update states.
         self._updwait_vsortdir = 0.0
-        self._updperiod_vsortdir = 0.267
+        self._updperiod_vsortdir = pycv(py=0.267, c=0.087)
         if self._cloudshape == 0:
             self._updwait_shdinp_refup = 0.0
             self._updperiod_shdinp_refup = 0.137
@@ -649,18 +630,8 @@ void main ()
         if self._updwait_vsortdir <= 0.0:
             self._updwait_vsortdir = self._updperiod_vsortdir
             camdir = self.world.camera.getQuat(self.world.node).getForward()
-            vsnbvdirs = self._vsnbvdirs[self._vsortdir_index]
-            vsortdir = self._vsortdirs[self._vsortdir_index][1]
-            vsmaxoffang0 = self._vsmaxoffangs[self._vsortdir_index]
-            if vsnbvdirs:
-                vsind = max(vsnbvdirs, key=lambda x: camdir.dot(x[1]))[0]
-            else:
-                vsind = self._vsortdir_index
-            vsortdir = self._vsortdirs[vsind][1]
-            vsoffang = acos(min(max(camdir.dot(vsortdir), -1.0), 1.0))
-            if vsoffang > 2 * vsmaxoffang0:
-                vsind = max(self._vsortdirs, key=lambda x: camdir.dot(x[1]))[0]
-                vsortdir = self._vsortdirs[vsind][1]
+            vsind = self._geom.update_visual_sort_dir_index(
+                camdir, self._vsortdir_index)
             if self._vsortdir_index != vsind:
                 self._vtilings[self._vsortdir_index].hide()
                 self._vtilings[vsind].show()
@@ -763,6 +734,11 @@ class CloudsGeom (object):
         self._vsnbinds = vsnbinds
 
         self._tileroot = tileroot
+
+        self._ivsortdirs = list(enumerate(vsortdirs))
+        self._vsnbvdirs = [(  [(i, vsortdirs[i])]
+                            + [(j, vsortdirs[j]) for j in vsnbinds1])
+                           for i, vsnbinds1 in enumerate(vsnbinds)]
 
 
     _gvformat = {}
@@ -1337,29 +1313,20 @@ class CloudsGeom (object):
         return self._tileroot
 
 
-    def num_visual_sort_dirs (self):
+    def update_visual_sort_dir_index (self, camdir, vsind0):
 
-        return len(self._vsortdirs)
-
-
-    def visual_sort_dir (self, i):
-
-        return self._vsortdirs[i]
-
-
-    def max_visual_sort_dir_offset_angle (self, i):
-
-        return self._vsmaxoffangs[i]
-
-
-    def num_neighbor_visual_sort_dirs (self, i):
-
-        return len(self._vsnbinds[i])
-
-
-    def visual_sort_dir_neighbor_index (self, i, j):
-
-        return self._vsnbinds[i][j]
+        vsind = vsind0
+        # Quick search, only among neighbors of current direction.
+        vsnbvdirs0 = self._vsnbvdirs[vsind0]
+        vsmaxoffang0 = self._vsmaxoffangs[vsind0]
+        if vsnbvdirs0:
+            vsind = max(vsnbvdirs0, key=lambda x: camdir.dot(x[1]))[0]
+        # Slow search if needed, among all directions.
+        vsortdir = self._ivsortdirs[vsind][1]
+        vsoffang = acos(min(max(camdir.dot(vsortdir), -1.0), 1.0))
+        if vsoffang > 2 * vsmaxoffang0:
+            vsind = max(self._ivsortdirs, key=lambda x: camdir.dot(x[1]))[0]
+        return vsind
 
 
 # :also-compiled:

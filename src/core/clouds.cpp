@@ -783,29 +783,38 @@ NodePath CloudsGeom::tile_root ()
     return _tileroot;
 }
 
-int CloudsGeom::num_visual_sort_dirs () const
+int CloudsGeom::update_visual_sort_dir_index (
+    const LVector3 &camdir, int vsind0) const
 {
-    return _vsortdirs.size();
-}
-
-LVector3 CloudsGeom::visual_sort_dir (int i) const
-{
-    return _vsortdirs[i];
-}
-
-double CloudsGeom::max_visual_sort_dir_offset_angle (int i) const
-{
-    return _vsmaxoffangs[i];
-}
-
-int CloudsGeom::num_neighbor_visual_sort_dirs (int i) const
-{
-    return _vsnbinds[i].size();
-}
-
-int CloudsGeom::visual_sort_dir_neighbor_index (int i, int j) const
-{
-    return _vsnbinds[i][j];
+    int vsind = vsind0;
+    // Quick search, only among neighbors of current direction.
+    const std::vector<int> &vsnbinds0 = _vsnbinds[vsind0];
+    double vsmaxoffang0 = _vsmaxoffangs[vsind0];
+    const LVector3 &vsortdir0 = _vsortdirs[vsind0];
+    double maxdotp = camdir.dot(vsortdir0);
+    for (int j = 0; j < vsnbinds0.size(); ++j) {
+        int vsind1 = vsnbinds0[j];
+        double dotp = camdir.dot(_vsortdirs[vsind1]);
+        if (maxdotp < dotp) {
+            maxdotp = dotp;
+            vsind = vsind1;
+        }
+    }
+    // Slow search if needed, among all directions.
+    double vsoffang = acos(std::min(std::max(maxdotp, -1.0), 1.0));
+    if (vsoffang > 2 * vsmaxoffang0) {
+        for (int i = 0; i < _vsnbinds.size(); ++i) {
+            for (int j = 0; j < _vsnbinds[i].size(); ++j) {
+                int vsind1 = _vsnbinds[i][j];
+                double dotp = camdir.dot(_vsortdirs[vsind1]);
+                if (maxdotp < dotp) {
+                    maxdotp = dotp;
+                    vsind = vsind1;
+                }
+            }
+        }
+    }
+    return vsind;
 }
 
 
