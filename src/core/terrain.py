@@ -310,14 +310,18 @@ class Terrain (object):
             celldensity, periodic,
             enc_lst_string(cutmaskpaths), enc_lst_bool(levints))
 
-        self._numquadsx = self._geom.num_quads_x()
-        self._numquadsy = self._geom.num_quads_y()
+        numquadsx = self._geom.num_quads_x()
+        numquadsy = self._geom.num_quads_y()
         numtilesx = self._geom.num_tiles_x()
         numtilesy = self._geom.num_tiles_y()
         tilesizex = self._geom.tile_size_x()
         tilesizey = self._geom.tile_size_y()
         numcuts = self._geom.num_cuts()
         tileroot = self._geom.tile_root()
+        self.numtilesx = numtilesx
+        self.numtilesy = numtilesy
+        self._numquadsx = numquadsx
+        self._numquadsy = numquadsy
 
         self.node = world.node.attachNewNode("terrain")
         if pos is None:
