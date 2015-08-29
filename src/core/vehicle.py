@@ -6,6 +6,7 @@ from pandac.PandaModules import Vec3, Vec3D, Vec4, Point3, Point3D, Quat
 from pandac.PandaModules import NodePath, AmbientLight
 
 from src import pycv
+from src import join_path, path_exists, path_dirname, path_basename
 from src.core.body import Body
 from src.core.curve import Segment, Arc
 from src.core.effect import fire_n_smoke_2
@@ -15,6 +16,7 @@ from src.core.misc import sign, unitv, clamp, vtod, vtof, ptod, ptof
 from src.core.misc import make_text, update_text
 from src.core.misc import uniform, randrange
 from src.core.misc import fx_uniform
+from src.core.misc import load_model_lod_chain
 from src.core.shader import make_shader
 from src.core.sound import Sound3D
 
@@ -55,6 +57,7 @@ class Vehicle (Body):
     modelscale = 1.0
     modeloffset = Point3()
     modelrot = Vec3()
+    sdmodelpath = None
     shdmodelpath = None
     normalmap = None
     glowmap = rgba(0,0,0, 0.1)
@@ -76,6 +79,8 @@ class Vehicle (Body):
         if speed is None:
             speed = 0.0
         pos = Point3(pos[0], pos[1], 0.0)
+
+        self.texture = texture
 
         if isinstance(self.modelpath, basestring):
             shdmodind = 0
@@ -104,6 +109,68 @@ class Vehicle (Body):
             pos=pos, hpr=hpr, vel=speed)
 
         self.maxbracc = self.maxspeed / 4.0
+
+        # Detect shotdown maps.
+        self._shotdown_texture = self.texture
+        self._shotdown_normalmap = self.normalmap
+        self._shotdown_glowmap = self.glowmap if not isinstance(self.glowmap, Vec4) else None
+        self._shotdown_glossmap = self.glossmap
+        self._shotdown_change_maps = False
+        if isinstance(self.modelpath, basestring):
+            ref_modelpath = self.modelpath
+        elif isinstance(self.modelpath, (tuple, list)):
+            ref_modelpath = self.modelpath[0]
+        else:
+            ref_modelpath = None
+        if ref_modelpath:
+            ref_modeldir = path_dirname(ref_modelpath)
+            ref_modelname = path_basename(ref_modeldir)
+            if self.texture:
+                test_path = self.texture.replace("_tex.", "_burn.")
+                if path_exists("data", test_path):
+                    self._shotdown_texture = test_path
+                    self._shotdown_change_maps = True
+            if self.normalmap:
+                test_path = join_path(ref_modeldir,
+                                      ref_modelname + "_burn_nm.png")
+                if path_exists("data", test_path):
+                    self._shotdown_normalmap = test_path
+                    self._shotdown_change_maps = True
+            if self.glowmap and not isinstance(self.glowmap, Vec4):
+                test_path = join_path(ref_modeldir,
+                                      ref_modelname + "_burn_gw.png")
+                if path_exists("data", test_path):
+                    self._shotdown_glowmap = test_path
+                    self._shotdown_change_maps = True
+            if self.glossmap:
+                test_path = join_path(ref_modeldir,
+                                      ref_modelname + "_burn_gls.png")
+                if path_exists("data", test_path):
+                    self._shotdown_glossmap = test_path
+                    self._shotdown_change_maps = True
+
+        # Prepare shotdown model.
+        self._shotdown_modelnode = None
+        if self.sdmodelpath:
+            modelchain = self.sdmodelpath
+            if isinstance(modelchain, basestring):
+                modelchain = [modelchain]
+            ret = load_model_lod_chain(
+                    world.vfov, modelchain,
+                    texture=self._shotdown_texture,
+                    normalmap=self._shotdown_normalmap,
+                    glowmap=self._shotdown_glowmap,
+                    glossmap=self._shotdown_glossmap,
+                    shadowmap=self.world.shadow_texture,
+                    scale=self.modelscale,
+                    pos=self.modeloffset, hpr=self.modelrot)
+            lnode, models, fardists = ret[:3]
+            lnode.setShader(self.shader)
+            self._shotdown_modelnode = lnode
+            self._shotdown_models = models
+            self._shotdown_fardists = fardists
+            for mlevel, model in enumerate(models):
+                model.setTwoSided(True)
 
         # Locally reposition and reorient vehicle such as that
         # all ground contact points have local z-coordinates zero.
@@ -152,9 +219,16 @@ class Vehicle (Body):
         self._length = length
         self._size_xy = min(width, length)
 
+        # Models for detecting moving parts.
+        mvpt_models = list(self.models)
+        if base.with_world_shadows and self.shadow_node is not None:
+            mvpt_models += [self.shadow_node]
+        if self.sdmodelpath:
+            mvpt_models += self._shotdown_models
+
         # Detect turning axles.
         self._axles = []
-        for model in self.models:
+        for model in mvpt_models:
             axlends = model.findAllMatches("**/axle*")
             for axlend in axlends:
                 c1, c2 = axlend.getTightBounds()
@@ -165,7 +239,7 @@ class Vehicle (Body):
         # Detect turning tracks.
         # Use ambient light as shader input for uv-scroll.
         self._tracks = []
-        for model in self.models:
+        for model in mvpt_models:
             tracknds = model.findAllMatches("**/track*")
             for it, tracknd in enumerate(tracknds):
                 spdfac = self.trkspdfac[it]
@@ -182,7 +256,7 @@ class Vehicle (Body):
         # Detect lights.
         # Set up turning on/off through glow factor.
         self._lights = []
-        for model in self.models:
+        for model in mvpt_models:
             for lnd in model.findAllMatches("**/lights"):
                 kwargs = dict(self.shader_kwargs)
                 kwargs["glow"] = rgba(255, 255, 255, 1.0)
@@ -266,8 +340,6 @@ class Vehicle (Body):
         if self.damage >= self.strength:
             self.set_shotdown(5.0)
 
-            self.node.setColor(rgba(32, 32, 32, 1.0))
-
             d100 = randrange(100)
             if d100 < 66:
                 self.explode_minor()
@@ -290,6 +362,24 @@ class Vehicle (Body):
 
             for turret in self.turrets:
                 turret.set_ap()
+
+            # Switch to shotdown model.
+            # Or set shotdown maps.
+            if self._shotdown_modelnode is not None:
+                self.modelnode.removeNode()
+                self.modelnode = self._shotdown_modelnode
+                self.modelnode.reparentTo(self.node)
+                self.models = self._shotdown_models
+                self.fardists = self._shotdown_fardists
+                self.texture = self._shotdown_texture
+            elif self._shotdown_change_maps:
+                for model in self.models:
+                    set_texture(model,
+                                texture=self._shotdown_texture,
+                                normalmap=self._shotdown_normalmap,
+                                glowmap=self._shotdown_glowmap,
+                                glossmap=self._shotdown_glossmap,
+                                shadowmap=self.world.shadow_texture)
 
             self._ap_active = True
             self._ap_pause = 0.0
