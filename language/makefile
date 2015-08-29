@@ -7,7 +7,7 @@ mo_files := $(shell echo " $(mo_files)" \
 all: $(mo_files)
 
 %.mo: %.po
-	"$(LIMLOAD_ROOT)"/util/po-compile.sh $<
+	../util/po-compile.sh $<
 
 %/sr@latin.po: %/sr.po
 	msgfilter -i $< -o $@ recode-sr-latin
