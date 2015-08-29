@@ -1689,6 +1689,7 @@ class B8m1 (RocketPod):
     rounds = 20
     modelpath = ["models/weapons/missile_s8_b8m1rp.egg"]
     texture = "models/weapons/missile_s8_tex.png"
+    normalmap = "models/weapons/missile_s8_nm.png"
 
     def __init__ (self):
 
@@ -1713,6 +1714,7 @@ class Rpg7 (PodRocket):
     hitboxdata = [(Point3(0.0, 0.0, 0.0), 2.0)]
     modelpath = [("models/weapons/missile_rpg7.egg")]
     texture = "models/weapons/missile_rpg7_tex.png"
+    normalmap = "models/weapons/missile_rpg7_nm.png"
 
     def __init__ (self, world, name, side,
                   pos=None, hpr=None, speed=None, extvis=False):
