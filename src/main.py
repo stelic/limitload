@@ -20,6 +20,7 @@ from src import path_exists, real_path, full_path, join_path
 from src import decode_real_path, encode_full_path
 from src import get_base_game_root, add_game_root
 from src import list_dir_files, list_dir_subdirs
+from src.bconf import PYTHON_CMD
 from src.core.basestack import BaseStack
 from src.core.game import Game
 from src.core.interface import NarrowAspect
@@ -710,7 +711,7 @@ def set_panda_config (options, gameconf):
 
     if gc.video.resolution == "desktop":
         # NOTE: Detection in separate process, not to mess up engine startup.
-        cmd = ["python", real_path("data", "src/detres.py")]
+        cmd = [PYTHON_CMD, real_path("data", "src/detres.py")]
         proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
         ret = proc.communicate()
         if proc.returncode != 0:

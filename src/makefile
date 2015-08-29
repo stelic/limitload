@@ -10,6 +10,7 @@ pyc_files := $(shell find -name '*.py' | sort | sed 's:\.py$$:\.pyc:')
 all: \
     subdir-core \
     ../$(binname) \
+    bconf.pyc \
     $(pyc_files) \
 
 ../$(binname): $(binname).cpp $(binname).ico
@@ -24,6 +25,11 @@ else ifeq ($(build_env), winmsvc)
 	mv $(binname).exe ../
 	rm -f $(binname).obj resource.obj resource.res resource.rc
 endif
+
+bconf.py: bconf.py.in ../util/build_setup
+	cat $< \
+	| sed "s/@python_cmd@/$(python_cmd)/g" \
+	> $@
 
 %.pyc: %.py
 	$(python_cmd) -m py_compile $<
