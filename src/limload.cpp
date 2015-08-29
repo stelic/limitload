@@ -40,7 +40,8 @@ int main (int argc, char *argv[])
     snprintf(main_path, max_path_size, "%s/src/main.py",
              abs_lib_dir_path);
 
-    char *python_cmd = strdup("python");
+    char *python_cmd = strdup(PYTHON_CMD);
+    // ...PYTHON_CMD macro is defined by compiler call.
     char *opt_unbuff = strdup("-u");
 
     const int max_num_opt = 1000;

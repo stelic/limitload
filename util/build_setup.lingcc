@@ -4,6 +4,7 @@ build_env=lingcc
 
 envsep=":"
 
+python_cmd=python
 python_inc_dir="/usr/include/python2.7"
 python_lib_dir="/usr/lib"
 eigen_inc_dir="/usr/include/eigen3"

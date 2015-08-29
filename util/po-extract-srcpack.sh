@@ -1,6 +1,7 @@
 #!/bin/sh
 
-script_dir=`dirname $0 | xargs readlink -f`
+script_dir="$(dirname $0)"
+source "$script_dir/build_setup"
 
 pack_dir="$1"
 if test -z "$pack_dir"; then
@@ -19,4 +20,4 @@ domain_dir="$pack_dir/$rev_dir/language/po/$domain"
 mkdir -p "$domain_dir"
 cd "$domain_dir"
 rev_pack_dir=$rev_dir/src/$pack_type/$pack_name
-python "$script_dir/extract_srcpack_pot.py" "$rev_pack_dir" $domain.pot
+$python_cmd "$script_dir/extract_srcpack_pot.py" "$rev_pack_dir" $domain.pot

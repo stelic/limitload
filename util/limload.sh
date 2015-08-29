@@ -1,6 +1,8 @@
 #!/bin/sh
 
 this_dir="$(dirname $0)"
+source "$this_dir/build_setup"
+
 export LD_LIBRARY_PATH="$this_dir/../src/core:$LD_LIBRARY_PATH"
 export PYTHONPATH="$this_dir/..:$PYTHONPATH"
-python "$this_dir/../src/main.py" "$@"
+$python_cmd "$this_dir/../src/main.py" "$@"

@@ -4,6 +4,7 @@ build_env=winmsvc
 
 envsep=";"
 
+python_cmd=python
 python_inc_dir="c:/Program Files/python27/include"
 python_lib_dir="c:/Program Files/python27/libs"
 eigen_inc_dir="c:/panda3d-git/thirdparty/win-libs-vc10-x64/eigen/include"

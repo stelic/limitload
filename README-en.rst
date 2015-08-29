@@ -149,7 +149,9 @@ and manually delete directories ``panda3d`` and ``python``.
 
 Then, an ``util/build_setup.<platform>`` file appropriate for the platform
 should be copied to ``util/build_setup`` and the paths in it modified
-to correspond to the system.
+to correspond to the system. Also, on some systems the name of Python 2
+interpreter executable is ``python`` and on others ``python2``,
+and that can be set in this file.
 
 Finally, simply executing ``make`` in the game's root directory should
 build everything needed, and produce the ``limload.exe`` (on Windows)

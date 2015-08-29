@@ -34,7 +34,7 @@ interrogate \
     -module $mod_name -library $mod_name \
     -oc $mod_name-igate.cpp -od $mod_name.in \
     $mod_header
-python $script_dir/uncamel_igate.py $mod_name-igate.cpp
+$python_cmd $script_dir/uncamel_igate.py $mod_name-igate.cpp
 
 interrogate_module \
     -python-native \
@@ -42,7 +42,7 @@ interrogate_module \
     -oc $mod_name-module.cpp \
     $mod_name.in
 
-panda_core_lib=$(python -c "import panda3d.core; print panda3d.core.__file__")
+panda_core_lib=$($python_cmd -c "import panda3d.core; print panda3d.core.__file__")
 
 if test $build_env = lingcc; then
 
