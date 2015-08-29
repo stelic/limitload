@@ -62,6 +62,8 @@ class BaseStack (DirectObject):
     def __init__ (self, gameconf, inputconf, fixdt=None, randseed=None,
                   pandalog=None):
 
+        self.alive = False # needed if it crashes during initialization
+
         DirectObject.__init__(self)
 
         if BaseStack._created:
