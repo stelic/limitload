@@ -1297,12 +1297,12 @@ class BaseStack (DirectObject):
             full_file_load_path = full_file_cext_path
             need_load = not copy_func
 
-        if need_load or not cache:
+        if need_load:
             obj = load_func(full_file_load_path)
-            if copy_func and cache:
+            if copy_func:
                 for ckey_ext in all_ckey_ext:
                     self._file_object_cache[ckey_ext] = obj
-        if copy_func and cache:
+        if copy_func:
             cached_obj = self._file_object_cache[ckey]
             obj = copy_func(cached_obj)
 
