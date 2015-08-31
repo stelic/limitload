@@ -1071,8 +1071,6 @@ class CloudsGeom (object):
                     for krt, kup in krt_kup:
                         poff = drt * krt + dup * kup
                         ts.verts.append(qtpos + poff)
-                        qpoff = qoff + poff
-                        qprad = qpoff.length()
                         klu = (1 - krt) / 2; klv = (1 + kup) / 2
                         ts.texuvs.append(Vec2(uoff + ulen * klu, voff + vlen * klv))
                         if cloudshape == 0:

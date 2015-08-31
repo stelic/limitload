@@ -572,8 +572,6 @@ void CloudsGeom::_construct (
                     LVector3 poff = drt * krt + dup * kup;
                     LPoint3 tpos = qtpos + poff;
                     ts.verts.push_back(tpos);
-                    LVector3 qpoff = qoff + poff;
-                    double qprad = qpoff.length();
                     int klu = (1 - krt) / 2, klv = (1 + kup) / 2;
                     ts.texuvs.push_back(LVector2(uoff + ulen * klu, voff + vlen * klv));
                     if (cloudshape == 0) {
