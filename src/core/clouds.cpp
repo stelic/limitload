@@ -151,6 +151,9 @@ void CloudsGeom::destroy ()
         return;
     }
     _tileroot.remove_node();
+    _vsortdirs.clear();
+    _vsmaxoffangs.clear();
+    _vsnbinds.clear();
     _alive = false;
 }
 

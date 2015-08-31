@@ -586,9 +586,20 @@ class Terrain (object):
 
         if not self.alive:
             return
+        self.alive = False
         self._geom.destroy()
         self.node.removeNode()
-        self.alive = False
+        self._prod_gc()
+
+
+    def _prod_gc (self):
+
+        for tiles1 in self._tiles:
+            for tiles2 in tiles1:
+                for tile in tiles2:
+                    tile.removeNode()
+        self._tiles = []
+        del self._geom
 
 
     _shader_cache = {}

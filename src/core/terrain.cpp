@@ -151,6 +151,10 @@ void TerrainGeom::destroy ()
         return;
     }
     _tileroot.remove_node();
+    _verts.clear();
+    _tris.clear();
+    _quadmap.clear();
+    _maxqzs.clear();
     _alive = false;
 }
 

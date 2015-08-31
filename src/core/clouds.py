@@ -221,6 +221,15 @@ class Clouds (object):
             return
         self.alive = False
         self.node.removeNode()
+        self._prod_gc()
+
+
+    def _prod_gc (self):
+
+        for vtiling in self._vtilings:
+            vtiling.removeNode()
+        self._vtilings = []
+        del self._geom
 
 
     _shader_cache = {}
