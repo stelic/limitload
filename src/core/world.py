@@ -263,6 +263,13 @@ class World (object):
         self._explosion_ctrav = CollisionTraverser("collision-traverser-explosion")
         self._explosions = []
 
+        # LIFO removal of bodies.
+        self._remove_bodies_spec_by_family = {
+            "vehicle": SimpleProps(keepmax=4),
+        }
+        self._remove_bodies_queue = dict(
+            (f, []) for f in self._remove_bodies_spec_by_family)
+
         self._allied_sides = {}
         self._allied_to_all = set()
 
@@ -1428,6 +1435,18 @@ class World (object):
 
         info = self._tagging_body_info.get((tag, body))
         return info
+
+
+    def remove_body_on_count (self, body):
+
+        rem_spec = self._remove_bodies_spec_by_family.get(body.family)
+        if rem_spec is not None:
+            rem_bodies = self._remove_bodies_queue[body.family]
+            if body not in rem_bodies:
+                rem_bodies.append(body)
+                if len(rem_bodies) > rem_spec.keepmax:
+                    old_body = rem_bodies.pop(0)
+                    old_body.destroy()
 
 
     # Dummy body-like methods, so that world can be parent to bodies.

@@ -384,6 +384,8 @@ class Vehicle (Body):
             self._ap_active = True
             self._ap_pause = 0.0
 
+            self.world.remove_body_on_count(self)
+
         return False
 
 
