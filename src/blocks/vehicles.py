@@ -326,7 +326,7 @@ class Abrams (Vehicle):
     modelpath = ["models/vehicles/abrams/abrams-1.egg",
                  "models/vehicles/abrams/abrams-2.egg",
                  "models/vehicles/abrams/abrams-3.egg"]
-    shmodelpath = "models/vehicles/t80/t80-shotdown.egg"
+    sdmodelpath = "models/vehicles/abrams/abrams-shotdown.egg"
     shdmodelpath = "models/vehicles/abrams/abrams-shadow.egg"
     normalmap = "models/vehicles/abrams/abrams_nm.png"
     glossmap = "models/vehicles/abrams/abrams_gls.png"
@@ -365,6 +365,7 @@ class Bradley (Vehicle):
     modelpath = ["models/vehicles/bradley/bradley-1.egg",
                  "models/vehicles/bradley/bradley-2.egg",
                  "models/vehicles/bradley/bradley-3.egg"]
+    sdmodelpath = "models/vehicles/bradley/bradley-shotdown.egg"
     shdmodelpath = "models/vehicles/bradley/bradley-shadow.egg"
     normalmap = "models/vehicles/bradley/bradley_nm.png"
     glossmap = "models/vehicles/bradley/bradley_gls.png"
