@@ -112,44 +112,53 @@ def cache_bodies (include=[]):
     fill_particles_cache(1000)
 
 
-def create_player (mc, world, pos, hpr, speed, onground=False,
-                   texture="models/aircraft/mig29/mig29_tex.png",
-                   noeject=False):
+def create_player_1 (mc, world, acsel, name, side, pos, hpr, speed,
+                     texture, onground=False, noeject=False):
+
+    if acsel == "mig29fd":
+        actype = Mig29fd
+        headpos = Point3(0, 4.900, 1.185) # down angle 11 [deg]
+        dimpos = Point3(0, -37, 5)
+        rvpos = Point3(0, -40, 10)
+        cpitpos = Point3(-0.0078, 0.0, 0.0004)
+        cpitmfspec = [("longhalf", # mshape
+                      1.0, # mscale
+                      # Point3(-0.7, 4.6, 0.85), # mpos
+                      # Vec3(0.0, 0.0, 0.0), # mphpr
+                      # Point3(-0.7, 4.6, 0.85), # mposlt
+                      Point3(-0.7, 5.0, 0.65), # mpos
+                      Vec3(0.0, 0.0, 0.0), # mphpr
+                      Point3(-0.7, 5.0, 0.65), # mposlt
+                      )]
+        # cpitmfspec = [("square", # mshape
+                      # 1.0, # mscale
+                      # Point3(-0.7, 5.0, 0.1), # mpos
+                      # Vec3(0.0, 0.0, 0.0), # mphpr
+                      # Point3(-0.7, 5.0, 0.1), # mposlt
+                      # )]
+        cpitdownto = Point3(0.0, 5.020, 1.078)
+    else:
+        raise StandardError("Undefined player aircraft selection '%s'." % acsel)
 
     texture = mc.player_texture if texture is None else texture
-    ac = Mig29fd(world=world, name="red", side="bstar",
-                 texture=texture,
-                 fuelfill=(mc.player_fuelfill or 0.50),
-                 pos=pos, hpr=hpr, speed=speed, onground=onground,
-                 damage=mc.player_damage,
-                 faillvl=mc.player_failure_level,
-                 cnammo=mc.player_ammo_cannons,
-                 lnammo=mc.player_ammo_launchers)
+    ac = actype(world=world, name=name, side=side,
+                texture=texture,
+                fuelfill=(mc.player_fuelfill or 0.50),
+                pos=pos, hpr=hpr, speed=speed, onground=onground,
+                damage=mc.player_damage,
+                faillvl=mc.player_failure_level,
+                cnammo=mc.player_ammo_cannons,
+                lnammo=mc.player_ammo_launchers)
     if noeject:
         ac.must_eject_time = -1
     #ac.show_state_info(pos=Vec3(-0.5, 0, -0.4))
     player = Player(ac=ac,
-                    headpos=Point3(0, 4.900, 1.185), # down angle 11 [deg]
-                    dimpos=Point3(0, -37, 5),
-                    rvpos=Point3(0, -40, 10),
-                    cpitpos=Point3(-0.0078, 0.0, 0.0004),
-                    cpitmfspec=[("longhalf", # mshape
-                                  1.0, # mscale
-                                  # Point3(-0.7, 4.6, 0.85), # mpos
-                                  # Vec3(0.0, 0.0, 0.0), # mphpr
-                                  # Point3(-0.7, 4.6, 0.85), # mposlt
-                                  Point3(-0.7, 5.0, 0.65), # mpos
-                                  Vec3(0.0, 0.0, 0.0), # mphpr
-                                  Point3(-0.7, 5.0, 0.65), # mposlt
-                                 )],
-                    # cpitmfspec=[("square", # mshape
-                                 # 1.0, # mscale
-                                 # Point3(-0.7, 5.0, 0.1), # mpos
-                                 # Vec3(0.0, 0.0, 0.0), # mphpr
-                                 # Point3(-0.7, 5.0, 0.1), # mposlt
-                                # ),
-                               # ],
-                    cpitdownto=Point3(0.0, 5.020, 1.078),
+                    headpos=headpos,
+                    dimpos=dimpos,
+                    rvpos=rvpos,
+                    cpitpos=cpitpos,
+                    cpitmfspec=cpitmfspec,
+                    cpitdownto=cpitdownto,
                     mission=mc.mission,
                     mzexitf=zone_exit_player_down)
     world.player = player

@@ -69,6 +69,10 @@ def zone_zero_enter (zc, mc, gc):
                 shotdownmusic=None)
 
     zc.player = create_player(mc=mc, world=zc.world,
+                              acsel="mig29fd",
+                              name="red",
+                              side="taymyr",
+                              texture="models/aircraft/mig29/mig29_tex.png",
                               pos=Point3(56000, 24500, 4196),
                               hpr=Vec3(100, 0, 0),
                               speed=200)

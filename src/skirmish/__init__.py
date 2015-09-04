@@ -42,3 +42,4 @@ def setup_world (zc, mc, gc,
     zc.terrain = zc.world.terrains[0]
 
 
+create_player = create_player_1
