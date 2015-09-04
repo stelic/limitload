@@ -804,14 +804,11 @@ int CloudsGeom::update_visual_sort_dir_index (
     // Slow search if needed, among all directions.
     double vsoffang = acos(std::min(std::max(maxdotp, -1.0), 1.0));
     if (vsoffang > 2 * vsmaxoffang0) {
-        for (int i = 0; i < _vsnbinds.size(); ++i) {
-            for (int j = 0; j < _vsnbinds[i].size(); ++j) {
-                int vsind1 = _vsnbinds[i][j];
-                double dotp = camdir.dot(_vsortdirs[vsind1]);
-                if (maxdotp < dotp) {
-                    maxdotp = dotp;
-                    vsind = vsind1;
-                }
+        for (int i = 0; i < _vsortdirs.size(); ++i) {
+            double dotp = camdir.dot(_vsortdirs[i]);
+            if (maxdotp < dotp) {
+                maxdotp = dotp;
+                vsind = i;
             }
         }
     }
