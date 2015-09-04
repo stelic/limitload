@@ -9,10 +9,10 @@ from src.skirmish import *
 _, p_, n_, pn_ = make_tr_calls_skirmish(__file__)
 
 
-mission_shortdes = p_("mission name", "Airstrike")
+mission_shortdes = p_("mission name", "Air Strike")
 
 mission_longdes = p_("mission description", """
-Ground attack mission. A group of enemy vehicles is spotted down below. It's consisted mostly of light armored IFVs, but some MBTs are reported too. To complete the task you must destroy whole group. While vehicles themselves are defenceless against attacks from air, keep in mind that enemy infantry, armed with Stingers, is scattered in surrounding hills.
+Ground attack mission. A group of enemy vehicles is spotted in the area. It consists mostly of lightly armored IFVs, but some MBTs are reported too. To complete the task you must destroy the whole group. While vehicles themselves are defenseless against attack from air, keep in mind that enemy infantry, armed with Stingers, is scattered through surrounding hills.
 
 Primary objectives:
 - Destroy all enemy vehicles.
@@ -107,7 +107,7 @@ def zone_zero_enter (zc, mc, gc):
                          hpr=Vec3(130, 0, 0),
                          speed=0.0)
     zc.enemyvehiclegroup = [zc.target1, zc.target2, zc.target3, zc.target4, zc.target5, zc.target6]
-    
+
     #SAM carpet
     zc.infantry = SamCarpet(zc.world, mtype=Stinger, mside="merc",
                             targsides=["bstar"],
@@ -115,7 +115,7 @@ def zone_zero_enter (zc, mc, gc):
                             carpetpos=zc.wp1pos, carpetradius=2500)
 
     #Waypoint data
-    zc.player.add_waypoint(name="wp1", longdes=_("waypoint 1"), shortdes=_("WP1"),
+    zc.player.add_waypoint(name="wp1", longdes=_("Waypoint 1"), shortdes=_("WP1"),
                            pos=zc.wp1pos, radius=4000, height=500)
 
 
@@ -125,7 +125,7 @@ def zone_zero_loop (zc, mc, gc):
 
     yield zc.world, 1.0
 
-    zc.player.show_message("notification", "left", _("Rain fire to the enemy below."), duration=1.0)
+    zc.player.show_message("notification", "left", _("Rain fire on the enemy below."), duration=1.0)
     zc.player.show_message("notification", "left", _("Get going!"), duration=4.0)
 
     yield zc.world, 2.0
