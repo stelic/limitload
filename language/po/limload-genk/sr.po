@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: limload-genk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-27 16:12+0200\n"
-"PO-Revision-Date: 2015-04-06 17:56+0200\n"
+"POT-Creation-Date: 2015-09-05 22:56+0200\n"
+"PO-Revision-Date: 2015-09-05 23:03+0200\n"
 "Last-Translator: Nikola Milentijevic <nikolmiv@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -26,6 +26,60 @@ msgstr "Задатак пропао."
 #: ../../../src/skirmish/genk/__init__.py:21
 msgid "Bonus objective completed."
 msgstr "Бонус циљеви извршени."
+
+#: ../../../src/skirmish/genk/airstrike.py:12
+msgctxt "mission name"
+msgid "Air Strike"
+msgstr "Ваздушни удар"
+
+# well-spelled: ИФВ, МБТ, стингерима
+#: ../../../src/skirmish/genk/airstrike.py:14
+msgctxt "mission description"
+msgid ""
+"\n"
+"Ground attack mission. A group of enemy vehicles is spotted in the area. It consists mostly of lightly armored IFVs, but some MBTs are reported too. To complete the task you must destroy the whole group. While vehicles themselves are defenseless against attack from air, keep in mind that enemy infantry, armed with Stingers, is scattered through surrounding hills.\n"
+"\n"
+"Primary objectives:\n"
+"- Destroy all enemy vehicles.\n"
+"\n"
+"Bonus objectives:\n"
+"- None.\n"
+"\n"
+msgstr ""
+"\n"
+"Задатак напада на земљу. Група непријатељских возила је опажена у зони. Чине је углавном лако оклопљени ИФВ-ови, али су пријављени и неки МБТ-ови. За извршење задатка неопходно је да уништиш целу групу. Док су сама возила беспомоћна на нападе из ваздуха, имај на уму да је непријатељска пешадија, наоружана стингерима, размештена по околним брдима.\n"
+"\n"
+"Примарни циљеви:\n"
+"— Уништи сва непријатељска возила.\n"
+"\n"
+"Бонус циљеви:\n"
+"— Нема.\n"
+"\n"
+
+#: ../../../src/skirmish/genk/airstrike.py:122
+msgid "Waypoint 1"
+msgstr "путна тачка 1"
+
+#: ../../../src/skirmish/genk/airstrike.py:122
+msgid "WP1"
+msgstr "ПТ1"
+
+#: ../../../src/skirmish/genk/airstrike.py:132
+msgid "Rain fire on the enemy below."
+msgstr "Распали по непријатељу испод."
+
+#: ../../../src/skirmish/genk/airstrike.py:133
+msgid "Get going!"
+msgstr "Мрдај!"
+
+#: ../../../src/skirmish/genk/airstrike.py:153
+msgid "Enemy vehicle group destroyed."
+msgstr "Непријатељска група возила уништена."
+
+#: ../../../src/skirmish/genk/airstrike.py:154
+#: ../../../src/skirmish/genk/incoming.py:178
+msgid "Good work."
+msgstr "Добро обављено."
 
 #: ../../../src/skirmish/genk/incoming.py:12
 msgctxt "mission name"
@@ -55,26 +109,14 @@ msgstr ""
 "— Немој да испалиш ниједну ракету.\n"
 "\n"
 
-#: ../../../src/skirmish/genk/incoming.py:84
-msgid "Incoming enemy planes!"
-msgstr "Стижу непријатељски авиони!"
-
-#: ../../../src/skirmish/genk/incoming.py:85
-msgid "Good luck!"
-msgstr "Срећно ти било!"
-
-#: ../../../src/skirmish/genk/incoming.py:170
+#: ../../../src/skirmish/genk/incoming.py:173
 msgid "All enemy planes destroyed."
 msgstr "Сви непријатељски авиони уништени."
 
-#: ../../../src/skirmish/genk/incoming.py:172
+#: ../../../src/skirmish/genk/incoming.py:175
 msgid "No missile was fired."
 msgstr "Није испаљена ниједна ракета."
 
-#: ../../../src/skirmish/genk/incoming.py:173
+#: ../../../src/skirmish/genk/incoming.py:176
 msgid "Excellent work."
 msgstr "Изврсно обављено."
-
-#: ../../../src/skirmish/genk/incoming.py:175
-msgid "Good work."
-msgstr "Добро обављено."

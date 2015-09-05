@@ -5,8 +5,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: limload\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-05-06 16:00+0200\n"
-"PO-Revision-Date: 2015-04-06 17:56+0200\n"
+"POT-Creation-Date: 2015-09-05 22:38+0200\n"
+"PO-Revision-Date: 2015-09-05 22:50+0200\n"
 "Last-Translator: Nikola Milentijevic <nikolmiv@gmail.com>\n"
 "Language-Team: Serbian\n"
 "Language: sr\n"
@@ -35,180 +35,180 @@ msgstr ""
 "ГРАНИЧНО\n"
 "ОПТЕРЕЋЕЊЕ"
 
-#: ../../../src/main.py:56
+#: ../../../src/main.py:57
 msgctxt "game description in command-line help"
 msgid "Limit Load -- an arcade cockpit flight game."
 msgstr "Гранично оптерећење — аркадна кабинска летачка игра."
 
-#: ../../../src/main.py:63 ../../../src/main.py:78
+#: ../../../src/main.py:64 ../../../src/main.py:79
 msgctxt "command-line option argument pattern"
 msgid "PACK:MISSION[:ZONE]"
 msgstr "ПАКЕТ:ЗАДАТАК[:ЗОНА]"
 
-#: ../../../src/main.py:66
+#: ../../../src/main.py:67
 msgctxt "command-line option description"
 msgid "Start game directly on the given campaign mission. The mission starts on the mission menu, or in the mission zone if given. If empty campaign pack is given (i.e. just leading semicolon), the mission is looked for through all known campaign packs; if more than one mission is found, exits with error. If empty zone is given (i.e. just trailing semicolon), the mission starts in the default zone."
 msgstr "Покрени игру непосредно на задатом задатку кампање. Задатак почиње својим менијем, или у зони задатка ако је задата. Ако се зада празан пакет кампање (тј. само водећа двотачка), задатак се тражи кроз све познате пакете кампање; ако се нађе више од једног задатка, излази с грешком. Ако се зада празна зона (тј. само пратећа двотачка), задатак почиње у подразумеваној зони."
 
-#: ../../../src/main.py:81
+#: ../../../src/main.py:82
 msgctxt "command-line option description"
 msgid "Start game directly on the given skirmish mission. The mission starts with the intro dialogue (if any), or in the mission zone if given. If empty skirmish pack is given (i.e. just leading semicolon), the mission is looked for through all known skirmish packs; if more than one mission is found, exits with error. If empty zone is given (i.e. just trailing semicolon), the mission starts in the default zone."
 msgstr "Покрени игру непосредно на задатом задатку окршаја. Задатак почиње уводним дијалогом (ако га има), или у зони задатка ако је задата. Ако се зада празан пакет окршаја (тј. само водећа двотачка), задатак се тражи кроз све познате пакете окршаја; ако се нађе више од једног задатка, излази с грешком. Ако се зада празна зона (тј. само пратећа двотачка), задатак почиње у подразумеваној зони."
 
-#: ../../../src/main.py:93
+#: ../../../src/main.py:94
 msgctxt "command-line option argument pattern"
 msgid "PACK:MISSION[:ZONE|.LOOP]"
 msgstr "ПАКЕТ:ЗАДАТАК[:ЗОНА|.ПЕТЉА]"
 
-#: ../../../src/main.py:96
+#: ../../../src/main.py:97
 msgctxt "command-line option description"
 msgid "Start game directly on the given test mission. The mission starts with the intro dialogue (if any), or in the mission zone if given. If empty test pack is given (i.e. just leading semicolon), the mission is looked for through all known test packs; if more than one mission is found, exits error. If empty zone is given (i.e. just trailing semicolon), the mission starts in the default zone. Instead of the zone, a loop extension can be given to request a particular mission loop to execute alone."
 msgstr "Покрени игру непосредно на задатом задатку пробе. Задатак почиње уводним дијалогом (ако га има), или у зони задатка ако је задата. Ако се зада празан пакет проба (тј. само водећа двотачка), задатак се тражи кроз све познате пакете проба; ако се нађе више од једног задатка, излази с грешком. Ако се зада празна зона (тј. само пратећа двотачка), задатак почиње у подразумеваној зони. Уместо зоне може да се зада наставак петље, да би се затражило извршавање само одређене петље задатка."
 
-#: ../../../src/main.py:110
+#: ../../../src/main.py:111
 msgctxt "command-line option argument pattern"
 msgid "SECONDS"
 msgstr "СЕКУНДЕ"
 
 # well-spelled: рендеровања
-#: ../../../src/main.py:113
+#: ../../../src/main.py:114
 msgctxt "command-line option description"
 msgid "Use the given fixed time step for game physics, instead of variable, rendering-dependent time step. Note that action will not run in real-time with fixed time step."
 msgstr "Користи задати фиксни временски корак за физику игре, уместо променљивог корака који зависи од рендеровања. Имајте на уму да се радња неће одвијати у стварном времену при фиксном кораку."
 
 # well-spelled: ЕФСЕМЕ
-#: ../../../src/main.py:121
+#: ../../../src/main.py:122
 msgctxt "command-line option argument pattern"
 msgid "SEED[:FXSEED]"
 msgstr "СЕМЕ[:ЕФСЕМЕ]"
 
-#: ../../../src/main.py:124
+#: ../../../src/main.py:125
 msgctxt "command-line option description"
 msgid "Use the given integer number as random seed, instead of system-derived seed. If second seed is given, it is used for randomness in game effects. If negative number is given, system-derived seed is used instead."
 msgstr "Користи задати цео број као семе насумичности, уместо системски изведеног семена. Ако се зада и друго семе, користи се за насумичност у ефектима игре. Ако се зада негативан број, користи се системски изведено семе."
 
-#: ../../../src/main.py:134
+#: ../../../src/main.py:135
 msgctxt "command-line option argument pattern"
 msgid "VARIANT"
 msgstr "ВАРИЈАНТА"
 
-#: ../../../src/main.py:137
+#: ../../../src/main.py:138
 msgctxt "command-line option description"
 msgid "Read game configuration from config-VARIANT.ini instead of from config.ini."
 msgstr "Читај подешавања игре из config-ВАРИЈАНТА.ini уместо из config.ini."
 
 # well-spelled: АТР
-#: ../../../src/main.py:143
+#: ../../../src/main.py:144
 msgctxt "command-line option argument pattern"
 msgid "ATTR=VALUE"
 msgstr "АТР=ВРЕДНОСТ"
 
-#: ../../../src/main.py:146
+#: ../../../src/main.py:147
 msgctxt "command-line option description"
 msgid "Set a game context attribute. Value will be converted to first possible type of integer, float, True/False/None, string. String type can be forced by prepending and appending either two dots (e.g. foo=..123..), or single or double quotes (which may need to be escaped for the shell). Can be repeated to set multiple attributes."
 msgstr "Постави атрибут контекста игре. Вредност се претвара у први могући тип од целог броја, реалног, True/False/None, ниске. Тип ниске може да се примора окруживањем са две тачке (нпр. foo=..123...), или наводницима или полунаводницима (које можда треба избећи за шкољку). Може да се понавља за постављање више атрибута."
 
-#: ../../../src/main.py:157
+#: ../../../src/main.py:158
 #, python-format
 msgctxt "game name with release string in command-line help"
 msgid "Limit Load %s"
 msgstr "Гранично оптерећење %s"
 
-#: ../../../src/main.py:171
+#: ../../../src/main.py:172
 #, python-format
 msgid "Requested game configuration file '%s' does not exist."
 msgstr "Тражени фајл подешавања игре ‘%s’ не постоји."
 
-#: ../../../src/main.py:183
+#: ../../../src/main.py:184
 msgid "Only one of campaign, skirmish or test mission can be started directly."
 msgstr "Непосредно да се покрене може само једно од задатка кампање, окршаја или пробе."
 
-#: ../../../src/main.py:210
+#: ../../../src/main.py:211
 #, python-format
 msgid "Campaign mission must be requested as PACK:MISSION[:ZONE], got '%s' instead."
 msgstr "Задатак кампање мора да се затражи као ПАКЕТ:ЗАДАТАК[:ЗОНА], а добијено ‘%s’."
 
-#: ../../../src/main.py:218
+#: ../../../src/main.py:219
 #, python-format
 msgid "Mission '%s' does not exist in any campaign pack."
 msgstr "Задатак ‘%s’ не постоји ни у једном пакету кампање."
 
-#: ../../../src/main.py:221
+#: ../../../src/main.py:222
 #, python-format
 msgid "Mission '%(m)s' exists in more than one campaign pack: %(lst)s."
 msgstr "Задатак ‘%(m)s’ постоји у више од једног пакета кампање: %(lst)s."
 
-#: ../../../src/main.py:227
+#: ../../../src/main.py:228
 #, python-format
 msgid "There is no campaign '%s'."
 msgstr "Нема кампање ‘%s’."
 
-#: ../../../src/main.py:229
+#: ../../../src/main.py:230
 #, python-format
 msgid "There is no mission '%(m)s' in campaign '%(c)s'."
 msgstr "Нема задатка ‘%(m)s’ у кампањи ‘%(c)s’."
 
-#: ../../../src/main.py:238
+#: ../../../src/main.py:239
 #, python-format
 msgid "Skirmish mission must be requested as PACK:MISSION[:ZONE], got '%s' instead."
 msgstr "Задатак окршаја мора да се затражи као ПАКЕТ:ЗАДАТАК[:ЗОНА], а добијено ‘%s’."
 
-#: ../../../src/main.py:246
+#: ../../../src/main.py:247
 #, python-format
 msgid "Mission '%s' does not exist in any skirmish pack."
 msgstr "Задатак ‘%s’ не постоји ни у једном пакету окршаја."
 
-#: ../../../src/main.py:249
+#: ../../../src/main.py:250
 #, python-format
 msgid "Mission '%(m)s' exists in more than one skirmish pack: %(lst)s."
 msgstr "Задатак ‘%(m)s’ постоји у више од једног пакета окршаја: %(lst)s."
 
-#: ../../../src/main.py:255
+#: ../../../src/main.py:256
 #, python-format
 msgid "There is no skirmish '%s'."
 msgstr "Нема окршаја ‘%s’."
 
-#: ../../../src/main.py:257
+#: ../../../src/main.py:258
 #, python-format
 msgid "There is no mission '%(m)s' in skirmish '%(s)s'."
 msgstr "Нема задатка ‘%(m)s’ у окршају ‘%(s)s’."
 
-#: ../../../src/main.py:269
+#: ../../../src/main.py:270
 #, python-format
 msgid "Test mission must be requested as PACK:MISSION[:ZONE|.LOOP], got '%s' instead."
 msgstr "Задатак пробе мора да се затражи као ПАКЕТ:ЗАДАТАК[:ЗОНА|.ПЕТЉА], а добијено ‘%s’."
 
-#: ../../../src/main.py:285
+#: ../../../src/main.py:286
 #, python-format
 msgid "Mission '%s' does not exist in any test pack."
 msgstr "Задатак ‘%s’ не постоји ни у једном пакету проба."
 
-#: ../../../src/main.py:288
+#: ../../../src/main.py:289
 #, python-format
 msgid "Mission '%(m)s' exists in more than one test pack: %(lst)s."
 msgstr "Задатак ‘%(m)s’ постоји у више од једног пакета проба: %(lst)s."
 
-#: ../../../src/main.py:294
+#: ../../../src/main.py:295
 #, python-format
 msgid "There is no test '%s'."
 msgstr "Нема пробе ‘%s’."
 
-#: ../../../src/main.py:296
+#: ../../../src/main.py:297
 #, python-format
 msgid "There is no mission '%(m)s' in test '%(t)s."
 msgstr "Нема задатка ‘%(m)s’ у проби ‘%(t)s’."
 
-#: ../../../src/main.py:307
+#: ../../../src/main.py:308
 #, python-format
 msgid "Time step must be a real number, got '%s' instead."
 msgstr "Временски корак мора да буде реалан број, а добијено ‘%s’."
 
-#: ../../../src/main.py:310
+#: ../../../src/main.py:311
 #, python-format
 msgid "Time step must be in range (0.0, %(num1).3f], got '%(num2).3f' instead."
 msgstr "Временски корак мора да буде у опсегу (0.0, %(num1).3f], а добијено ‘%(num2).3f’."
 
-#: ../../../src/main.py:320
+#: ../../../src/main.py:321
 #, python-format
 msgid "Exactly one or two random seeds can be given, got %(num)d instead ('%(fmt)s')."
 msgid_plural "Exactly one or two random seeds can be given, got %(num)d instead ('%(fmt)s')."
@@ -217,21 +217,21 @@ msgstr[1] "Могу се задати тачно једно или два сем
 msgstr[2] "Могу се задати тачно једно или два семена насумичности, а добијено %(num)d (‘%(fmt)s’)."
 msgstr[3] "Могу се задати тачно једно или два семена насумичности, а добијено %(num)d (‘%(fmt)s’)."
 
-#: ../../../src/main.py:331
+#: ../../../src/main.py:332
 #, python-format
 msgid "Random seed must be an integer number, got '%s' instead."
 msgstr "Семе насумичности мора да буде цео број, а добијено ‘%s’."
 
-#: ../../../src/main.py:345
+#: ../../../src/main.py:346
 #, python-format
 msgid "Equal sign not found in game context attribute '%s'."
 msgstr "Нема знака једнакости у атрибуту контекста игре ‘%s’."
 
-#: ../../../src/main.py:371
+#: ../../../src/main.py:372
 msgid "Starting game."
 msgstr "Покрећем игру."
 
-#: ../../../src/main.py:401
+#: ../../../src/main.py:402
 #, python-format
 msgid ""
 "Setting game context:\n"
@@ -240,407 +240,407 @@ msgstr ""
 "Постављам контекст игре:\n"
 "%s"
 
-#: ../../../src/main.py:529
+#: ../../../src/main.py:532
 #, python-format
 msgid "Game configuration field '%(fld)s' value '%(val)s' cannot be converted to type '%(typ)s'."
 msgstr "Поље подешавања игре ‘%(fld)s’ има вредност ‘%(val)s’ која не може да се претвори у тип ‘%(typ)s’."
 
-#: ../../../src/main.py:558
+#: ../../../src/main.py:561
 #, python-format
 msgid "Game configuration field '%(fld)s' set to inadmissible value '%(val)s' (admissible values: %(lst)s)."
 msgstr "Поље подешавања игре ‘%(fld)s’ постављено на неприхватљиву вредност ‘%(val)s’ (прихватљиве вредности: %(lst)s)."
 
-#: ../../../src/main.py:595
+#: ../../../src/main.py:598
 #, python-format
 msgid "Game configuration field '%(fld)s' must have value '%(specval)s' or width and height in pixels as '<width> <height>', got '%(val)s' instead."
 msgstr "Поље подешавања игре ‘%(fld)s’ мора да има вредност ‘%(specval)s’ или ширину и висину у пикселима као ‘<ширина> <висина>’, а добијено ‘%(val)s’."
 
-#: ../../../src/main.py:632
+#: ../../../src/main.py:635
 #, python-format
 msgid "Unknown game configuration section '%s'."
 msgstr "Непознат одељак подешавања игре ‘%s’."
 
-#: ../../../src/main.py:639
+#: ../../../src/main.py:642
 #, python-format
 msgid "Unknown game configuration field '%(fld)s' in section '%(sec)s'."
 msgstr "Непознато поље подешавања игре ‘%(fld)s’ у одељку ‘%(sec)s’."
 
-#: ../../../src/main.py:673
+#: ../../../src/main.py:676
 #, python-format
 msgid "Game configuration field '%(fld)s' contains unknown variable '%(var)s'."
 msgstr "Поље подешавања игре ‘%(fld)s’ садржи непознату променљиву ‘%(var)s’."
 
-#: ../../../src/main.py:797
+#: ../../../src/main.py:800
 msgctxt "input command description"
 msgid "rotate plane around pitch axis"
 msgstr "обрће авион око попречне осе"
 
-#: ../../../src/main.py:799 ../../../src/main.py:824
+#: ../../../src/main.py:802 ../../../src/main.py:827
 msgctxt "input command note"
 msgid "Needed when using joystick for rotation."
 msgstr "Потребно када се обрће џојстиком."
 
-#: ../../../src/main.py:806
+#: ../../../src/main.py:809
 msgctxt "input command description"
 msgid "rotate plane in pitch upwards"
 msgstr "обрће авион попречно нагоре"
 
-#: ../../../src/main.py:808 ../../../src/main.py:816 ../../../src/main.py:833
-#: ../../../src/main.py:841
+#: ../../../src/main.py:811 ../../../src/main.py:819 ../../../src/main.py:836
+#: ../../../src/main.py:844
 msgctxt "input command note"
 msgid "Needed only when using keyboard for rotation, which is not recommended."
 msgstr "Потребно само када се обрће тастатуром, што није препоручљиво."
 
-#: ../../../src/main.py:814
+#: ../../../src/main.py:817
 msgctxt "input command description"
 msgid "rotate plane in pitch downwards"
 msgstr "обрће авион попречно надоле"
 
-#: ../../../src/main.py:822
+#: ../../../src/main.py:825
 msgctxt "input command description"
 msgid "rotate plane around roll axis"
 msgstr "обрће авион око уздужне осе"
 
-#: ../../../src/main.py:831
+#: ../../../src/main.py:834
 msgctxt "input command description"
 msgid "rotate plane in roll to the left"
 msgstr "обрће авион уздужно улево"
 
-#: ../../../src/main.py:839
+#: ../../../src/main.py:842
 msgctxt "input command description"
 msgid "rotate plane in roll to the right"
 msgstr "обрће авион уздужно удесно"
 
-#: ../../../src/main.py:847
+#: ../../../src/main.py:850
 msgctxt "input command description"
 msgid "set engine throttle"
 msgstr "задаје гас мотора"
 
-#: ../../../src/main.py:849
+#: ../../../src/main.py:852
 msgctxt "input command note"
 msgid "Needed when using a hardware throttle, on joystick or standalone."
 msgstr "Потребно када се гас даје хардверском ручицом, самосталном или на џојстику."
 
-#: ../../../src/main.py:857
+#: ../../../src/main.py:860
 msgctxt "input command description"
 msgid "increase engine throttle"
 msgstr "повећава гас мотора"
 
-#: ../../../src/main.py:859 ../../../src/main.py:866
+#: ../../../src/main.py:862 ../../../src/main.py:869
 msgctxt "input command note"
 msgid "Needed when using keyboard for engine control."
 msgstr "Потребно када се гас даје тастатуром."
 
-#: ../../../src/main.py:864
+#: ../../../src/main.py:867
 msgctxt "input command description"
 msgid "decrease engine throttle"
 msgstr "смањује гас мотора"
 
-#: ../../../src/main.py:871
+#: ../../../src/main.py:874
 msgctxt "input command description"
 msgid "deploy or retract air brake"
 msgstr "извлачи или увлачи ваздушну кочницу"
 
-#: ../../../src/main.py:873
+#: ../../../src/main.py:876
 msgctxt "input command note"
 msgid "Use for quick airspeed decreases, such as in maneuvering combat or on landing, without or in addition to throttle setting."
 msgstr "Корисно за брзо смањивање брзине, на пример током маневарске борбе или на слетању, без или у додатак промени гаса."
 
-#: ../../../src/main.py:880
+#: ../../../src/main.py:883
 msgctxt "input command description"
 msgid "lower or raise landing gear"
 msgstr "спушта или диже стајни трап"
 
-#: ../../../src/main.py:882
+#: ../../../src/main.py:885
 msgctxt "input command note"
 msgid "Do not forget this when landing."
 msgstr "Не заборавите ово кад слећете."
 
-#: ../../../src/main.py:887
+#: ../../../src/main.py:890
 msgctxt "input command description"
 msgid "switch to next waypoint or next target"
 msgstr "пребацује на наредну тачку маршруте или наредну мету"
 
 # well-spelled: ХУД
-#: ../../../src/main.py:889
+#: ../../../src/main.py:892
 msgctxt "input command note"
 msgid "Waypoints are switched in the HUD navigation mode, and targets in the HUD weapon modes. When a target is selected, the selection can be cancelled either by holding this input pressed for a little while longer or by pressing the dedicated target deselection input."
 msgstr "Тачке маршруте се мењају у навигационом режиму ХУД-а, а мете у оружаним режимима. Када је мета изабрана, избор може да се уклони или краћим држањем овог улаза, или притиском наменског улаза за поништавање мете."
 
-#: ../../../src/main.py:899
+#: ../../../src/main.py:902
 msgctxt "input command description"
 msgid "cancel target selection"
 msgstr "поништава избор мете"
 
-#: ../../../src/main.py:901
+#: ../../../src/main.py:904
 msgctxt "input command note"
 msgid "This can be useful to recover rotation through all HUD modes, and not only through weapons with which the target can be attacked."
 msgstr "Може бити корисно за враћање ротације кроз све режиме ХУД-а, а не само кроз оружја којима мета може да се нападне."
 
-#: ../../../src/main.py:908
+#: ../../../src/main.py:911
 msgctxt "input command description"
 msgid "fire currently selected weapon"
 msgstr "испаљује тренутно изабрано оружје"
 
-#: ../../../src/main.py:910
+#: ../../../src/main.py:913
 msgctxt "input command note"
 msgid "Guns and rocket pods keep firing while the input is pressed."
 msgstr "Топови и подвесни лансери одржавају паљбу док је улаз притиснут."
 
-#: ../../../src/main.py:916
+#: ../../../src/main.py:919
 msgctxt "input command description"
 msgid "switch to next target section"
 msgstr "пребацује на наредни део мете"
 
-#: ../../../src/main.py:918
+#: ../../../src/main.py:921
 msgctxt "input command note"
 msgid "Big targets have multiple sections which can be acquired."
 msgstr "Велике мете имају више делова који се могу захватити."
 
-#: ../../../src/main.py:924
+#: ../../../src/main.py:927
 msgctxt "input command description"
 msgid "switch to next weapon or to navigation"
 msgstr "пребацује на наредно оружје или навигацију"
 
-#: ../../../src/main.py:926
+#: ../../../src/main.py:929
 msgctxt "input command note"
 msgid "Rotates through all weapon and navigation modes when target is not acquired. If a target is acquired, rotates only through weapons with which the target can be attacked."
 msgstr "Ротира кроз све оружане и навигационе режиме када није захваћена мета. Ако је мета захваћена, ротира само кроз оружја којима она може да се нападне."
 
-#: ../../../src/main.py:934
+#: ../../../src/main.py:937
 msgctxt "input command description"
 msgid "switch to previous weapon or to navigation"
 msgstr "пребацује на претходно оружје или на навигацију"
 
-#: ../../../src/main.py:941
+#: ../../../src/main.py:944
 msgctxt "input command description"
 msgid "turn on or off the radar"
 msgstr "укључује или искључује радар"
 
 # well-spelled: ИРСТ
-#: ../../../src/main.py:943
+#: ../../../src/main.py:946
 msgctxt "input command note"
 msgid "Turning the radar off can be used sometimes to sneak behind the enemies. Passive sensors (such as IRST) keep working."
 msgstr "Искључивање радара некада може да послужи за шуњање иза непријатеља. Пасивни сензори (попут ИРСТ-а) настављају да раде."
 
-#: ../../../src/main.py:950
+#: ../../../src/main.py:953
 msgctxt "input command description"
 msgid "increase the scale on the radar screen"
 msgstr "повећава размеру на радарском екрану"
 
-#: ../../../src/main.py:952
+#: ../../../src/main.py:955
 msgctxt "input command note"
 msgid "Higher scales are useful for search and engagement beyond visual range."
 msgstr "Веће размере су корисне за претрагу и напад изван визуелног домета."
 
-#: ../../../src/main.py:958
+#: ../../../src/main.py:961
 msgctxt "input command description"
 msgid "decrease the scale on the radar screen"
 msgstr "смањује размеру на радарском екрану"
 
-#: ../../../src/main.py:960
+#: ../../../src/main.py:963
 msgctxt "input command note"
 msgid "Lower scales are useful for close combat."
 msgstr "Мање размере су корисне за блиску борбу."
 
 # well-spelled: МФД
-#: ../../../src/main.py:965
+#: ../../../src/main.py:968
 msgctxt "input command description"
 msgid "switch to next MFD mode"
 msgstr "пребацује на наредни режим МФД-а"
 
 # well-spelled: МФД
-#: ../../../src/main.py:967
+#: ../../../src/main.py:970
 msgctxt "input command note"
 msgid "Sometimes the MFD mode will switch automatically to support a weapon, and then it cannot be changed as long as the weapon is selected."
 msgstr "Понекад ће режим МФД-а бити постављен аутоматски за подршку одређеном оружју, и тада не може да се промени док год је то оружје изабрано."
 
 # well-spelled: МФД
-#: ../../../src/main.py:974
+#: ../../../src/main.py:977
 msgctxt "input command description"
 msgid "switch to previous MFD mode"
 msgstr "пребацује на претходни режим МФД-а"
 
-#: ../../../src/main.py:981
+#: ../../../src/main.py:984
 msgctxt "input command description"
 msgid "launch missile decoys"
 msgstr "испаљује мамце ракета"
 
-#: ../../../src/main.py:983
+#: ../../../src/main.py:986
 msgctxt "input command note"
 msgid "Launch decoys only when the missile is one-two seconds away, or else they may be ineffective."
 msgstr "Испаљујте мамце само када је ракета секунду-две удаљена, иначе могу бити неделотворни."
 
-#: ../../../src/main.py:989
+#: ../../../src/main.py:992
 msgctxt "input command description"
 msgid "turn on or off the instrument panel lights"
 msgstr "укључује или искључује светла инструмент-табле"
 
-#: ../../../src/main.py:991
+#: ../../../src/main.py:994
 msgctxt "input command note"
 msgid "Lights will normally be on or off automatically, depending on the time of day in the current zone."
 msgstr "Светла ће нормално бити укључена или искључена аутоматски, према добу дана у тренутној зони."
 
-#: ../../../src/main.py:997
+#: ../../../src/main.py:1000
 msgctxt "input command description"
 msgid "eject from the plane"
 msgstr "искаче из авиона"
 
-#: ../../../src/main.py:999
+#: ../../../src/main.py:1002
 msgctxt "input command note"
 msgid "Use in case of panic."
 msgstr "Употребити у случају панике."
 
-#: ../../../src/main.py:1004
+#: ../../../src/main.py:1007
 msgctxt "input command description"
 msgid "enable or disable visual target tracking"
 msgstr "активира или деактивира визуелно праћење мете"
 
 # well-spelled: ХУД
-#: ../../../src/main.py:1006
+#: ../../../src/main.py:1009
 msgctxt "input command note"
 msgid "Useful to quickly switch sights between the target and the HUD and instruments, which is crucial in maneuvering combat."
 msgstr "Корисно за брзо пребацивање између мете и ХУД-а или инструмената, што је кључно у маневарској борби."
 
-#: ../../../src/main.py:1013
+#: ../../../src/main.py:1016
 msgctxt "input command description"
 msgid "switch to cockpit view"
 msgstr "пребацује на поглед из кабине"
 
-#: ../../../src/main.py:1020
+#: ../../../src/main.py:1023
 msgctxt "input command description"
 msgid "switch to world-oriented external view"
 msgstr "пребацује на спољашњи поглед оријентације света"
 
-#: ../../../src/main.py:1022
+#: ../../../src/main.py:1025
 msgctxt "input command note"
 msgid "This view keeps north-front upwards orientation independently of the plane attitude."
 msgstr "Овај поглед одржава оријентацију север-напред независно од угла положаја авиона."
 
-#: ../../../src/main.py:1028
+#: ../../../src/main.py:1031
 msgctxt "input command description"
 msgid "switch to chase external view"
 msgstr "пребацује на спољашњи поглед гоњења"
 
-#: ../../../src/main.py:1030
+#: ../../../src/main.py:1033
 msgctxt "input command note"
 msgid "This view is following and rotating with the plane from behind."
 msgstr "Овај поглед прати авион отпозади и обрће се са њим."
 
-#: ../../../src/main.py:1036
+#: ../../../src/main.py:1039
 msgctxt "input command description"
 msgid "switch to target view"
 msgstr "пребацује на поглед мете"
 
-#: ../../../src/main.py:1038
+#: ../../../src/main.py:1041
 msgctxt "input command note"
 msgid "This view can be activated when a target is acquired."
 msgstr "Овај поглед може да се активира када се захвати мета."
 
-#: ../../../src/main.py:1044
+#: ../../../src/main.py:1047
 msgctxt "input command description"
 msgid "enable or disable the missile view"
 msgstr "активира или деактивира поглед пројектила"
 
-#: ../../../src/main.py:1046
+#: ../../../src/main.py:1049
 msgctxt "input command note"
 msgid "If enabled, when a missile (or bomb) is launched, the view will follow the missile to destruction."
 msgstr "Ако је активирано, када се ракета (или бомба) испали, овај поглед ће је пратити до уништења."
 
-#: ../../../src/main.py:1052
+#: ../../../src/main.py:1055
 msgctxt "input command description"
 msgid "look around in the cockpit"
 msgstr "разгледа по кабини"
 
-#: ../../../src/main.py:1054
+#: ../../../src/main.py:1057
 msgctxt "input command note"
 msgid "Needed when using a digital joystick hat to look around."
 msgstr "Потребно када се разгледа дигиталном капицом џојстика."
 
-#: ../../../src/main.py:1060
+#: ../../../src/main.py:1063
 msgctxt "input command description"
 msgid "rotate cockpit view left or right"
 msgstr "обрће поглед из кабине улево или удесно"
 
-#: ../../../src/main.py:1062 ../../../src/main.py:1088
+#: ../../../src/main.py:1065 ../../../src/main.py:1091
 msgctxt "input command note"
 msgid "Needed when using an analog joystick hat to look around."
 msgstr "Потребно када се разгледа аналогном капицом џојстика."
 
-#: ../../../src/main.py:1070
+#: ../../../src/main.py:1073
 msgctxt "input command description"
 msgid "rotate cockpit view to the left"
 msgstr "обрће поглед из кабине улево"
 
-#: ../../../src/main.py:1072 ../../../src/main.py:1080
-#: ../../../src/main.py:1098 ../../../src/main.py:1106
+#: ../../../src/main.py:1075 ../../../src/main.py:1083
+#: ../../../src/main.py:1101 ../../../src/main.py:1109
 msgctxt "input command note"
 msgid "Needed when using the keyboard to look around."
 msgstr "Потребно када се разгледа тастатуром."
 
-#: ../../../src/main.py:1078
+#: ../../../src/main.py:1081
 msgctxt "input command description"
 msgid "rotate cockpit view to the right"
 msgstr "обрће поглед из кабине удесно"
 
-#: ../../../src/main.py:1086
+#: ../../../src/main.py:1089
 msgctxt "input command description"
 msgid "rotate cockpit view up or down"
 msgstr "обрће поглед из кабине нагоре или надоле"
 
-#: ../../../src/main.py:1096
+#: ../../../src/main.py:1099
 msgctxt "input command description"
 msgid "rotate cockpit view upwards"
 msgstr "обрће поглед из кабине нагоре"
 
-#: ../../../src/main.py:1104
+#: ../../../src/main.py:1107
 msgctxt "input command description"
 msgid "rotate cockpit view downwards"
 msgstr "обрће поглед из кабине надоле"
 
-#: ../../../src/main.py:1112
+#: ../../../src/main.py:1115
 msgctxt "input command description"
 msgid "zoom in current view"
 msgstr "увеличава тренутни поглед"
 
 # well-spelled: ФОВ
-#: ../../../src/main.py:1114
+#: ../../../src/main.py:1117
 msgctxt "input command note"
 msgid "Decrease the FOV of the current view."
 msgstr "Смањује ФОВ тренутног погледа."
 
-#: ../../../src/main.py:1119
+#: ../../../src/main.py:1122
 msgctxt "input command description"
 msgid "zoom out current view"
 msgstr "умањује тренутни поглед"
 
 # well-spelled: ФОВ
-#: ../../../src/main.py:1121
+#: ../../../src/main.py:1124
 msgctxt "input command note"
 msgid "Increases the FOV of the current view."
 msgstr "Повећава ФОВ тренутног погледа."
 
-#: ../../../src/main.py:1126
+#: ../../../src/main.py:1129
 msgctxt "input command description"
 msgid "enable or disable virtual cockpit"
 msgstr "активира или деактивира виртуелну кабину"
 
-#: ../../../src/main.py:1128
+#: ../../../src/main.py:1131
 msgctxt "input command note"
 msgid "A limited set of virtual cockpit indicators appear by default in some external views, and this can be used to turned them on or off."
 msgstr "Ограничен скуп виртуелних кабинских показатеља подразумевано се види у неким спољашњим погледима, и тада се овим они могу укључити или искључити."
 
-#: ../../../src/main.py:1225
+#: ../../../src/main.py:1228
 #, python-format
 msgid "Unknown input configuration field '%(fld)s' in section '%(sec)s'."
 msgstr "Непознато поље подешавања улаза ‘%(fld)s’ у одељку ‘%(sec)s’."
 
-#: ../../../src/main.py:1231
+#: ../../../src/main.py:1234
 #, python-format
 msgid "Missing input configuration field '%(fld)s' in section '%(sec)s', using default '%(val)s'."
 msgstr "Недостаје поље подешавања улаза ‘%(fld)s’ у одељку ‘%(sec)s’, узимам подразумевано ‘%(val)s’."
 
-#: ../../../src/main.py:1247
+#: ../../../src/main.py:1250
 #, python-format
 msgid ""
 "Aborting, backtrace follows:\n"
@@ -660,7 +660,7 @@ msgstr "нп"
 # ! Context.
 #: ../../../src/core/bomb.py:21 ../../../src/core/droptank.py:15
 #: ../../../src/core/jammer.py:115 ../../../src/core/podrocket.py:21
-#: ../../../src/core/rocket.py:28 ../../../src/core/shell.py:286
+#: ../../../src/core/rocket.py:28 ../../../src/core/shell.py:285
 msgid "generic"
 msgstr "генеричко"
 
@@ -669,7 +669,7 @@ msgstr "генеричко"
 msgid "G/BMB"
 msgstr "Г/БМБ"
 
-#: ../../../src/core/clouds.py:235
+#: ../../../src/core/clouds.py:118 ../../../src/core/clouds.py:784
 msgid "Constructing clouds."
 msgstr "Градим облаке."
 
@@ -683,101 +683,101 @@ msgid "[%(key)s] %(navpoint)s"
 msgstr "[%(key)s] %(navpoint)s"
 
 # ! Context.
-#: ../../../src/core/cockpit.py:1589
+#: ../../../src/core/cockpit.py:1684
 msgid "R"
 msgstr "Р"
 
 # ! Context.
-#: ../../../src/core/cockpit.py:1607
+#: ../../../src/core/cockpit.py:1702
 msgid "IR"
 msgstr "ИЦ"
 
 # ! Context.
-#: ../../../src/core/cockpit.py:2175
+#: ../../../src/core/cockpit.py:2270
 msgid "LA"
 msgstr "ИД"
 
 # ! Context.
-#: ../../../src/core/cockpit.py:2290
+#: ../../../src/core/cockpit.py:2385
 msgid "STALL"
 msgstr "ПРЕВ"
 
 # ! Context.
 # well-spelled: ЗМЉ
-#: ../../../src/core/cockpit.py:2325
+#: ../../../src/core/cockpit.py:2420
 msgid "GND"
 msgstr "ЗМЉ"
 
 # ! Context.
-#: ../../../src/core/cockpit.py:2330
+#: ../../../src/core/cockpit.py:2425
 msgid "ATK"
 msgstr "НАП"
 
 # ! Context.
-#: ../../../src/core/cockpit.py:2335
+#: ../../../src/core/cockpit.py:2430
 msgid "NAV"
 msgstr "НАВ"
 
-#: ../../../src/core/cockpit.py:4362
+#: ../../../src/core/cockpit.py:4459
 msgctxt "target information display: currently there is no target"
 msgid "NO TARGET"
 msgstr "НЕМА МЕТЕ"
 
-#: ../../../src/core/cockpit.py:4408
+#: ../../../src/core/cockpit.py:4505
 #, python-format
 msgctxt "target information display: weight to wing area"
 msgid "W/S: %s kg/m²"
 msgstr "W/S: %s kg/m²"
 
-#: ../../../src/core/cockpit.py:4419
+#: ../../../src/core/cockpit.py:4516
 #, python-format
 msgctxt "target information display: thrust to weight"
 msgid "T/W: %s"
 msgstr "T/W: %s"
 
-#: ../../../src/core/cockpit.py:4437
+#: ../../../src/core/cockpit.py:4534
 #, python-format
 msgctxt "target information display: speed for best turn"
 msgid "Vturn: %s km/h"
 msgstr "Vokr: %s km/h"
 
-#: ../../../src/core/cockpit.py:4448
+#: ../../../src/core/cockpit.py:4545
 #, python-format
 msgctxt "target information display: speed for best climb"
 msgid "Vclimb: %s km/h"
 msgstr "Vpenj: %s km/h"
 
-#: ../../../src/core/cockpit.py:4476
+#: ../../../src/core/cockpit.py:4573
 #, python-format
 msgctxt "target information display: class"
 msgid "CL: %s"
 msgstr "КЛ: %s"
 
-#: ../../../src/core/cockpit.py:4485
+#: ../../../src/core/cockpit.py:4582
 #, python-format
 msgctxt "target information display: country of origin"
 msgid "OR: %s"
 msgstr "ПР: %s"
 
-#: ../../../src/core/cockpit.py:4495
+#: ../../../src/core/cockpit.py:4592
 #, python-format
 msgctxt "target information display: span"
 msgid "b: %(1)s/%(2)s m"
 msgstr "b: %(1)s/%(2)s m"
 
-#: ../../../src/core/cockpit.py:4502
+#: ../../../src/core/cockpit.py:4599
 #, python-format
 msgctxt "target information display: span"
 msgid "b: %s m"
 msgstr "b: %s m"
 
-#: ../../../src/core/cockpit.py:4511
+#: ../../../src/core/cockpit.py:4608
 #, python-format
 msgctxt "target information display: weight"
 msgid "W: %s t"
 msgstr "W: %s t"
 
-#: ../../../src/core/cockpit.py:4520
+#: ../../../src/core/cockpit.py:4617
 #, python-format
 msgctxt "target information display: limit load factor"
 msgid "nmax: %s"
@@ -1233,36 +1233,36 @@ msgstr "ПОЗОР: %s\n"
 msgid "ERROR: %s\n"
 msgstr "ГРЕШКА: %s\n"
 
-#: ../../../src/core/mission.py:139
+#: ../../../src/core/mission.py:140
 msgid "Loading zone..."
 msgstr "Учитавам зону..."
 
-#: ../../../src/core/mission.py:143
+#: ../../../src/core/mission.py:144
 msgid "First entry into this zone, generating data may take several minutes."
 msgstr "Први улаз у ову зону, генерисање података може потрајати неколико минута."
 
-#: ../../../src/core/mission.py:145
+#: ../../../src/core/mission.py:146
 #, python-format
 msgid "Switching to zone: %s"
 msgstr "Пребацујем на зону: %s"
 
-#: ../../../src/core/mission.py:188
+#: ../../../src/core/mission.py:189
 msgid "Loading mission..."
 msgstr "Учитавам задатак..."
 
-#: ../../../src/core/mission.py:191
+#: ../../../src/core/mission.py:192
 msgid "First start of this mission, generating data may take several minutes."
 msgstr "Прво покретање овог задатка, генерисање података може потрајати неколико минута."
 
-#: ../../../src/core/player.py:1225
+#: ../../../src/core/player.py:1260
 msgid "Running away from the fight? Turn back!"
 msgstr "Бежиш из борбе? Окрећи назад!"
 
-#: ../../../src/core/player.py:1226
+#: ../../../src/core/player.py:1261
 msgid "The enemy is in the other direction!"
 msgstr "Непријатељ је на другу страну!"
 
-#: ../../../src/core/player.py:1227
+#: ../../../src/core/player.py:1262
 msgid "Navigation system defunct? Check the compass!"
 msgstr "Навигациони систем отказао? Види компас!"
 
@@ -1280,92 +1280,160 @@ msgstr "Г/РКТ"
 
 # ! Context.
 # |, no-check-spell
-#: ../../../src/core/shell.py:287
+#: ../../../src/core/shell.py:286
 msgid "G/CN"
 msgstr "Г/ТОП"
 
-#: ../../../src/core/terrain.py:665
+#: ../../../src/core/sky.py:1001
+msgid "Constructing stars."
+msgstr "Градим звезде."
+
+#: ../../../src/core/terrain.py:298 ../../../src/core/terrain.py:1798
 msgid "Constructing terrain."
 msgstr "Градим терен."
 
-#: ../../../src/core/world.py:1888
+#: ../../../src/core/world.py:1920
 msgid "Quitting game from pause."
 msgstr "Напуштам игру из паузе."
 
 # ! Context.
-#: ../../../src/blocks/buildings.py:534
+#: ../../../src/blocks/buildings.py:360
+msgid "command post"
+msgstr "командно место"
+
+# ! Context.
+# |, no-check-spell
+#: ../../../src/blocks/buildings.py:360
+msgid "COMMP"
+msgstr "КОМАМ"
+
+# ! Context.
+#: ../../../src/blocks/buildings.py:364
+msgid "barrack post"
+msgstr "бараке"
+
+# ! Context.
+# |, no-check-spell
+#: ../../../src/blocks/buildings.py:364
+msgid "BARRP"
+msgstr "БАРАК"
+
+# ! Context.
+#: ../../../src/blocks/buildings.py:368
+msgid "uplink post"
+msgstr "узлазна веза"
+
+# ! Context.
+# |, no-check-spell
+#: ../../../src/blocks/buildings.py:368
+msgid "ULNKP"
+msgstr "УЗВЕЗ"
+
+# ! Context.
+#: ../../../src/blocks/buildings.py:374
+msgid "wall front"
+msgstr "зид предњи"
+
+# ! Context.
+# |, no-check-spell
+#: ../../../src/blocks/buildings.py:374 ../../../src/blocks/buildings.py:784
+msgid "WALLF"
+msgstr "ЗИДПР"
+
+# ! Context.
+#: ../../../src/blocks/buildings.py:378
+msgid "wall back"
+msgstr "зид задњи"
+
+# ! Context.
+# |, no-check-spell
+#: ../../../src/blocks/buildings.py:378 ../../../src/blocks/buildings.py:788
+msgid "WALLB"
+msgstr "ЗИДЗД"
+
+# ! Context.
+#: ../../../src/blocks/buildings.py:382
+msgid "wall left"
+msgstr "зид леви"
+
+# ! Context.
+# |, no-check-spell
+#: ../../../src/blocks/buildings.py:382 ../../../src/blocks/buildings.py:792
+msgid "WALLL"
+msgstr "ЗИДЛВ"
+
+# ! Context.
+#: ../../../src/blocks/buildings.py:386
+msgid "wall right"
+msgstr "зид десни"
+
+# ! Context.
+# |, no-check-spell
+#: ../../../src/blocks/buildings.py:386 ../../../src/blocks/buildings.py:796
+msgid "WALLR"
+msgstr "ЗИДДС"
+
+# ! Context.
+#: ../../../src/blocks/buildings.py:391
+msgid "apache"
+msgstr "апач"
+
+# ! Context.
+# |, no-check-spell
+#: ../../../src/blocks/buildings.py:391
+msgid "HELI"
+msgstr "ХЕЛИ"
+
+# ! Context.
+#: ../../../src/blocks/buildings.py:779
 msgid "prison building"
 msgstr "затворска зграда"
 
 # ! Context.
 # |, no-check-spell
-#: ../../../src/blocks/buildings.py:534
+#: ../../../src/blocks/buildings.py:779
 msgid "PRSN"
 msgstr "ЗТВР"
 
 # ! Context.
-#: ../../../src/blocks/buildings.py:539
+#: ../../../src/blocks/buildings.py:784
 msgid "prison wall front"
 msgstr "затворски зид предњи"
 
 # ! Context.
-# |, no-check-spell
-#: ../../../src/blocks/buildings.py:539
-msgid "WALLF"
-msgstr "ЗИДПР"
-
-# ! Context.
-#: ../../../src/blocks/buildings.py:543
+#: ../../../src/blocks/buildings.py:788
 msgid "prison wall back"
 msgstr "затворски зид задњи"
 
 # ! Context.
-# |, no-check-spell
-#: ../../../src/blocks/buildings.py:543
-msgid "WALLB"
-msgstr "ЗИДЗД"
-
-# ! Context.
-#: ../../../src/blocks/buildings.py:547
+#: ../../../src/blocks/buildings.py:792
 msgid "prison wall left"
 msgstr "затворски зид леви"
 
 # ! Context.
-# |, no-check-spell
-#: ../../../src/blocks/buildings.py:547
-msgid "WALLL"
-msgstr "ЗИДЛВ"
-
-# ! Context.
-#: ../../../src/blocks/buildings.py:551
+#: ../../../src/blocks/buildings.py:796
 msgid "prison wall right"
 msgstr "затворски зид десни"
 
 # ! Context.
-# |, no-check-spell
-#: ../../../src/blocks/buildings.py:551
-msgid "WALLR"
-msgstr "ЗИДДС"
-
-# ! Context.
-#: ../../../src/blocks/buildings.py:555
+#: ../../../src/blocks/buildings.py:800
 msgid "watchtower 1"
 msgstr "осматрачница 1"
 
 # ! Context.
 # |, no-check-spell
-#: ../../../src/blocks/buildings.py:555
+#: ../../../src/blocks/buildings.py:800
 msgid "WTOW1"
 msgstr "ОСМТ1"
 
 # ! Context.
-#: ../../../src/blocks/buildings.py:559
+#: ../../../src/blocks/buildings.py:804
 msgid "watchtower 2"
 msgstr "осматрачница 2"
 
 # ! Context.
 # |, no-check-spell
-#: ../../../src/blocks/buildings.py:559
+#: ../../../src/blocks/buildings.py:804
 msgid "WTOW2"
 msgstr "ОСМТ2"
 
@@ -1379,26 +1447,26 @@ msgstr "Хјуз АХ-64 Апач"
 msgid "AH-64"
 msgstr "АХ-64"
 
-#: ../../../src/blocks/missiontools.py:403
+#: ../../../src/blocks/missiontools.py:412
 msgid "Oops."
 msgstr "Упс."
 
 # ! Context per gender.
-#: ../../../src/blocks/missiontools.py:541
+#: ../../../src/blocks/missiontools.py:550
 #, python-format
 msgid "%s is shotdown."
 msgstr "%s је оборен."
 
 # ! Gender.
-#: ../../../src/blocks/missiontools.py:587
+#: ../../../src/blocks/missiontools.py:596
 msgid "You abandoned the mission."
 msgstr "Напустио си задатак."
 
-#: ../../../src/blocks/missiontools.py:679
+#: ../../../src/blocks/missiontools.py:688
 msgid "Mission complete!"
 msgstr "Задатак извршен!"
 
-#: ../../../src/blocks/missiontools.py:692
+#: ../../../src/blocks/missiontools.py:699
 msgid "Mission failed..."
 msgstr "Задатак пропао..."
 
@@ -1591,20 +1659,20 @@ msgstr "Роквел Б-1Б Лансер"
 msgid "B-1B"
 msgstr "Б-1Б"
 
-#: ../../../src/blocks/planes.py:2750 ../../../src/blocks/planes.py:3193
-#: ../../../src/blocks/planes.py:3563 ../../../src/blocks/planes.py:3862
-#: ../../../src/blocks/planes.py:4179 ../../../src/blocks/planes.py:4480
-#: ../../../src/blocks/planes.py:4798 ../../../src/blocks/planes.py:5206
-#: ../../../src/blocks/planes.py:5731 ../../../src/blocks/vehicles.py:485
+#: ../../../src/blocks/planes.py:2750 ../../../src/blocks/planes.py:3180
+#: ../../../src/blocks/planes.py:3550 ../../../src/blocks/planes.py:3849
+#: ../../../src/blocks/planes.py:4166 ../../../src/blocks/planes.py:4467
+#: ../../../src/blocks/planes.py:4785 ../../../src/blocks/planes.py:5198
+#: ../../../src/blocks/planes.py:5728 ../../../src/blocks/vehicles.py:486
 msgid "hull"
 msgstr "труп"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:2750 ../../../src/blocks/planes.py:3193
-#: ../../../src/blocks/planes.py:3563 ../../../src/blocks/planes.py:3862
-#: ../../../src/blocks/planes.py:4179 ../../../src/blocks/planes.py:4480
-#: ../../../src/blocks/planes.py:4798 ../../../src/blocks/planes.py:5206
-#: ../../../src/blocks/planes.py:5731 ../../../src/blocks/vehicles.py:485
+#: ../../../src/blocks/planes.py:2750 ../../../src/blocks/planes.py:3180
+#: ../../../src/blocks/planes.py:3550 ../../../src/blocks/planes.py:3849
+#: ../../../src/blocks/planes.py:4166 ../../../src/blocks/planes.py:4467
+#: ../../../src/blocks/planes.py:4785 ../../../src/blocks/planes.py:5198
+#: ../../../src/blocks/planes.py:5728 ../../../src/blocks/vehicles.py:486
 msgid "HULL"
 msgstr "ТРУП"
 
@@ -1626,37 +1694,37 @@ msgstr "леви мотор"
 msgid "LENG"
 msgstr "ЛМОТ"
 
-#: ../../../src/blocks/planes.py:2764 ../../../src/blocks/planes.py:3223
-#: ../../../src/blocks/planes.py:3586 ../../../src/blocks/planes.py:3885
-#: ../../../src/blocks/planes.py:4204 ../../../src/blocks/planes.py:4503
-#: ../../../src/blocks/planes.py:4831 ../../../src/blocks/planes.py:5229
-#: ../../../src/blocks/planes.py:5758
+#: ../../../src/blocks/planes.py:2764 ../../../src/blocks/planes.py:3210
+#: ../../../src/blocks/planes.py:3573 ../../../src/blocks/planes.py:3872
+#: ../../../src/blocks/planes.py:4191 ../../../src/blocks/planes.py:4490
+#: ../../../src/blocks/planes.py:4818 ../../../src/blocks/planes.py:5221
+#: ../../../src/blocks/planes.py:5755
 msgid "right wing"
 msgstr "десно крило"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:2764 ../../../src/blocks/planes.py:3223
-#: ../../../src/blocks/planes.py:3586 ../../../src/blocks/planes.py:3885
-#: ../../../src/blocks/planes.py:4204 ../../../src/blocks/planes.py:4503
-#: ../../../src/blocks/planes.py:4831 ../../../src/blocks/planes.py:5229
-#: ../../../src/blocks/planes.py:5758
+#: ../../../src/blocks/planes.py:2764 ../../../src/blocks/planes.py:3210
+#: ../../../src/blocks/planes.py:3573 ../../../src/blocks/planes.py:3872
+#: ../../../src/blocks/planes.py:4191 ../../../src/blocks/planes.py:4490
+#: ../../../src/blocks/planes.py:4818 ../../../src/blocks/planes.py:5221
+#: ../../../src/blocks/planes.py:5755
 msgid "RWNG"
 msgstr "ДКРЛ"
 
-#: ../../../src/blocks/planes.py:2770 ../../../src/blocks/planes.py:3229
-#: ../../../src/blocks/planes.py:3593 ../../../src/blocks/planes.py:3892
-#: ../../../src/blocks/planes.py:4213 ../../../src/blocks/planes.py:4510
-#: ../../../src/blocks/planes.py:4840 ../../../src/blocks/planes.py:5236
-#: ../../../src/blocks/planes.py:5769
+#: ../../../src/blocks/planes.py:2770 ../../../src/blocks/planes.py:3216
+#: ../../../src/blocks/planes.py:3580 ../../../src/blocks/planes.py:3879
+#: ../../../src/blocks/planes.py:4200 ../../../src/blocks/planes.py:4497
+#: ../../../src/blocks/planes.py:4827 ../../../src/blocks/planes.py:5228
+#: ../../../src/blocks/planes.py:5766
 msgid "left wing"
 msgstr "лево крило"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:2770 ../../../src/blocks/planes.py:3229
-#: ../../../src/blocks/planes.py:3593 ../../../src/blocks/planes.py:3892
-#: ../../../src/blocks/planes.py:4213 ../../../src/blocks/planes.py:4510
-#: ../../../src/blocks/planes.py:4840 ../../../src/blocks/planes.py:5236
-#: ../../../src/blocks/planes.py:5769
+#: ../../../src/blocks/planes.py:2770 ../../../src/blocks/planes.py:3216
+#: ../../../src/blocks/planes.py:3580 ../../../src/blocks/planes.py:3879
+#: ../../../src/blocks/planes.py:4200 ../../../src/blocks/planes.py:4497
+#: ../../../src/blocks/planes.py:4827 ../../../src/blocks/planes.py:5228
+#: ../../../src/blocks/planes.py:5766
 msgid "LWNG"
 msgstr "ЛКРЛ"
 
@@ -1670,177 +1738,177 @@ msgid "TAIL"
 msgstr "РЕП"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:3095
+#: ../../../src/blocks/planes.py:3082
 msgid "Boeing B-52F Stratofortress"
 msgstr "Боинг Б-52Ф Стратотврђава"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:3096
+#: ../../../src/blocks/planes.py:3083
 msgid "B-52F"
 msgstr "Б-52Ф"
 
-#: ../../../src/blocks/planes.py:3197 ../../../src/blocks/planes.py:3567
-#: ../../../src/blocks/planes.py:3866 ../../../src/blocks/planes.py:4183
-#: ../../../src/blocks/planes.py:4484 ../../../src/blocks/planes.py:4802
-#: ../../../src/blocks/planes.py:5210 ../../../src/blocks/planes.py:5735
+#: ../../../src/blocks/planes.py:3184 ../../../src/blocks/planes.py:3554
+#: ../../../src/blocks/planes.py:3853 ../../../src/blocks/planes.py:4170
+#: ../../../src/blocks/planes.py:4471 ../../../src/blocks/planes.py:4789
+#: ../../../src/blocks/planes.py:5202 ../../../src/blocks/planes.py:5732
 msgid "right engine 1"
 msgstr "десни мотор 1"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:3197 ../../../src/blocks/planes.py:3567
-#: ../../../src/blocks/planes.py:3866 ../../../src/blocks/planes.py:4183
-#: ../../../src/blocks/planes.py:4484 ../../../src/blocks/planes.py:4802
-#: ../../../src/blocks/planes.py:5210 ../../../src/blocks/planes.py:5735
+#: ../../../src/blocks/planes.py:3184 ../../../src/blocks/planes.py:3554
+#: ../../../src/blocks/planes.py:3853 ../../../src/blocks/planes.py:4170
+#: ../../../src/blocks/planes.py:4471 ../../../src/blocks/planes.py:4789
+#: ../../../src/blocks/planes.py:5202 ../../../src/blocks/planes.py:5732
 msgid "RENG1"
 msgstr "ДМОТ1"
 
-#: ../../../src/blocks/planes.py:3201 ../../../src/blocks/planes.py:3571
-#: ../../../src/blocks/planes.py:3870 ../../../src/blocks/planes.py:4187
-#: ../../../src/blocks/planes.py:4488 ../../../src/blocks/planes.py:4806
-#: ../../../src/blocks/planes.py:5214 ../../../src/blocks/planes.py:5739
+#: ../../../src/blocks/planes.py:3188 ../../../src/blocks/planes.py:3558
+#: ../../../src/blocks/planes.py:3857 ../../../src/blocks/planes.py:4174
+#: ../../../src/blocks/planes.py:4475 ../../../src/blocks/planes.py:4793
+#: ../../../src/blocks/planes.py:5206 ../../../src/blocks/planes.py:5736
 msgid "left engine 1"
 msgstr "леви мотор 1"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:3201 ../../../src/blocks/planes.py:3571
-#: ../../../src/blocks/planes.py:3870 ../../../src/blocks/planes.py:4187
-#: ../../../src/blocks/planes.py:4488 ../../../src/blocks/planes.py:4806
-#: ../../../src/blocks/planes.py:5214 ../../../src/blocks/planes.py:5739
+#: ../../../src/blocks/planes.py:3188 ../../../src/blocks/planes.py:3558
+#: ../../../src/blocks/planes.py:3857 ../../../src/blocks/planes.py:4174
+#: ../../../src/blocks/planes.py:4475 ../../../src/blocks/planes.py:4793
+#: ../../../src/blocks/planes.py:5206 ../../../src/blocks/planes.py:5736
 msgid "LENG1"
 msgstr "ЛМОТ1"
 
-#: ../../../src/blocks/planes.py:3205 ../../../src/blocks/planes.py:3575
-#: ../../../src/blocks/planes.py:3874 ../../../src/blocks/planes.py:4191
-#: ../../../src/blocks/planes.py:4492 ../../../src/blocks/planes.py:4810
-#: ../../../src/blocks/planes.py:5218 ../../../src/blocks/planes.py:5743
+#: ../../../src/blocks/planes.py:3192 ../../../src/blocks/planes.py:3562
+#: ../../../src/blocks/planes.py:3861 ../../../src/blocks/planes.py:4178
+#: ../../../src/blocks/planes.py:4479 ../../../src/blocks/planes.py:4797
+#: ../../../src/blocks/planes.py:5210 ../../../src/blocks/planes.py:5740
 msgid "right engine 2"
 msgstr "десни мотор 2"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:3205 ../../../src/blocks/planes.py:3575
-#: ../../../src/blocks/planes.py:3874 ../../../src/blocks/planes.py:4191
-#: ../../../src/blocks/planes.py:4492 ../../../src/blocks/planes.py:4810
-#: ../../../src/blocks/planes.py:5218 ../../../src/blocks/planes.py:5743
+#: ../../../src/blocks/planes.py:3192 ../../../src/blocks/planes.py:3562
+#: ../../../src/blocks/planes.py:3861 ../../../src/blocks/planes.py:4178
+#: ../../../src/blocks/planes.py:4479 ../../../src/blocks/planes.py:4797
+#: ../../../src/blocks/planes.py:5210 ../../../src/blocks/planes.py:5740
 msgid "RENG2"
 msgstr "ДМОТ2"
 
-#: ../../../src/blocks/planes.py:3209 ../../../src/blocks/planes.py:3579
-#: ../../../src/blocks/planes.py:3878 ../../../src/blocks/planes.py:4195
-#: ../../../src/blocks/planes.py:4496 ../../../src/blocks/planes.py:4814
-#: ../../../src/blocks/planes.py:5222 ../../../src/blocks/planes.py:5747
+#: ../../../src/blocks/planes.py:3196 ../../../src/blocks/planes.py:3566
+#: ../../../src/blocks/planes.py:3865 ../../../src/blocks/planes.py:4182
+#: ../../../src/blocks/planes.py:4483 ../../../src/blocks/planes.py:4801
+#: ../../../src/blocks/planes.py:5214 ../../../src/blocks/planes.py:5744
 msgid "left engine 2"
 msgstr "леви мотор 2"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:3209 ../../../src/blocks/planes.py:3579
-#: ../../../src/blocks/planes.py:3878 ../../../src/blocks/planes.py:4195
-#: ../../../src/blocks/planes.py:4496 ../../../src/blocks/planes.py:4814
-#: ../../../src/blocks/planes.py:5222 ../../../src/blocks/planes.py:5747
+#: ../../../src/blocks/planes.py:3196 ../../../src/blocks/planes.py:3566
+#: ../../../src/blocks/planes.py:3865 ../../../src/blocks/planes.py:4182
+#: ../../../src/blocks/planes.py:4483 ../../../src/blocks/planes.py:4801
+#: ../../../src/blocks/planes.py:5214 ../../../src/blocks/planes.py:5744
 msgid "LENG2"
 msgstr "ЛМОТ2"
 
-#: ../../../src/blocks/planes.py:3213 ../../../src/blocks/planes.py:4818
+#: ../../../src/blocks/planes.py:3200 ../../../src/blocks/planes.py:4805
 msgid "right tank"
 msgstr "десни танк"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:3213 ../../../src/blocks/planes.py:4818
+#: ../../../src/blocks/planes.py:3200 ../../../src/blocks/planes.py:4805
 msgid "RTNK"
 msgstr "ДТНК"
 
-#: ../../../src/blocks/planes.py:3217 ../../../src/blocks/planes.py:4822
+#: ../../../src/blocks/planes.py:3204 ../../../src/blocks/planes.py:4809
 msgid "left tank"
 msgstr "леви танк"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:3217 ../../../src/blocks/planes.py:4822
+#: ../../../src/blocks/planes.py:3204 ../../../src/blocks/planes.py:4809
 msgid "LTNK"
 msgstr "ЛТНК"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:3505
+#: ../../../src/blocks/planes.py:3492
 msgid "Boeing E-3 Sentry"
 msgstr "Боинг Е-3 Сентри"
 
-#: ../../../src/blocks/planes.py:3506
+#: ../../../src/blocks/planes.py:3493
 msgid "E-3B"
 msgstr "Е-3Б"
 
-#: ../../../src/blocks/planes.py:3597
+#: ../../../src/blocks/planes.py:3584
 msgid "radar dome"
 msgstr "радарска купола"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:3597
+#: ../../../src/blocks/planes.py:3584
 msgid "RADO"
 msgstr "РАДК"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:3806
+#: ../../../src/blocks/planes.py:3793
 msgid "Ilyushin Il-76"
 msgstr "Иљушин Ил-76"
 
-#: ../../../src/blocks/planes.py:3807
+#: ../../../src/blocks/planes.py:3794
 msgid "Il-76"
 msgstr "Ил-76"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:4120
+#: ../../../src/blocks/planes.py:4107
 msgid "Antonov An-124"
 msgstr "Антонов Ан-124"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:4121
+#: ../../../src/blocks/planes.py:4108
 msgid "An-124"
 msgstr "Ан-124"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:4417
+#: ../../../src/blocks/planes.py:4404
 msgid "Antonov An-12"
 msgstr "Антонов Ан-12"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:4418
+#: ../../../src/blocks/planes.py:4405
 msgid "An-12"
 msgstr "Ан-12"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:4737
+#: ../../../src/blocks/planes.py:4724
 msgid "Lockheed C-130 Hercules"
 msgstr "Локид Ц-130 Херкулес"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:4738
+#: ../../../src/blocks/planes.py:4725
 msgid "C-130"
 msgstr "Ц-130"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:5148
+#: ../../../src/blocks/planes.py:5140
 msgid "Boeing KC-135 Stratotanker"
 msgstr "Боинг КЦ-135 Стратотанкер"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:5149
+#: ../../../src/blocks/planes.py:5141
 msgid "KC-135"
 msgstr "КЦ-135"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:5497
+#: ../../../src/blocks/planes.py:5494
 msgid "Yakovlev Yak-40"
 msgstr "Јаковљев Јак-40"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:5498
+#: ../../../src/blocks/planes.py:5495
 msgid "Yak-40"
 msgstr "Јак-40"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:5654
+#: ../../../src/blocks/planes.py:5651
 msgid "Boeing 747-400"
 msgstr "Боинг 747-400"
 
 # |, no-check-spell
-#: ../../../src/blocks/planes.py:5655
+#: ../../../src/blocks/planes.py:5652
 msgid "B-747/4"
 msgstr "Б-747/4"
 
@@ -2059,161 +2127,161 @@ msgid "M2"
 msgstr "М2"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:386
+#: ../../../src/blocks/vehicles.py:387
 msgid "M2(AA)"
 msgstr "М2(ПВО)"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:387
+#: ../../../src/blocks/vehicles.py:388
 msgid "M2 Bradley Anti-Aircraft"
 msgstr "М2 Бредли противавионски"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:424
+#: ../../../src/blocks/vehicles.py:425
 msgid "M1126 Stryker"
 msgstr "М1126 Страјкер"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:425
+#: ../../../src/blocks/vehicles.py:426
 msgid "M1126"
 msgstr "М1126"
 
-#: ../../../src/blocks/vehicles.py:461 ../../../src/blocks/vehicles.py:462
+#: ../../../src/blocks/vehicles.py:462 ../../../src/blocks/vehicles.py:463
 msgid "TK-1"
 msgstr "ТК-1"
 
-#: ../../../src/blocks/vehicles.py:489
+#: ../../../src/blocks/vehicles.py:490
 msgid "rhull"
 msgstr "десни труп"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:489
+#: ../../../src/blocks/vehicles.py:490
 msgid "RHULL"
 msgstr "ДТРУП"
 
-#: ../../../src/blocks/vehicles.py:494
+#: ../../../src/blocks/vehicles.py:495
 msgid "turret main"
 msgstr "купола главна"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:494
+#: ../../../src/blocks/vehicles.py:495
 msgid "TURM"
 msgstr "КУПГ"
 
-#: ../../../src/blocks/vehicles.py:498
+#: ../../../src/blocks/vehicles.py:499
 msgid "turret side left"
 msgstr "купола бочна лева"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:498
+#: ../../../src/blocks/vehicles.py:499
 msgid "TURSL"
 msgstr "КУПБЛ"
 
-#: ../../../src/blocks/vehicles.py:502
+#: ../../../src/blocks/vehicles.py:503
 msgid "turret side right"
 msgstr "купола бочна десна"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:502
+#: ../../../src/blocks/vehicles.py:503
 msgid "TURSR"
 msgstr "КУПБД"
 
-#: ../../../src/blocks/vehicles.py:506
+#: ../../../src/blocks/vehicles.py:507
 msgid "turret anti air 1"
 msgstr "купола противваздушна 1"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:506
+#: ../../../src/blocks/vehicles.py:507
 msgid "TURAA1"
 msgstr "КУППВ1"
 
-#: ../../../src/blocks/vehicles.py:510
+#: ../../../src/blocks/vehicles.py:511
 msgid "turret anti air 5"
 msgstr "купола противваздушна 5"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:510
+#: ../../../src/blocks/vehicles.py:511
 msgid "TURAA5"
 msgstr "КУППВ5"
 
-#: ../../../src/blocks/vehicles.py:514
+#: ../../../src/blocks/vehicles.py:515
 msgid "turret anti air 6"
 msgstr "купола противваздушна 6"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:514
+#: ../../../src/blocks/vehicles.py:515
 msgid "TURAA6"
 msgstr "КУППВ6"
 
-#: ../../../src/blocks/vehicles.py:519
+#: ../../../src/blocks/vehicles.py:520
 msgid "wheel 1"
 msgstr "точак 1"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:519
+#: ../../../src/blocks/vehicles.py:520
 msgid "WHEEL1"
 msgstr "ТОЧАК1"
 
-#: ../../../src/blocks/vehicles.py:523
+#: ../../../src/blocks/vehicles.py:524
 msgid "wheel 2"
 msgstr "точак 2"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:523
+#: ../../../src/blocks/vehicles.py:524
 msgid "WHEEL2"
 msgstr "ТОЧАК2"
 
-#: ../../../src/blocks/vehicles.py:527
+#: ../../../src/blocks/vehicles.py:528
 msgid "wheel 3"
 msgstr "точак 3"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:527
+#: ../../../src/blocks/vehicles.py:528
 msgid "WHEEL3"
 msgstr "ТОЧАК3"
 
-#: ../../../src/blocks/vehicles.py:531
+#: ../../../src/blocks/vehicles.py:532
 msgid "wheel 4"
 msgstr "точак 4"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:531
+#: ../../../src/blocks/vehicles.py:532
 msgid "WHEEL4"
 msgstr "ТОЧАК4"
 
-#: ../../../src/blocks/vehicles.py:535
+#: ../../../src/blocks/vehicles.py:536
 msgid "wheel 5"
 msgstr "точак 5"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:535
+#: ../../../src/blocks/vehicles.py:536
 msgid "WHEEL5"
 msgstr "ТОЧАК5"
 
-#: ../../../src/blocks/vehicles.py:539
+#: ../../../src/blocks/vehicles.py:540
 msgid "wheel 6"
 msgstr "точак 6"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:539
+#: ../../../src/blocks/vehicles.py:540
 msgid "WHEEL6"
 msgstr "ТОЧАК6"
 
-#: ../../../src/blocks/vehicles.py:543
+#: ../../../src/blocks/vehicles.py:544
 msgid "wheel 7"
 msgstr "точак 7"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:543
+#: ../../../src/blocks/vehicles.py:544
 msgid "WHEEL7"
 msgstr "ТОЧАК7"
 
-#: ../../../src/blocks/vehicles.py:547
+#: ../../../src/blocks/vehicles.py:548
 msgid "wheel 8"
 msgstr "точак 8"
 
 # |, no-check-spell
-#: ../../../src/blocks/vehicles.py:547
+#: ../../../src/blocks/vehicles.py:548
 msgid "WHEEL8"
 msgstr "ТОЧАК8"
 
@@ -2414,217 +2482,247 @@ msgid "R-13"
 msgstr "Р-13"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:525
+#: ../../../src/blocks/weapons.py:526
 msgid "Vympel R-60"
 msgstr "Вимпел Р-60"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:526
+#: ../../../src/blocks/weapons.py:527
 msgid "R-60"
 msgstr "Р-60"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:587
+#: ../../../src/blocks/weapons.py:589
 msgid "Vympel R-73"
 msgstr "Вимпел Р-73"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:588
+#: ../../../src/blocks/weapons.py:590
 msgid "R-73"
 msgstr "Р-73"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:650
+#: ../../../src/blocks/weapons.py:652
 msgid "Vympel R-27"
 msgstr "Вимпел Р-27"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:651
+#: ../../../src/blocks/weapons.py:653
 msgid "R-27"
 msgstr "Р-27"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:713
+#: ../../../src/blocks/weapons.py:715
 msgid "Vympel R-77"
 msgstr "Вимпел Р-77"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:714
+#: ../../../src/blocks/weapons.py:716
 msgid "R-77"
 msgstr "Р-77"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:776
+#: ../../../src/blocks/weapons.py:778
 msgid "Zvezda Kh-25"
 msgstr "Звезда Х-25"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:777 ../../../src/blocks/weapons.py:778
+#: ../../../src/blocks/weapons.py:779 ../../../src/blocks/weapons.py:780
 msgid "Kh-25"
 msgstr "Х-25"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:840
+#: ../../../src/blocks/weapons.py:842
 msgid "Raduga Kh-59"
 msgstr "Радуга Х-59"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:841
+#: ../../../src/blocks/weapons.py:843
 msgid "Kh-59"
 msgstr "Х-59"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:903
+#: ../../../src/blocks/weapons.py:905
 msgid "Almaz S-200 Dubna"
 msgstr "Алмаз С-200 Дубна"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:904
+#: ../../../src/blocks/weapons.py:906
 msgid "S-200"
 msgstr "С-200"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:965
+#: ../../../src/blocks/weapons.py:967
+msgid "Fakel 9M33 Osa"
+msgstr "Факел 9М33 Оса"
+
+# |, no-check-spell
+#: ../../../src/blocks/weapons.py:968
+msgid "Osa"
+msgstr "Оса"
+
+# |, no-check-spell
+#: ../../../src/blocks/weapons.py:1029
 msgid "Kolomna Igla"
 msgstr "Коломна Игла"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:966
+#: ../../../src/blocks/weapons.py:1030
 msgid "Igla"
 msgstr "Игла"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1026
+#: ../../../src/blocks/weapons.py:1091
 msgid "Raytheon FIM-92 Stinger"
 msgstr "Рејтион ФИМ-92 Стингер"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1027
+#: ../../../src/blocks/weapons.py:1092
 msgid "FIM-92"
 msgstr "ФИМ-92"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1087
+#: ../../../src/blocks/weapons.py:1153
 msgid "Raytheon AIM-7 Sparrow"
 msgstr "Рејтион АИМ-7 Спароу"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1088
+#: ../../../src/blocks/weapons.py:1154
 msgid "AIM-7"
 msgstr "АИМ-7"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1149
+#: ../../../src/blocks/weapons.py:1215
 msgid "Raytheon AIM-9 Sidewinder"
 msgstr "Рејтион АИМ-9 Сајдвајндер"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1150
+#: ../../../src/blocks/weapons.py:1216
 msgid "AIM-9"
 msgstr "АИМ-9"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1211
+#: ../../../src/blocks/weapons.py:1277
 msgid "Raytheon AIM-120 AMRAAM"
 msgstr "Рејтион АИМ-120 АМРАМ"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1212
+#: ../../../src/blocks/weapons.py:1278
 msgid "AIM-120"
 msgstr "АИМ-120"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1273
+#: ../../../src/blocks/weapons.py:1339
 msgid "Raytheon RIM-156 Standard SM-2ER"
 msgstr "Рејтион РИМ-156 Стандард СМ-2ЕР"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1274
+#: ../../../src/blocks/weapons.py:1340
 msgid "RIM-156"
 msgstr "РИМ-156"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1335
+#: ../../../src/blocks/weapons.py:1401
+msgid "BAe Rapier"
+msgstr "БАе Рејпир"
+
+# |, no-check-spell
+#: ../../../src/blocks/weapons.py:1402
+msgid "Rapier"
+msgstr "Рејпир"
+
+# |, no-check-spell
+#: ../../../src/blocks/weapons.py:1463
+msgid "Euromissile Roland"
+msgstr "Јуромисајл Роланд"
+
+# |, no-check-spell
+#: ../../../src/blocks/weapons.py:1464
+msgid "Roland"
+msgstr "Роланд"
+
+# |, no-check-spell
+#: ../../../src/blocks/weapons.py:1525
 msgid "Raytheon AGM-65 Maverick"
 msgstr "Рејтион АГМ-65 Маверик"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1336
+#: ../../../src/blocks/weapons.py:1526
 msgid "AGM-65"
 msgstr "АГМ-65"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1397
+#: ../../../src/blocks/weapons.py:1587
 msgid "Raytheon BGM-109 Tomahawk"
 msgstr "Рејтион БГМ-109 Томахавк"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1398
+#: ../../../src/blocks/weapons.py:1588
 msgid "BGM-109"
 msgstr "БГМ-109"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1459 ../../../src/blocks/weapons.py:1460
+#: ../../../src/blocks/weapons.py:1649 ../../../src/blocks/weapons.py:1650
 msgid "S-8"
 msgstr "С-8"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1511 ../../../src/blocks/weapons.py:1512
+#: ../../../src/blocks/weapons.py:1702 ../../../src/blocks/weapons.py:1703
 msgid "RPG-7"
 msgstr "РПГ-7"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1680 ../../../src/blocks/weapons.py:1681
+#: ../../../src/blocks/weapons.py:1871 ../../../src/blocks/weapons.py:1872
 msgid "FAB-500"
 msgstr "ФАБ-500"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1705
+#: ../../../src/blocks/weapons.py:1896
 msgid "Mark 84 Hammer"
 msgstr "Марк 84 Хамер"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1706
+#: ../../../src/blocks/weapons.py:1897
 msgid "Mk 84"
 msgstr "Мк 84"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1729
+#: ../../../src/blocks/weapons.py:1920
 msgid "EDO Corporation AN/ALQ-99"
 msgstr "ЕДО-корпорација АН/АЛКу-99"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1730
+#: ../../../src/blocks/weapons.py:1921
 msgid "ALQ-99"
 msgstr "АЛКу-99"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1747 ../../../src/blocks/weapons.py:1748
+#: ../../../src/blocks/weapons.py:1938 ../../../src/blocks/weapons.py:1939
 msgid "PTB-1150"
 msgstr "ПТБ-1150"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1763 ../../../src/blocks/weapons.py:1764
+#: ../../../src/blocks/weapons.py:1954 ../../../src/blocks/weapons.py:1955
 msgid "PTB-1500"
 msgstr "ПТБ-1500"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1779
+#: ../../../src/blocks/weapons.py:1970
 msgid "USAF 370 gal"
 msgstr "УСАФ 370 гал"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1780
+#: ../../../src/blocks/weapons.py:1971
 msgid "US-370"
 msgstr "УС-370"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1795
+#: ../../../src/blocks/weapons.py:1986
 msgid "USAF 600 gal"
 msgstr "УСАФ 600 гал"
 
 # |, no-check-spell
-#: ../../../src/blocks/weapons.py:1796
+#: ../../../src/blocks/weapons.py:1987
 msgid "US-600"
 msgstr "УС-600"
 
