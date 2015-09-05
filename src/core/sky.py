@@ -25,8 +25,10 @@ from src.core.misc import get_cache_key_section, key_to_hex
 from src.core.misc import hprtovec
 from src.core.misc import Random
 from src.core.misc import intl01vr
+from src.core.misc import report, dbgval
 from src.core.shader import printsh, make_shader, make_shdfunc_sunbln
 from src.core.shader import make_frag_outputs
+from src.core.transl import *
 
 
 class Sky (object):
@@ -910,6 +912,8 @@ class Stars (object):
                   reffov=None, name=None):
 # @cache-key-end: stars-generation
 
+        timeit = False
+
         self.world = world
 
         self.node = world.node.attachNewNode("stars")
@@ -918,7 +922,6 @@ class Stars (object):
         self._reffov = reffov
         self._camfov = None
 
-        t1 = time()
 # @cache-key-start: stars-generation
         carg = AutoProps(
             radius=radius,
@@ -936,12 +939,32 @@ class Stars (object):
                    get_cache_key_section(this_path.replace(".pyc", ".py"),
                                          "stars-generation"))
             keyhx = key_to_hex(key, fckey)
+# @cache-key-end: stars-generation
+            if timeit:
+                t1 = time()
+# @cache-key-start: stars-generation
             ret = self._load_from_cache(sname, keyhx)
+# @cache-key-start: stars-generation
+            if timeit and ret:
+                t2 = time()
+                dbgval(1, "stars-load-from-cache",
+                       (t2 - t1, "%.3f", "time", "s"))
+# @cache-key-end: stars-generation
         if not ret:
             ret = Stars._construct(**dict(carg.props() + fcarg.props()))
             starnode = ret
             if keyhx is not None:
+# @cache-key-end: stars-generation
+                if timeit:
+                    t1 = time()
+# @cache-key-start: stars-generation
                 Stars._write_to_cache(sname, keyhx, starnode)
+# @cache-key-end: stars-generation
+                if timeit:
+                    t2 = time()
+                    dbgval(1, "stars-write-to-cache",
+                           (t2 - t1, "%.3f", "time", "s"))
+# @cache-key-start: stars-generation
         else:
             starnode = ret
 # @cache-key-end: stars-generation
@@ -974,11 +997,34 @@ class Stars (object):
     def _construct (datapath, radius,
                     mag1, mag2, size1, size2, alpha1, alpha2, poly1, poly2):
 
+# @cache-key-end: stars-generation
+        report(_("Constructing stars."))
+        timeit = False
+# @cache-key-start: stars-generation
+
+# @cache-key-end: stars-generation
+        if timeit:
+            t0 = time()
+            t1 = t0
+# @cache-key-start: stars-generation
         stardata = Stars._load_stars(datapath)
-        # print "--stardata-10", len(stardata)
+# @cache-key-end: stars-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "stars-load-definitions",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+# @cache-key-start: stars-generation
         starnode = Stars._make_star_sphere(
             stardata, radius,
             mag1, mag2, size1, size2, alpha1, alpha2, poly1, poly2)
+# @cache-key-end: stars-generation
+        if timeit:
+            t2 = time()
+            dbgval(1, "stars-make-sphere",
+                   (t2 - t1, "%.3f", "time", "s"))
+            t1 = t2
+# @cache-key-start: stars-generation
 
         return starnode
 
