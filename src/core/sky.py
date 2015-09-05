@@ -1162,48 +1162,53 @@ class Stars (object):
             gvformat = GeomVertexFormat.registerFormat(gvformat)
             Stars._gvformat = gvformat
 
+        # Derive visual star data.
+        minsize = radians(1e-4)
+        minalpha = 1e-4
+        nverts = 0
+        ntris = 0
+        for sd in stardata:
+            rmag = (sd.mag - mag1) / (mag2 - mag1)
+            sd.size = size1 + (size2 - size1) * rmag
+            sd.alpha = min(alpha1 + (alpha2 - alpha1) * rmag, 1.0)
+            if sd.size >= minsize and sd.alpha >= minalpha:
+                sd.npoly = max(int(round(poly1 + (poly2 - poly1) * rmag)), 4)
+                nverts += sd.npoly + 1
+                ntris += sd.npoly
+            else:
+                sd.npoly = 0
+
         gvdata = GeomVertexData("starsphere", gvformat, Geom.UHStatic)
+        gvdata.uncleanSetNumRows(nverts)
         gvwvertex = GeomVertexWriter(gvdata, InternalName.getVertex())
         gvwcolor = GeomVertexWriter(gvdata, InternalName.getColor())
         gvwoffcenter = GeomVertexWriter(gvdata, "offcenter")
         gvwshimmer = GeomVertexWriter(gvdata, "shimmer")
         gtris = GeomTriangles(Geom.UHStatic)
+        gvdtris = gtris.modifyVertices()
+        gvdtris.uncleanSetNumRows(ntris * 3)
+        gvwtris = GeomVertexWriter(gvdtris, 0)
 
-        minsize = radians(1e-4)
-        minalpha = 1e-4
-        ndrawn = 0
-        nverts = 0
-        ntris = 0
+        iv0 = 0
         # NOTE: Double precision for rotation because radius >> prad.
         rot = QuatD()
         pxf = lambda x, y, z: Point3(*rot.xform(Point3D(x, y, z)))
         for sd in stardata:
-            rmag = (sd.mag - mag1) / (mag2 - mag1)
-            size = size1 + (size2 - size1) * rmag
-            alpha = min(alpha1 + (alpha2 - alpha1) * rmag, 1.0)
-            poly = max(int(round(poly1 + (poly2 - poly1) * rmag)), 4)
-            if size < minsize or alpha < minalpha:
+            if sd.npoly == 0:
                 continue
-            prad = radius * size
+            prad = radius * sd.size
             rot.setHpr(Vec3D(degrees(sd.ra), degrees(sd.dec), 0.0))
             cp = pxf(0.0, radius, 0.0)
             gvwvertex.addData3f(*cp)
-            n = Vec3(*pxf(0.0, 1.0, 0.0))
-            #gvwnormal.addData3f(*n)
-            gvwcolor.addData4f(1.0, 1.0, 1.0, alpha)
-            #gvwtexcoord.addData2f(0.5, 0.5)
+            gvwcolor.addData4f(1.0, 1.0, 1.0, sd.alpha)
             gvwoffcenter.addData3f(*Vec3())
-            da = 2 * pi / poly
-            for ip in range(poly):
+            da = 2 * pi / sd.npoly
+            for ip in range(sd.npoly):
                 a = -da * ip
                 # NOTE: First point on vertical z.
                 p = pxf(prad * sin(a), radius, prad * cos(a))
                 gvwvertex.addData3f(*p)
-                #gvwnormal.addData3f(*n)
-                gvwcolor.addData4f(sd.col[0], sd.col[1], sd.col[2], alpha)
-                #u = 0.5 + 0.5 * cos(a)
-                #v = 0.5 + 0.5 * sin(a)
-                #gvwtexcoord.addData2f(u, v)
+                gvwcolor.addData4f(sd.col[0], sd.col[1], sd.col[2], sd.alpha)
                 oc = p - cp
                 gvwoffcenter.addData3f(*oc)
             twopi = 2 * pi
@@ -1212,16 +1217,16 @@ class Stars (object):
             szf = randgen.uniform(0.05, 0.10)
             brf = randgen.uniform(0.10, 0.30)
             gvwshimmer.addData4f(omg, phi, 0.0, brf)
-            for ip in range(poly):
+            for ip in range(sd.npoly):
                 gvwshimmer.addData4f(omg, phi, szf, 0.0)
-            for ip in range(poly):
-                ip1 = ip + 1 if ip + 1 < poly else 0
-                gtris.addVertices(nverts, nverts + 1 + ip, nverts + 1 + ip1)
-                gtris.closePrimitive()
-                ntris += 1
-            nverts += poly + 1
-            ndrawn += 1
-        # print "--make-star-sphere-30", ndrawn, nverts, ntris
+            for ip in range(sd.npoly):
+                ip1 = ip + 1 if ip + 1 < sd.npoly else 0
+                #gtris.addVertices(iv0, iv0 + 1 + ip, iv0 + 1 + ip1)
+                gvwtris.addData1i(iv0)
+                gvwtris.addData1i(iv0 + 1 + ip)
+                gvwtris.addData1i(iv0 + 1 + ip1)
+                #gtris.closePrimitive()
+            iv0 += sd.npoly + 1
 
         geom = Geom(gvdata)
         geom.addPrimitive(gtris)
