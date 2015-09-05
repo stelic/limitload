@@ -1,6 +1,7 @@
 #!/bin/sh
 
-script_dir="$(dirname $0)"
+script_dir="$(dirname $0 | xargs readlink -f)"
+# ...need absolute directory because cwd is changed below.
 source "$script_dir/build_setup"
 
 pack_dir="$1"
