@@ -818,6 +818,7 @@ def make_text_page (text, width, font, size, color,
             text_1, props_1 = text_1
         else:
             props_1 = None
+        tnd = None
         if isinstance(text_1, basestring):
             font_1 = font
             ppunit_1 = ppunit
@@ -912,7 +913,8 @@ def make_text_page (text, width, font, size, color,
             accu_height += 0.5 * line_width_1
             accu_height += 0.25 * base_height
 
-        tnds.append(tnd)
+        if tnd is not None:
+            tnds.append(tnd)
 
     # Offset nodes for page.
     for tnd in tnds:
