@@ -20,6 +20,7 @@ msgctxt "campaign name"
 msgid "Cloudy Rubicon"
 msgstr "Магловити Рубикон"
 
+# well-spelled: ратовођ, ратовођа, Леуварден
 #: ../../../src/campaigns/crub/__init__.py:15
 msgctxt "campaign description"
 msgid ""

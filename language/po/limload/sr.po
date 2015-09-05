@@ -1912,6 +1912,7 @@ msgstr "Боинг 747-400"
 msgid "B-747/4"
 msgstr "Б-747/4"
 
+# |, no-check-spell
 #: ../../../src/blocks/ships.py:19 ../../../src/blocks/ships.py:20
 msgid "Ticonderoga"
 msgstr "Тајкондерога"
