@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-04-27 16:12+0200\n"
+"POT-Creation-Date: 2015-09-05 22:56+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -27,6 +27,50 @@ msgstr ""
 
 #: ../../../src/skirmish/genk/__init__.py:21
 msgid "Bonus objective completed."
+msgstr ""
+
+#: ../../../src/skirmish/genk/airstrike.py:12
+msgctxt "mission name"
+msgid "Air Strike"
+msgstr ""
+
+#: ../../../src/skirmish/genk/airstrike.py:14
+msgctxt "mission description"
+msgid ""
+"\n"
+"Ground attack mission. A group of enemy vehicles is spotted in the area. It consists mostly of lightly armored IFVs, but some MBTs are reported too. To complete the task you must destroy the whole group. While vehicles themselves are defenseless against attack from air, keep in mind that enemy infantry, armed with Stingers, is scattered through surrounding hills.\n"
+"\n"
+"Primary objectives:\n"
+"- Destroy all enemy vehicles.\n"
+"\n"
+"Bonus objectives:\n"
+"- None.\n"
+"\n"
+msgstr ""
+
+#: ../../../src/skirmish/genk/airstrike.py:122
+msgid "Waypoint 1"
+msgstr ""
+
+#: ../../../src/skirmish/genk/airstrike.py:122
+msgid "WP1"
+msgstr ""
+
+#: ../../../src/skirmish/genk/airstrike.py:132
+msgid "Rain fire on the enemy below."
+msgstr ""
+
+#: ../../../src/skirmish/genk/airstrike.py:133
+msgid "Get going!"
+msgstr ""
+
+#: ../../../src/skirmish/genk/airstrike.py:153
+msgid "Enemy vehicle group destroyed."
+msgstr ""
+
+#: ../../../src/skirmish/genk/airstrike.py:154
+#: ../../../src/skirmish/genk/incoming.py:178
+msgid "Good work."
 msgstr ""
 
 #: ../../../src/skirmish/genk/incoming.py:12
@@ -48,26 +92,14 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../../../src/skirmish/genk/incoming.py:84
-msgid "Incoming enemy planes!"
-msgstr ""
-
-#: ../../../src/skirmish/genk/incoming.py:85
-msgid "Good luck!"
-msgstr ""
-
-#: ../../../src/skirmish/genk/incoming.py:170
-msgid "All enemy planes destroyed"
-msgstr ""
-
-#: ../../../src/skirmish/genk/incoming.py:172
-msgid "No missile was fired"
-msgstr ""
-
 #: ../../../src/skirmish/genk/incoming.py:173
-msgid "Excellent work"
+msgid "All enemy planes destroyed."
 msgstr ""
 
 #: ../../../src/skirmish/genk/incoming.py:175
-msgid "Good work"
+msgid "No missile was fired."
+msgstr ""
+
+#: ../../../src/skirmish/genk/incoming.py:176
+msgid "Excellent work."
 msgstr ""
