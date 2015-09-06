@@ -4,6 +4,7 @@
 import sys
 from pandac.PandaModules import loadPrcFileData
 loadPrcFileData("main", """
+load-display pandagl
 window-type none
 """)
 import direct.directbase.DirectStart
