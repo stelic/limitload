@@ -5,9 +5,6 @@ An arcade cockpit flight game with story-driven campaigns.
 
 Visit http://www.limitload.org for more information.
 
-Check ``doc/<lang>/`` directories for this file in other languages,
-and more documentation.
-
 
 Installation
 ------------
@@ -52,4 +49,5 @@ https://creativecommons.org/licenses/by-sa/4.0/legalcode .
 However, many of the resources were taken from open repositories
 on the Internet and adapted for the game, and for some of them
 the licensing situation is unclear.
+
 
