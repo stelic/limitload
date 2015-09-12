@@ -111,7 +111,7 @@ def add_game_root (full_root_path):
 
 add_game_root(get_base_game_root())
 if os.name == "posix":
-    add_game_root(_get_user_root("XDG_CACHE_HOME", (".local", "share"), ()))
+    add_game_root(_get_user_root("XDG_DATA_HOME", (".local", "share"), ()))
 
 
 def _get_data_roots ():
