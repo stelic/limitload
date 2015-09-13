@@ -11,11 +11,9 @@ Installation
 
 To run the game under Windows, just unpack the archive and run
 the ``limload.exe`` file. A 64-bit version of Windows is required.
-The game was tested to run on Windows 7.
 
 To run the game under Linux, just unpack the archive and run
 the ``limload`` file. A 64-bit version of Linux is required.
-The game was tested to run on Debian 8.1.
 
 
 Configuration
