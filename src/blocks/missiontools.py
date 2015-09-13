@@ -65,7 +65,7 @@ def cache_bodies (include=[]):
     else:
         assert False
 
-    texture_mode = 1
+    texture_mode = base.gameconf.video.preload_textures
     if texture_mode == 0:
         pass
     elif texture_mode == 1:

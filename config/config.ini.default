@@ -14,6 +14,8 @@ full-screen = true
 multi-sampling-antialiasing = 4
 ; Anisotropic filtering: 0, 4, 8, 16
 anisotropic-filtering = 16
+; Texture pre-loading mode: 0, 1, 2
+preload-textures = 2
 ; Vertical sync: true, false.
 vertical-sync = false
 
