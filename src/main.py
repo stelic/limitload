@@ -8,7 +8,6 @@ import locale
 from multiprocessing import cpu_count
 import os
 import re
-from subprocess import Popen, PIPE
 import sys
 import traceback
 
@@ -711,18 +710,7 @@ def set_panda_config (options, gameconf):
     pc["fullscreen"] = bfmt(gc.video.full_screen)
 
     if gc.video.resolution == "desktop":
-        # NOTE: Detection in separate process, not to mess up engine startup.
-        cmd = [PYTHON_CMD, real_path("data", "src/detres.py")]
-        proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
-        ret = proc.communicate()
-        if proc.returncode != 0:
-            raise StandardError("Failed to detect desktop resolution.")
-        stdout, stderr = ret
-        res_kw = "res:"
-        for line in stdout.split("\n"):
-            if line.startswith(res_kw):
-                width, height = map(int, line[len(res_kw):].split())
-                resolution = (width, height)
+        resolution = desktop_resolution()
     else:
         resolution = gc.video.resolution
     pc["win-size"] = "%d %d" % resolution
@@ -772,6 +760,37 @@ def set_panda_config (options, gameconf):
 
     pcstr = "".join("%s %s\n" % pv for pv in sorted(pc.items()))
     loadPrcFileData("main", pcstr)
+
+
+def desktop_resolution ():
+
+    # NOTE: In case of multiple monitors, this should return the resolution
+    # of the primary monitor, and not some aggregation of all monitors.
+
+    if os.name == "posix":
+        from subprocess import Popen, PIPE
+        cmd = ["xrandr", "-q"]
+        proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
+        ret = proc.communicate()
+        if proc.returncode != 0:
+            raise StandardError("Failed to run '%s'." % "xrandr")
+        stdout, stderr = ret
+        w, h = None, None
+        for line in stdout.split("\n"):
+            m = re.search(r"(\d+)x(\d+).*\*", line)
+            if m is not None:
+                w_test, h_test = map(int, m.groups())
+                if w is None or w * h < w_test * h_test:
+                    w, h = w_test, h_test
+        if w is None:
+            raise StandardError("Unexpected output from '%s'." % "xrandr")
+
+    elif os.name == "nt":
+        import ctypes
+        user32 = ctypes.windll.user32
+        w, h = user32.GetSystemMetrics(0), user32.GetSystemMetrics(1)
+
+    return w, h
 
 
 class InputConfError (Exception):
