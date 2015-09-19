@@ -16,8 +16,8 @@ static void _init_table ()
     initialized = true;
     INITIALIZE_TYPE(UnitGrid2)
 }
-DToolConfigure(config_limload_fire);
-DToolConfigureFn(config_limload_fire) { _init_table(); }
+DToolConfigure(config_limload_table);
+DToolConfigureFn(config_limload_table) { _init_table(); }
 
 
 INITIALIZE_TYPE_HANDLE(UnitGrid2)
