@@ -27,7 +27,7 @@ Before building Panda3D, see notes about that below.
 If the sources from a binary archive are used, the prebuilt elements from
 the archive should be cleaned up before starting an own build of the game.
 To clean up, execute ``make clean``, and manually delete directories
-``panda3d`` and ``python``.
+``panda3d`` and ``python`` on Windows, or ``binroot`` on Linux.
 
 The build is configured by copying one of ``util/build_setup.<platform>``
 files, as appropriate for the platform, to ``util/build_setup`` and modifying

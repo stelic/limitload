@@ -6,35 +6,76 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
+
+const int max_env_size = 16384 - 1;
+const int max_path_size = 4096 - 1;
+
+void set_if_exists (const char *env_name,
+                    const char *root_path, const char *sub_path)
+{
+    char full_path[max_path_size + 1];
+    snprintf(full_path, max_path_size, "%s/%s", root_path, sub_path);
+    struct stat s;
+    if (stat(full_path, &s) == 0) {
+        setenv(env_name, full_path, 1);
+    }
+}
+
+void prepend_if_exists (const char *env_name,
+                        const char *root_path, const char *sub_path)
+{
+    char full_path[max_path_size + 1];
+    snprintf(full_path, max_path_size, "%s/%s", root_path, sub_path);
+    struct stat s;
+    if (stat(full_path, &s) == 0) {
+        const char *base_env_value = getenv(env_name);
+        char env_value[max_env_size + 1];
+        snprintf(env_value, max_env_size, "%s:%s", full_path, base_env_value);
+        setenv(env_name, env_value, 1);
+    }
+}
 
 int main (int argc, char *argv[])
 {
-    const int max_env_size = 16384 - 1;
-    const int max_path_size = 4096 - 1;
-
     // Should be configured at build time.
     char *abs_cmd_path = realpath(argv[0], NULL);
     char *abs_lib_dir_path = dirname(abs_cmd_path);
 
-    char *base_bin_path = getenv("PATH");
-    char bin_path[max_env_size + 1];
-    snprintf(bin_path, max_env_size,
-             "%s/panda3d/bin:%s",
-             abs_lib_dir_path, base_bin_path);
-    setenv("PATH", bin_path, 1);
+    prepend_if_exists("PATH", abs_lib_dir_path,
+                      "binroot/usr/bin");
 
-    char *base_ld_library_path = getenv("LD_LIBRARY_PATH");
-    char ld_library_path[max_env_size + 1];
-    snprintf(ld_library_path, max_env_size,
-             "%s/panda3d/lib:%s/src/core:%s",
-             abs_lib_dir_path, abs_lib_dir_path, base_ld_library_path);
-    setenv("LD_LIBRARY_PATH", ld_library_path, 1);
+    prepend_if_exists("LD_LIBRARY_PATH", abs_lib_dir_path,
+                      "binroot/lib/x86_64-linux-gnu");
+    prepend_if_exists("LD_LIBRARY_PATH", abs_lib_dir_path,
+                      "binroot/usr/lib");
+    prepend_if_exists("LD_LIBRARY_PATH", abs_lib_dir_path,
+                      "binroot/usr/lib/x86_64-linux-gnu");
+    prepend_if_exists("LD_LIBRARY_PATH", abs_lib_dir_path,
+                      "binroot/usr/lib/x86_64-linux-gnu/pulseaudio");
+    prepend_if_exists("LD_LIBRARY_PATH", abs_lib_dir_path,
+                      "binroot/usr/lib/x86_64-linux-gnu/panda3d");
+    prepend_if_exists("LD_LIBRARY_PATH", abs_lib_dir_path,
+                      "src/core");
 
-    char *base_python_path = getenv("PYTHONPATH");
-    char python_path[max_env_size + 1];
-    snprintf(python_path, max_env_size, "%s:%s",
-             abs_lib_dir_path, base_python_path);
-    setenv("PYTHONPATH", python_path, 1);
+    set_if_exists("PYTHONHOME", abs_lib_dir_path,
+                  "binroot/usr/lib/python2.7");
+
+    prepend_if_exists("PYTHONPATH", abs_lib_dir_path,
+                      "binroot/usr/lib/python2.7");
+    prepend_if_exists("PYTHONPATH", abs_lib_dir_path,
+                      "binroot/usr/lib/python2.7/dist-packages");
+    prepend_if_exists("PYTHONPATH", abs_lib_dir_path,
+                      "binroot/usr/lib/python2.7/plat-x86_64-linux-gnu");
+    prepend_if_exists("PYTHONPATH", abs_lib_dir_path,
+                      "binroot/usr/lib/python2.7/lib-dynload");
+    prepend_if_exists("PYTHONPATH", abs_lib_dir_path,
+                      "binroot/usr/share/panda3d");
+    prepend_if_exists("PYTHONPATH", abs_lib_dir_path,
+                      "");
+
+    set_if_exists("PANDA_PRC_DIR", abs_lib_dir_path,
+                  "binroot/etc");
 
     char main_path[max_path_size + 1];
     snprintf(main_path, max_path_size, "%s/src/main.py",

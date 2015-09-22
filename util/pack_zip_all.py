@@ -4,7 +4,11 @@
 from argparse import ArgumentParser
 from glob import fnmatch, glob
 import os
+from StringIO import StringIO
+from subprocess import Popen, PIPE
 import sys
+from tarfile import TarFile, TarInfo
+from tarfile import open as open_tarfile
 from zipfile import ZipFile, ZIP_DEFLATED
 
 from src import PACKAGE_NAME, PACKAGE_VERSION
@@ -35,12 +39,22 @@ def main ():
     panda_dir_path = arg.panda_dir
     python_dir_path = arg.python_dir
 
+    abs_pkg_dir_path = os.path.abspath(pkg_dir_path)
+    abs_root_dir_path = os.path.abspath(root_dir_path)
+    if abs_pkg_dir_path.startswith(abs_root_dir_path + os.path.sep):
+        error("Package parent directory cannot be "
+              "inside source root directory.")
+
     if build_env == "winmsvc":
         pack_zip_winmsvc(pkg_dir_path, pkg_name,
                          root_dir_path, panda_dir_path, python_dir_path,
                          version_data, version_filename)
+    elif build_env == "lingcc":
+        pack_zip_lingcc(pkg_dir_path, pkg_name,
+                        root_dir_path,
+                        version_data, version_filename)
     else:
-        error("ZIP-packing not supported for environment '%s'." % build_env)
+        error("Archive packing not supported for environment '%s'." % build_env)
 
 
 def report (msg):
@@ -66,7 +80,7 @@ def pack_zip_winmsvc (pkg_dir_path, pkg_name,
                       root_dir_path, panda_dir_path, python_dir_path,
                       version_data, version_filename):
 
-    zip_basename = pkg_name + ".zip"
+    zip_basename = pkg_name + "-windows_x64" + ".zip"
     zip_path = os.path.join(pkg_dir_path, zip_basename)
     if os.path.exists(zip_path):
         os.remove(zip_path)
@@ -74,12 +88,12 @@ def pack_zip_winmsvc (pkg_dir_path, pkg_name,
                        compression=ZIP_DEFLATED, allowZip64=True)
 
     root_exclude_glob = [
+        ".??*",
         "_*",
         "*.ini",
         os.path.join("save", "*"),
         os.path.join("cache", "*"),
         os.path.join("log", "*"),
-        os.path.join("README.rst"),
     ]
     root_unix2dos_glob = [
         "README*.rst",
@@ -90,13 +104,9 @@ def pack_zip_winmsvc (pkg_dir_path, pkg_name,
         #("foo", "bar"),
     ]
     root_rename.extend(
-        (fp, fp.replace(".rst", ".txt")) for fp in glob("README-*.rst")
+        (fp, fp.replace(".rst", ".txt")) for fp in
+            (glob("*.rst") + glob(os.path.join("doc", "*", "*.rst")))
     )
-    abs_pkg_dir_path = os.path.abspath(pkg_dir_path)
-    abs_root_dir_path = os.path.abspath(root_dir_path)
-    if abs_pkg_dir_path.startswith(abs_root_dir_path + os.path.sep):
-        pos = len(abs_root_dir_path + os.path.sep)
-        root_exclude_glob.append(os.path.join(abs_pkg_dir_path[pos:], "*"))
     zip_add_dir(zip_file, root_dir_path,
                 strip_parent=True,
                 add_parent=pkg_name,
@@ -125,6 +135,80 @@ def pack_zip_winmsvc (pkg_dir_path, pkg_name,
 ../panda3d/bin
 """
     zip_add_bytes(zip_file, pth_data, arc_pth_path)
+
+    zip_file.close()
+
+
+def pack_zip_lingcc (pkg_dir_path, pkg_name,
+                     root_dir_path,
+                     version_data, version_filename):
+
+    zip_basename = pkg_name + "-linux_x64" + ".tar.gz"
+    zip_path = os.path.join(pkg_dir_path, zip_basename)
+    if os.path.exists(zip_path):
+        os.remove(zip_path)
+    zip_file = open_tarfile(zip_path, "w:gz", dereference=True)
+
+    lib_exclude_glob = [
+        "*/limload/*",
+        "*/limload",
+        "/dev/*",
+        "/sys/*",
+        "/proc/*",
+        "/etc/*",
+        "/home/*",
+        "*/locale/*",
+        "*/gconv/*",
+        "*/bin/xrandr",
+        "*/libc.so*",
+        "*/libdl.so*",
+        "*/libGL.so*",
+        "*/fglrx_dri.so*",
+    ]
+    lib_include_glob = [
+        "/etc/Conf*.prc",
+    ]
+    cmd = ["tracefile", "-e", "-u",
+           os.path.join(root_dir_path, "limload"),
+           "-s", ":incoming", "-g", "quick_exit=1"]
+    proc = Popen(cmd, stdout=PIPE, stderr=PIPE)
+    ret = proc.communicate()
+    if proc.returncode != 0:
+        raise StandardError("Failed to run '%s'." % cmd)
+    stdout, stderr = ret
+    lib_file_paths = set()
+    fnm = fnmatch.fnmatch
+    for line in stdout.split("\n"):
+        file_path = line
+        if (file_path and os.path.isfile(file_path) and
+            not any(fnm(file_path, p) for p in lib_exclude_glob) or
+            any(fnm(file_path, p) for p in lib_include_glob)):
+            lib_file_paths.add(file_path)
+    for file_path in sorted(lib_file_paths):
+        arc_path = os.path.join(pkg_name, "binroot",
+                                file_path.lstrip(os.path.sep))
+        zip_add_file(zip_file, file_path, arc_path)
+
+    root_exclude_glob = [
+        ".??*",
+        "_*",
+        "*.ini",
+    ]
+    root_rename = [
+        #("foo", "bar"),
+    ]
+    root_rename.extend(
+        (fp, fp.replace(".rst", ".txt")) for fp in
+            (glob("*.rst") + glob(os.path.join("doc", "*", "*.rst")))
+    )
+    zip_add_dir(zip_file, root_dir_path,
+                strip_parent=True,
+                add_parent=pkg_name,
+                exclude_glob=root_exclude_glob,
+                rename=root_rename)
+
+    arc_version_path = os.path.join(pkg_name, version_filename)
+    zip_add_bytes(zip_file, version_data, arc_version_path)
 
     zip_file.close()
 
@@ -183,25 +267,49 @@ def zip_add_dir (zip_file, dir_path,
 
 def zip_add_file (zip_file, file_path, arc_path):
 
-    zip_file.write(file_path, arc_path)
+    if isinstance(zip_file, ZipFile):
+        zip_file.write(file_path, arc_path)
+    elif isinstance(zip_file, TarFile):
+        zip_file.add(file_path, arc_path)
+    else:
+        raise StandardError("Unknown archive format.")
     cr = zip_get_stats(zip_file, arc_path)
-    report("packed: %s -> %s [%.1f%%]" %
-           (file_path, arc_path, cr * 100))
+    if cr is not None:
+        report("packed: %s -> %s [%.1f%%]" %
+               (file_path, arc_path, cr * 100))
+    else:
+        report("packed: %s -> %s" %
+               (file_path, arc_path))
 
 
 def zip_add_bytes (zip_file, data, arc_path):
 
-    zip_file.writestr(arc_path, data)
+    if isinstance(zip_file, ZipFile):
+        zip_file.writestr(arc_path, data)
+    elif isinstance(zip_file, TarFile):
+        sio = StringIO()
+        sio.write(data)
+        sio.seek(0)
+        ti = TarInfo(name=arc_path)
+        ti.size = len(sio.buf)
+        zip_file.addfile(ti, sio)
+    else:
+        raise StandardError("Unknown archive format.")
     report("packed: %s [created]" % (arc_path,))
 
 
 def zip_get_stats (zip_file, arc_path):
 
-    zi = zip_file.getinfo(arc_path.replace(os.path.sep, "/"))
-    if zi.file_size > 0:
-        cr = zi.compress_size / float(zi.file_size)
+    if isinstance(zip_file, ZipFile):
+        zi = zip_file.getinfo(arc_path.replace(os.path.sep, "/"))
+        if zi.file_size > 0:
+            cr = zi.compress_size / float(zi.file_size)
+        else:
+            cr = 1.0
+    elif isinstance(zip_file, TarFile):
+        cr = None
     else:
-        cr = 1.0
+        raise StandardError("Unknown archive format.")
     return cr
 
 

@@ -93,6 +93,12 @@ def zone_zero_loop (zc, mc, gc):
 
     zc.world.chaser = zc.world.player.chaser
 
+    if gc.quick_exit:
+        zc.world.player_control_level = 1
+        yield zc.world, 1.0
+        zc.world.destroy()
+        mc.mission.end(exitf=False, state="quit")
+
     yield zc.world, 1.0
 
     zc.player.show_message("notification", "left", _("Incoming enemy planes!"), duration=1.0)
