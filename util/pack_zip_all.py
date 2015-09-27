@@ -187,7 +187,11 @@ def pack_zip_lingcc (pkg_dir_path, pkg_name,
             not any(fnm(file_path, p) for p in lib_exclude_glob) or
             any(fnm(file_path, p) for p in lib_include_glob)):
             lib_file_paths.add(file_path)
-    for file_path in sorted(lib_file_paths):
+    lib_file_paths = sorted(lib_file_paths)
+    lib_file_manifest_path = os.path.join(pkg_dir_path, "binroot-manifest.out")
+    with open(lib_file_manifest_path, "w") as f:
+        f.writelines(l + "\n" for l in lib_file_paths)
+    for file_path in lib_file_paths:
         arc_path = os.path.join(pkg_name, "binroot",
                                 file_path.lstrip(os.path.sep))
         zip_add_file(zip_file, file_path, arc_path)
