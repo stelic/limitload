@@ -9,12 +9,13 @@ from src import pycv
 from src import join_path, path_exists, path_dirname, path_basename
 from src.core.body import Body
 from src.core.curve import Segment, Arc
+from src.core.debris import GroundBreakup
 from src.core.effect import fire_n_smoke_2
 from src.core.fire import PolyExplosion
 from src.core.misc import AutoProps, rgba, norm_ang_delta, to_navhead
 from src.core.misc import sign, unitv, clamp, vtod, vtof, ptod, ptof
 from src.core.misc import make_text, update_text
-from src.core.misc import uniform, randrange
+from src.core.misc import uniform, randrange, randunit
 from src.core.misc import fx_uniform
 from src.core.misc import load_model_lod_chain
 from src.core.shader import make_shader
@@ -66,6 +67,7 @@ class Vehicle (Body):
     engminvol = 0.0
     engmaxvol = 0.4
     trkspdfac = []
+    breakupdata = []
 
     def __init__ (self, world, name, side, texture=None,
                   pos=None, hpr=None, speed=None, sink=None, damage=None):
@@ -380,6 +382,29 @@ class Vehicle (Body):
                                 glowmap=self._shotdown_glowmap,
                                 glossmap=self._shotdown_glossmap,
                                 shadowmap=self.world.shadow_texture)
+
+            # Set up breakup.
+            for handle in ():
+                if randunit() > 0.6:
+                    for model in self.models:
+                        nd = model.find("**/%s" % handle)
+                        if not nd.isEmpty():
+                            nd.removeNode()
+            selected_breakupdata = []
+            for bkpd in self.breakupdata:
+                ref_prob = randunit()
+                if bkpd.breakprob >= ref_prob:
+                    selected_breakupdata.append(bkpd)
+            if selected_breakupdata:
+                for bkpd in selected_breakupdata:
+                    for model in self.models:
+                        nd = model.find("**/%s" % bkpd.handle)
+                        subnd = nd.find("**/%s_misc" % bkpd.handle)
+                        if not subnd.isEmpty():
+                            subnd.removeNode()
+                    if bkpd.texture is None:
+                        bkpd.texture = self.texture
+                GroundBreakup(self, selected_breakupdata)
 
             self._ap_active = True
             self._ap_pause = 0.0
