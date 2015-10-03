@@ -392,12 +392,18 @@ class Vehicle (Body):
                             nd.removeNode()
             selected_breakupdata = []
             selected_handles = set()
+            accum_handle_prob = {}
             for bkpd in self.breakupdata:
                 if bkpd.handle not in selected_handles:
                     ref_prob = randunit()
+                    if bkpd.handle not in accum_handle_prob:
+                        accum_handle_prob[bkpd.handle] = 0.0
+                    ref_prob -= accum_handle_prob[bkpd.handle]
                     if bkpd.breakprob >= ref_prob:
                         selected_breakupdata.append(bkpd)
                         selected_handles.add(bkpd.handle)
+                    else:
+                        accum_handle_prob[bkpd.handle] += bkpd.breakprob
             if selected_breakupdata:
                 for bkpd in selected_breakupdata:
                     for model in self.models:
