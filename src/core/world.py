@@ -1106,10 +1106,10 @@ class World (object):
         return any(t.below_surface(pos[0], pos[1], pos[2] - elev) for t in reftrs)
 
 
-    def intersect_surface (self, pos0, pos1):
+    def intersect_surface (self, pos0, pos1, elev=0.0):
 
-        otr0 = self.otr_altitude(pos0)
-        otr1 = self.otr_altitude(pos1)
+        otr0 = self.otr_altitude(pos0) - elev
+        otr1 = self.otr_altitude(pos1) - elev
         ifac = (0.0 - otr0) / (otr1 - otr0)
         posi = pos0 * (1.0 - ifac) + pos1 * ifac
         return posi
