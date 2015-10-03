@@ -7,7 +7,7 @@ from pandac.PandaModules import Point2, Vec3, Point3
 from src.blocks.weapons import Gsh23, Gsh301, Gsh623, M3, M39, M61, Nr23, Gau8, Defa554
 from src.blocks.weapons import TurretM61
 from src.core.body import Body, HitboxData
-from src.core.debris import BreakupData, Breakup
+from src.core.debris import AirBreakupData, AirBreakup
 from src.core.droptank import DropTank
 from src.core.effect import fire_n_smoke_1
 from src.core.misc import rgba, hprtovec, remove_subnodes, set_texture, intl01vr
@@ -27,124 +27,124 @@ exhaustltradius = 3.0
 exhaustlthalfat = 0.33
 
 def breakup_large_up (handle):
-    return BreakupData(handle=handle, limdamage=220,
-                       duration=(25, 30), termspeed=(150, 250),
-                       offdir=(-180, 180, 60, 90), offspeed=(3, 6),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=0.0, traillifespan=0.0,
-                       trailthickness=0.0)
+    return AirBreakupData(handle=handle, limdamage=220,
+                          duration=(25, 30), termspeed=(150, 250),
+                          offdir=(-180, 180, 60, 90), offspeed=(3, 6),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=0.0, traillifespan=0.0,
+                          trailthickness=0.0)
 
 def breakup_large_left (handle):
-    return BreakupData(handle=handle, limdamage=220,
-                       duration=(25, 30), termspeed=(150, 250),
-                       offdir=(75, 105, -15, 15), offspeed=(3, 6),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=0.0, traillifespan=0.0,
-                       trailthickness=0.0)
+    return AirBreakupData(handle=handle, limdamage=220,
+                          duration=(25, 30), termspeed=(150, 250),
+                          offdir=(75, 105, -15, 15), offspeed=(3, 6),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=0.0, traillifespan=0.0,
+                          trailthickness=0.0)
 
 def breakup_large_right (handle):
-    return BreakupData(handle=handle, limdamage=220,
-                       duration=(25, 30), termspeed=(150, 250),
-                       offdir=(-105, -75, -15, 15), offspeed=(3, 6),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=0.0, traillifespan=0.0,
-                       trailthickness=0.0)
+    return AirBreakupData(handle=handle, limdamage=220,
+                          duration=(25, 30), termspeed=(150, 250),
+                          offdir=(-105, -75, -15, 15), offspeed=(3, 6),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=0.0, traillifespan=0.0,
+                          trailthickness=0.0)
 
 def breakup_medium_up (handle):
-    return BreakupData(handle=handle, limdamage=160,
-                       duration=(15, 20), termspeed=(100, 200),
-                       offdir=(-180, 180, 45, 90), offspeed=(5, 10),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
-                       trailthickness=(0.7, 1.2), trailtcol=0.2)
+    return AirBreakupData(handle=handle, limdamage=160,
+                          duration=(15, 20), termspeed=(100, 200),
+                          offdir=(-180, 180, 45, 90), offspeed=(5, 10),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
+                          trailthickness=(0.7, 1.2), trailtcol=0.2)
 
 def breakup_medium_left (handle):
-    return BreakupData(handle=handle, limdamage=160,
-                       duration=(15, 20), termspeed=(100, 200),
-                       offdir=(60, 120, -30, 30), offspeed=(5, 10),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
-                       trailthickness=(0.7, 1.2), trailtcol=0.2)
+    return AirBreakupData(handle=handle, limdamage=160,
+                          duration=(15, 20), termspeed=(100, 200),
+                          offdir=(60, 120, -30, 30), offspeed=(5, 10),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
+                          trailthickness=(0.7, 1.2), trailtcol=0.2)
 
 def breakup_medium_right (handle):
-    return BreakupData(handle=handle, limdamage=160,
-                       duration=(15, 20), termspeed=(100, 200),
-                       offdir=(-120, -60, -30, 30), offspeed=(5, 10),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
-                       trailthickness=(0.7, 1.2), trailtcol=0.2)
+    return AirBreakupData(handle=handle, limdamage=160,
+                          duration=(15, 20), termspeed=(100, 200),
+                          offdir=(-120, -60, -30, 30), offspeed=(5, 10),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
+                          trailthickness=(0.7, 1.2), trailtcol=0.2)
 
 def breakup_engine_left (handle):
-    return BreakupData(handle=handle, limdamage=100,
-                       duration=(15, 20), termspeed=(100, 200),
-                       offdir=(60, 120, -30, 30), offspeed=(5, 10),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
-                       trailthickness=(0.7, 1.2), trailtcol=0.2)
+    return AirBreakupData(handle=handle, limdamage=100,
+                          duration=(15, 20), termspeed=(100, 200),
+                          offdir=(60, 120, -30, 30), offspeed=(5, 10),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
+                          trailthickness=(0.7, 1.2), trailtcol=0.2)
 
 def breakup_engine_right (handle):
-    return BreakupData(handle=handle, limdamage=100,
-                       duration=(15, 20), termspeed=(100, 200),
-                       offdir=(-120, -60, -30, 30), offspeed=(5, 10),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
-                       trailthickness=(0.7, 1.2), trailtcol=0.2)
+    return AirBreakupData(handle=handle, limdamage=100,
+                          duration=(15, 20), termspeed=(100, 200),
+                          offdir=(-120, -60, -30, 30), offspeed=(5, 10),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
+                          trailthickness=(0.7, 1.2), trailtcol=0.2)
 
 def breakup_engine_down (handle):
-    return BreakupData(handle=handle, limdamage=100,
-                       duration=(15, 20), termspeed=(100, 200),
-                       offdir=(-180, 180, -90, -45), offspeed=(5, 10),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
-                       trailthickness=(0.7, 1.2), trailtcol=0.2)
+    return AirBreakupData(handle=handle, limdamage=100,
+                          duration=(15, 20), termspeed=(100, 200),
+                          offdir=(-180, 180, -90, -45), offspeed=(5, 10),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.2, 0.4), traillifespan=(1.0, 1.5),
+                          trailthickness=(0.7, 1.2), trailtcol=0.2)
 
 def breakup_small_front (handle):
-    return BreakupData(handle=handle, limdamage=200,
-                       duration=(5, 10), termspeed=(200, 300),
-                       offdir=(-30, 30, -30, 30), offspeed=(10, 20),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.1, 0.3), traillifespan=(0.7, 1.0),
-                       trailthickness=(0.4, 0.8))
+    return AirBreakupData(handle=handle, limdamage=200,
+                          duration=(5, 10), termspeed=(200, 300),
+                          offdir=(-30, 30, -30, 30), offspeed=(10, 20),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.1, 0.3), traillifespan=(0.7, 1.0),
+                          trailthickness=(0.4, 0.8))
 
 def breakup_small_back (handle):
-    return BreakupData(handle=handle, limdamage=200,
-                       duration=(5, 10), termspeed=(200, 300),
-                       offdir=(150, 210, -30, 30), offspeed=(10, 20),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.1, 0.3), traillifespan=(0.7, 1.0),
-                       trailthickness=(0.4, 0.8))
+    return AirBreakupData(handle=handle, limdamage=200,
+                          duration=(5, 10), termspeed=(200, 300),
+                          offdir=(150, 210, -30, 30), offspeed=(10, 20),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.1, 0.3), traillifespan=(0.7, 1.0),
+                          trailthickness=(0.4, 0.8))
 
 def breakup_small_left (handle):
-    return BreakupData(handle=handle, limdamage=100,
-                       duration=(5, 10), termspeed=(50, 100),
-                       offdir=(30, 150, -60, 60), offspeed=(15, 25),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.1, 0.2), traillifespan=(0.3, 0.7),
-                       trailthickness=(0.3, 0.5))
+    return AirBreakupData(handle=handle, limdamage=100,
+                          duration=(5, 10), termspeed=(50, 100),
+                          offdir=(30, 150, -60, 60), offspeed=(15, 25),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.1, 0.2), traillifespan=(0.3, 0.7),
+                          trailthickness=(0.3, 0.5))
 
 def breakup_small_right (handle):
-    return BreakupData(handle=handle, limdamage=100,
-                       duration=(5, 10), termspeed=(50, 100),
-                       offdir=(-150, -30, -60, 60), offspeed=(15, 25),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.1, 0.2), traillifespan=(0.3, 0.7),
-                       trailthickness=(0.3, 0.5))
+    return AirBreakupData(handle=handle, limdamage=100,
+                          duration=(5, 10), termspeed=(50, 100),
+                          offdir=(-150, -30, -60, 60), offspeed=(15, 25),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.1, 0.2), traillifespan=(0.3, 0.7),
+                          trailthickness=(0.3, 0.5))
 
 def breakup_small_up (handle):
-    return BreakupData(handle=handle, limdamage=120,
-                       duration=(10, 15), termspeed=(100, 150),
-                       offdir=(-180, 180, 45, 90), offspeed=(10, 20),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.1, 0.3), traillifespan=(0.4, 0.9),
-                       trailthickness=(0.4, 0.8))
+    return AirBreakupData(handle=handle, limdamage=120,
+                          duration=(10, 15), termspeed=(100, 150),
+                          offdir=(-180, 180, 45, 90), offspeed=(10, 20),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.1, 0.3), traillifespan=(0.4, 0.9),
+                          trailthickness=(0.4, 0.8))
 
 def breakup_small_down (handle):
-    return BreakupData(handle=handle, limdamage=120,
-                       duration=(10, 15), termspeed=(100, 150),
-                       offdir=(-180, 180, -90, -45), offspeed=(10, 20),
-                       rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
-                       traildurfac=(0.1, 0.3), traillifespan=(0.4, 0.9),
-                       trailthickness=(0.4, 0.8))
+    return AirBreakupData(handle=handle, limdamage=120,
+                          duration=(10, 15), termspeed=(100, 150),
+                          offdir=(-180, 180, -90, -45), offspeed=(10, 20),
+                          rollspeeddeg=(-720, 720), rollrad=(-1.0, 1.0),
+                          traildurfac=(0.1, 0.3), traillifespan=(0.4, 0.9),
+                          trailthickness=(0.4, 0.8))
 
 
 class Mig29 (Plane):
@@ -3037,7 +3037,7 @@ class B1b (Plane):
             if breakupdata is not None:
                 for bkpd in breakupdata:
                     bkpd.texture = self.texture
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
             self._shotdown_modelnode = None
 
             for turret in self.turrets:
@@ -3464,7 +3464,7 @@ class B52f (Plane):
             if breakupdata is not None:
                 for bkpd in breakupdata:
                     bkpd.texture = self.texture
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
             self._shotdown_modelnode = None
 
             for turret in self.turrets:
@@ -3768,7 +3768,7 @@ class E3b (Plane):
             if breakupdata is not None:
                 for bkpd in breakupdata:
                     bkpd.texture = self.texture
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
             self._shotdown_modelnode = None
 
             self.set_shotdown(3.0)
@@ -4057,7 +4057,7 @@ class Il76 (Plane):
             if breakupdata is not None:
                 for bkpd in breakupdata:
                     bkpd.texture = self.texture
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
             self._shotdown_modelnode = None
 
             self.set_shotdown(3.0)
@@ -4379,7 +4379,7 @@ class An124 (Plane):
             if breakupdata is not None:
                 for bkpd in breakupdata:
                     bkpd.texture = self.texture
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
             self._shotdown_modelnode = None
 
             self.set_shotdown(3.0)
@@ -4699,7 +4699,7 @@ class An12 (Plane):
             if breakupdata is not None:
                 for bkpd in breakupdata:
                     bkpd.texture = self.texture
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
             self._shotdown_modelnode = None
 
             self.set_shotdown(3.0)
@@ -4950,7 +4950,7 @@ class C130 (Plane):
                     breakup_engine_down("engine_right_1")
                     ]
                 remove_subnodes(self._shotdown_modelnode, ("engine_right_1", "propeller_right_1"))
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
                 self._hbx_reng1.removed = True
             self._hbx_reng1.out = True
         if self._hbx_leng1.hitpoints <= 0 and not self._hbx_leng1.out:
@@ -4979,7 +4979,7 @@ class C130 (Plane):
                     breakup_engine_down("engine_left_1")
                     ]
                 remove_subnodes(self._shotdown_modelnode, ("engine_left_1", "propeller_left_1"))
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
                 self._hbx_leng1.removed = True
             self._hbx_leng1.out = True
         if self._hbx_reng2.hitpoints <= 0 and not self._hbx_reng2.out:
@@ -5008,7 +5008,7 @@ class C130 (Plane):
                     breakup_engine_down("engine_right_2")
                     ]
                 remove_subnodes(self._shotdown_modelnode, ("engine_right_2", "propeller_right_2"))
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
                 self._hbx_reng2.removed = True
             self._hbx_reng2.out = True
         if self._hbx_leng2.hitpoints <= 0 and not self._hbx_leng2.out:
@@ -5037,7 +5037,7 @@ class C130 (Plane):
                     breakup_engine_down("engine_left_2")
                     ]
                 remove_subnodes(self._shotdown_modelnode, ("engine_left_2", "propeller_left_2"))
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
                 self._hbx_leng2.removed = True
             self._hbx_leng2.out = True
         if (self._hbx_reng1.hitpoints <= 0 and self._hbx_reng2.hitpoints <= 0) or (self._hbx_leng1.hitpoints <= 0 and self._hbx_leng2.hitpoints <= 0):
@@ -5115,7 +5115,7 @@ class C130 (Plane):
             if breakupdata:
                 for bkpd in breakupdata:
                     bkpd.texture = self.texture
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
             self._shotdown_modelnode = None
 
             self.set_shotdown(3.0)
@@ -5343,7 +5343,7 @@ class Kc135 (Plane):
             else:
                 breakupdata = [breakup_engine_down("engine_right_1")]
                 remove_subnodes(self._shotdown_modelnode, ("engine_right_1",))
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
                 self._hbx_reng1.removed = True
             self._hbx_reng1.out = True
         if self._hbx_leng1.hitpoints <= 0 and not self._hbx_leng1.out:
@@ -5368,7 +5368,7 @@ class Kc135 (Plane):
             else:
                 breakupdata = [breakup_engine_down("engine_left_1")]
                 remove_subnodes(self._shotdown_modelnode, ("engine_left_1",))
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
                 self._hbx_leng1.removed = True
             self._hbx_leng1.out = True
         if self._hbx_reng2.hitpoints <= 0 and not self._hbx_reng2.out:
@@ -5393,7 +5393,7 @@ class Kc135 (Plane):
             else:
                 breakupdata = [breakup_engine_down("engine_right_2")]
                 remove_subnodes(self._shotdown_modelnode, ("engine_right_2",))
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
                 self._hbx_reng2.removed = True
             self._hbx_reng2.out = True
         if self._hbx_leng2.hitpoints <= 0 and not self._hbx_leng2.out:
@@ -5418,7 +5418,7 @@ class Kc135 (Plane):
             else:
                 breakupdata = [breakup_engine_down("engine_left_2")]
                 remove_subnodes(self._shotdown_modelnode, ("engine_left_2",))
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
                 self._hbx_leng2.removed = True
             self._hbx_leng2.out = True
 
@@ -5469,7 +5469,7 @@ class Kc135 (Plane):
             if breakupdata:
                 for bkpd in breakupdata:
                     bkpd.texture = self.texture
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
             self._shotdown_modelnode = None
 
             self.set_shotdown(3.0)
@@ -5943,7 +5943,7 @@ class Boeing747400 (Plane):
             if breakupdata is not None:
                 for bkpd in breakupdata:
                     bkpd.texture = self.texture
-                Breakup(self, breakupdata)
+                AirBreakup(self, breakupdata)
             self._shotdown_modelnode = None
 
             self.set_shotdown(3.0)

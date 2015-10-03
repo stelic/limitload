@@ -24,7 +24,7 @@ from src.core.misc import HaltonDistrib, hprtovec, unitv
 from src.core.misc import fx_uniform, fx_randrange, fx_choice, fx_randvec
 from src.core.misc import NumRandom
 from src.core.shader import make_shader
-from src.core.debris import BreakupPart
+from src.core.debris import AirBreakupPart
 
 
 class MuzzleFlash (object):
@@ -449,18 +449,18 @@ class Explosion (object):
         for i in xrange(debrispart):
             offdir = fx_randvec(minh=debrisheading[0], maxh=debrisheading[1],
                                 minp=debrispitch[0], maxp=debrispitch[1])
-            BreakupPart(body=(None, self.world),
-                        handle=None,
-                        duration=4.75 * timefac,
-                        termspeed=fx_uniform(10.0, 20.0) * sizefac,
-                        offpos=(pos + offdir * 2.0 * sizefac),
-                        offdir=offdir,
-                        offspeed=fx_uniform(30.0, 60.0),
-                        traillifespan=4.75 * timefac,
-                        trailthickness=fx_uniform(0.25, 0.5) * sizefac,
-                        trailendthfac=16.0,
-                        trailspacing=1.0,
-                        trailtcol=debristcol)
+            AirBreakupPart(body=(None, self.world),
+                           handle=None,
+                           duration=4.75 * timefac,
+                           termspeed=fx_uniform(10.0, 20.0) * sizefac,
+                           offpos=(pos + offdir * 2.0 * sizefac),
+                           offdir=offdir,
+                           offspeed=fx_uniform(30.0, 60.0),
+                           traillifespan=4.75 * timefac,
+                           trailthickness=fx_uniform(0.25, 0.5) * sizefac,
+                           trailendthfac=16.0,
+                           trailspacing=1.0,
+                           trailtcol=debristcol)
 
         self._time0 = self.world.time
 
@@ -801,18 +801,18 @@ class PolyExplosion (object):
             offdir = self._rg.randvec(
                 minh=debrisheading[0], maxh=debrisheading[1],
                 minp=debrispitch[0], maxp=debrispitch[1])
-            BreakupPart(body=(None, self.world),
-                        handle=None,
-                        duration=4.75 * timefac,
-                        termspeed=self._rg.uniform(10.0, 20.0) * sizefac,
-                        offpos=(pos + offdir * 2.0 * sizefac),
-                        offdir=offdir,
-                        offspeed=self._rg.uniform(30.0, 60.0),
-                        traillifespan=4.75 * timefac,
-                        trailthickness=self._rg.uniform(0.25, 0.5) * sizefac,
-                        trailendthfac=16.0,
-                        trailspacing=1.0,
-                        trailtcol=debristcol)
+            AirBreakupPart(body=(None, self.world),
+                           handle=None,
+                           duration=4.75 * timefac,
+                           termspeed=self._rg.uniform(10.0, 20.0) * sizefac,
+                           offpos=(pos + offdir * 2.0 * sizefac),
+                           offdir=offdir,
+                           offspeed=self._rg.uniform(30.0, 60.0),
+                           traillifespan=4.75 * timefac,
+                           trailthickness=self._rg.uniform(0.25, 0.5) * sizefac,
+                           trailendthfac=16.0,
+                           trailspacing=1.0,
+                           trailtcol=debristcol)
 
         self._time0 = self.world.time
 
@@ -1238,18 +1238,18 @@ class Splash (object):
         for i in xrange(debrispart):
             offdir = fx_randvec(minh=debrisheading[0], maxh=debrisheading[1],
                                 minp=debrispitch[0], maxp=debrispitch[1])
-            BreakupPart(body=(None, self.world),
-                        handle=None,
-                        duration=4.75 * timefac,
-                        termspeed=fx_uniform(10.0, 20.0) * sizefac,
-                        offpos=(pos + offdir * 2.0 * sizefac),
-                        offdir=offdir,
-                        offspeed=fx_uniform(30.0, 60.0),
-                        traillifespan=4.75 * timefac,
-                        trailthickness=fx_uniform(0.25, 0.5) * sizefac,
-                        trailendthfac=16.0,
-                        trailspacing=1.0,
-                        trailtcol=debristcol)
+            AirBreakupPart(body=(None, self.world),
+                           handle=None,
+                           duration=4.75 * timefac,
+                           termspeed=fx_uniform(10.0, 20.0) * sizefac,
+                           offpos=(pos + offdir * 2.0 * sizefac),
+                           offdir=offdir,
+                           offspeed=fx_uniform(30.0, 60.0),
+                           traillifespan=4.75 * timefac,
+                           trailthickness=fx_uniform(0.25, 0.5) * sizefac,
+                           trailendthfac=16.0,
+                           trailspacing=1.0,
+                           trailtcol=debristcol)
 
         self._time_step = 1.0 / fps
         self._wait_next_frame = 0.0

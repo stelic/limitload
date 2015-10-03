@@ -15,7 +15,7 @@ from src.core.body import Body
 from src.core.bomb import Bomb, Dropper
 from src.core.curve import Segment, Arc, HelixZ, ArcedHelixZ
 from src.core.decoy import FlareChaff
-from src.core.debris import Breakup
+from src.core.debris import AirBreakup
 from src.core.droptank import DropTank, Tanker
 from src.core.effect import fire_n_smoke_1, fire_n_smoke_4
 from src.core.fire import Splash, PolyExplosion
@@ -1648,7 +1648,7 @@ class Plane (Body):
                     jammer.destroy()
                 for tanker in self.tankers:
                     tanker.destroy()
-                Breakup(self, selected_breakupdata)
+                AirBreakup(self, selected_breakupdata)
                 if len(selected_breakupdata) == len(self.breakupdata):
                     if randunit() < 0.8:
                         self.explode(destroy=False)

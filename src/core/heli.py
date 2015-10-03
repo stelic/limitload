@@ -8,7 +8,7 @@ from pandac.PandaModules import TransparencyAttrib
 from src import pycv
 from src.core.body import Body
 from src.core.curve import Segment
-from src.core.debris import Breakup
+from src.core.debris import AirBreakup
 from src.core.effect import fire_n_smoke_1
 from src.core.fire import PolyExplosion
 from src.core.misc import clamp, unitv, vtod, vtof, qtod, qtof, to_navhead
@@ -478,7 +478,7 @@ class Heli (Body):
                         bkpd.texture = self.texture
                 for launcher in self.launchers:
                     launcher.destroy()
-                Breakup(self, selected_breakupdata)
+                AirBreakup(self, selected_breakupdata)
 
             # Set up falling autopilot.
             explode = False

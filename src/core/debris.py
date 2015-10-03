@@ -451,7 +451,7 @@ class FlowDebris (object):
         return task.cont
 
 
-class BreakupPart (object):
+class AirBreakupPart (object):
 
     def __init__ (self, body, handle, termspeed, duration,
                   offpos=None, offdir=None, offspeed=0.0,
@@ -722,7 +722,7 @@ class BreakupPart (object):
         self._tvel = tvel1
 
 
-class BreakupData (object):
+class AirBreakupData (object):
 
     def __init__ (self, handle, limdamage, duration, termspeed,
                   offdir, offspeed,
@@ -747,28 +747,28 @@ class BreakupData (object):
         self.texture = texture
 
 
-class Breakup (object):
+class AirBreakup (object):
 
     def __init__ (self, body, breakupdata):
 
         rv = lambda x: fx_uniform(*x) if isinstance(x, tuple) else float(x)
         rd = lambda x: fx_randvec(*x) if isinstance(x, tuple) else x
         for bkpd in breakupdata:
-            BreakupPart(body=body,
-                        handle=bkpd.handle,
-                        duration=rv(bkpd.duration),
-                        termspeed=rv(bkpd.termspeed),
-                        offpos=None,
-                        offdir=rd(bkpd.offdir),
-                        offspeed=rv(bkpd.offspeed),
-                        rollspeed=radians(rv(bkpd.rollspeeddeg)),
-                        rollrad=rv(bkpd.rollrad),
-                        traildurfac=rv(bkpd.traildurfac),
-                        traillifespan=rv(bkpd.traillifespan),
-                        trailthickness=rv(bkpd.trailthickness),
-                        trailtcol=rv(bkpd.trailtcol),
-                        trailfire=bkpd.trailfire,
-                        texture=bkpd.texture)
+            AirBreakupPart(body=body,
+                           handle=bkpd.handle,
+                           duration=rv(bkpd.duration),
+                           termspeed=rv(bkpd.termspeed),
+                           offpos=None,
+                           offdir=rd(bkpd.offdir),
+                           offspeed=rv(bkpd.offspeed),
+                           rollspeed=radians(rv(bkpd.rollspeeddeg)),
+                           rollrad=rv(bkpd.rollrad),
+                           traildurfac=rv(bkpd.traildurfac),
+                           traillifespan=rv(bkpd.traillifespan),
+                           trailthickness=rv(bkpd.trailthickness),
+                           trailtcol=rv(bkpd.trailtcol),
+                           trailfire=bkpd.trailfire,
+                           texture=bkpd.texture)
 
 
 class GroundBreakupPart (object):
