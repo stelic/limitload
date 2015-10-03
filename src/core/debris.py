@@ -10,7 +10,7 @@ from pandac.PandaModules import LinearVectorForce
 
 from src import pycv
 from src.core.misc import rgba, make_particles, bin_view_b2f
-from src.core.misc import unitv, vectohpr, sign, set_texture
+from src.core.misc import unitv, vectohpr, sign, set_texture, vtof
 from src.core.misc import fx_uniform, fx_randrange, fx_choice, fx_randvec
 from src.core.shader import make_shader
 from src.core.trail import PolyBraid, PolyExhaust
@@ -531,6 +531,7 @@ class BreakupPart (object):
         if quat is None:
             quat = Quat()
             quat.setHpr(vectohpr(fvel))
+
         fdir = unitv(fvel)
         tdir = unitv(quat.getRight().cross(fdir))
         tspeed = rollspeed * rollrad
@@ -768,5 +769,272 @@ class Breakup (object):
                         trailtcol=rv(bkpd.trailtcol),
                         trailfire=bkpd.trailfire,
                         texture=bkpd.texture)
+
+
+class GroundBreakupPart (object):
+
+    def __init__ (self, body, handle, duration,
+                  offdir, offspeed, tumbledir, tumblespeed,
+                  normrestfac=0.2, tangrestfac=0.7, tumblerestfac=0.2,
+                  fixelev=0.0,
+                  traildurfac=1.0, traillifespan=0.0,
+                  trailthickness=0.0, trailendthfac=4.0,
+                  trailspacing=1.0, trailtcol=0.0,
+                  trailfire=False,
+                  texture=None):
+
+        offpos = None
+
+        if isinstance(body, tuple):
+            model, world = body
+            models = [model]
+            body = None
+            self.world = world
+        else:
+            self.world = body.world
+            models = list(body.models)
+            if base.with_world_shadows and body.shadow_node is not None:
+                models += [body.shadow_node]
+
+        self.node = self.world.node.attachNewNode("ground-breakup-part")
+        shader = make_shader(ambln=self.world.shdinp.ambln,
+                             dirlns=self.world.shdinp.dirlns)
+        self.node.setShader(shader)
+        if texture is not None:
+            set_texture(self.node, texture)
+
+        if isinstance(handle, basestring):
+            handles = [handle]
+        else:
+            handles = handle
+
+        offset = offpos
+        pos = None
+        quat = None
+        for model in models:
+            if model is None:
+                continue
+            for handle in handles:
+                nd = model.find("**/%s" % handle)
+                if not nd.isEmpty():
+                    if offset is None:
+                        offset = nd.getPos()
+                    if pos is None:
+                        # Must be done here because of wrtReparentTo below.
+                        if body is not None:
+                            pos = body.pos(offset=offset)
+                            quat = body.quat()
+                        else:
+                            pos = self.world.node.getRelativePoint(model, offset)
+                            quat = model.getQuat(self.world.node)
+                        self.node.setPos(pos)
+                        self.node.setQuat(quat)
+                        if offdir is None:
+                            offdir = unitv(offset)
+                    nd.wrtReparentTo(self.node)
+        if pos is None:
+            if offpos is not None:
+                pos = offpos
+                self.node.setPos(pos)
+            else:
+                raise StandardError(
+                    "No subnodes found for given handle, "
+                    "and no initial position given.")
+
+        if body is not None:
+            odir = self.world.node.getRelativeVector(body.node, offdir)
+            bvel = body.vel()
+        elif models[0] is not None:
+            odir = self.world.node.getRelativeVector(models[0], offdir)
+            bvel = Vec3(0.0, 0.0, 0.0)
+        else:
+            odir = offdir
+            bvel = Vec3(0.0, 0.0, 0.0)
+        fvel = bvel + odir * offspeed
+        if quat is None:
+            quat = Quat()
+            quat.setHpr(vectohpr(fvel))
+
+        angvel = tumbledir * tumblespeed
+
+        self._pos = pos
+        self._quat = quat
+        self._vel = fvel
+        self._angvel = angvel
+
+        self._norm_rest_fac = normrestfac
+        self._tang_rest_fac = tangrestfac
+        self._tumble_rest_fac = tumblerestfac
+
+        self._fix_elev = fixelev
+
+        self._at_rest = False
+
+        self._duration = duration
+        self._time = 0.0
+
+        self._trails = []
+        if traildurfac > 0.0 and traillifespan > 0.0 and trailthickness > 0.0:
+            self._start_trail(traildurfac, traillifespan, trailthickness,
+                              trailendthfac, trailspacing, trailtcol, trailfire)
+
+        self.alive = True
+        # Before general loops, e.g. to have updated position in effect loops.
+        base.taskMgr.add(self._loop, "breakup-part-loop", sort=-1)
+
+
+    def destroy (self):
+
+        if not self.alive:
+            return
+        self.node.removeNode()
+        self.alive = False
+
+
+    def _start_trail (self, timefac, lifespan, thickness, endthfac, spacing, tcol, fire_on):
+
+        if True:
+            pass
+
+
+    def _loop (self, task):
+
+        if not self.alive:
+            return task.done
+
+        dt = self.world.dt
+
+        self._time += dt
+
+        if callable(self._duration):
+            done = self._duration()
+        else:
+            done = (self._time > self._duration)
+        if done:
+            self.destroy()
+            return task.done
+
+        if callable(self._duration):
+            rd = 1.0
+        else:
+            rd = self._time / self._duration
+
+        self._move(dt, rd)
+
+        if not callable(self._duration):
+            for trail, timefac in self._trails:
+                trd = self._time / (self._duration * timefac)
+                if trd < 1.0:
+                    trail.node.setSa((1.0 - trd)**2)
+                elif trail.alive:
+                    trail.destroy()
+
+        return task.cont
+
+
+    def _move (self, dt, rd):
+
+        if self._at_rest:
+            return
+
+        pos = self._pos
+        quat = self._quat
+        vel = self._vel
+        angvel = self._angvel
+
+        gracc = self.world.gravacc
+        pos1 = pos + vel * dt + gracc * (0.5 * dt**2)
+        vel1 = vel + gracc * dt
+        touch = self.world.below_surface(pos, elev=self._fix_elev)
+        if touch:
+            gpos = self.world.intersect_surface(pos, pos1, elev=self._fix_elev)
+            gnorm = vtof(self.world.elevation(gpos, wnorm=True)[1])
+            pos1 -= gnorm * (pos1 - gpos).dot(gnorm) * 2
+            vel1_el = unitv(pos1 - pos) * vel1.length()
+            vel1_el_n = gnorm * vel1_el.dot(gnorm)
+            vel1_el_t = vel1_el - vel1_el_n
+            vel1 = vel1_el_n * self._norm_rest_fac + vel1_el_t * self._tang_rest_fac
+            self._at_rest = (vel1.length() < 0.5)
+            if self._at_rest:
+                pos1 = gpos
+                vel1 = Vec3(0.0, 0.0, 0.0)
+        self.node.setPos(pos1)
+
+        raxis = unitv(self._angvel)
+        if raxis.length() == 0.0:
+            raxis = Vec3(0.0, 0.0, 1.0)
+        absangvel1 = self._angvel.length()
+        if touch:
+            absangvel1 *= self._tumble_rest_fac
+        dquat = Quat()
+        dquat.setFromAxisAngleRad(absangvel1 * dt, raxis)
+        quat1 = quat * dquat
+        angvel1 = raxis * absangvel1
+        self.node.setQuat(quat1)
+
+        self._pos = pos1
+        self._quat = quat1
+        self._vel = vel1
+        self._angvel = angvel1
+
+
+class GroundBreakupData (object):
+
+    def __init__ (self, handle, breakprob, duration,
+                  offdir, offspeed, tumbledir, tumblespeeddeg,
+                  normrestfac=0.2, tangrestfac=0.7, tumblerestfac=0.2,
+                  fixelev=0.0,
+                  traildurfac=0.0, traillifespan=0.0, trailthickness=0.0,
+                  trailtcol=0.0, trailfire=False,
+                  texture=None):
+
+        self.handle = handle
+        self.breakprob = breakprob
+        self.duration = duration
+        self.offdir = offdir
+        self.offspeed = offspeed
+        self.tumbledir = tumbledir
+        self.tumblespeeddeg = tumblespeeddeg
+        self.normrestfac = normrestfac
+        self.tangrestfac = tangrestfac
+        self.tumblerestfac = tumblerestfac
+        self.fixelev = fixelev
+        self.traildurfac = traildurfac
+        self.traillifespan = traillifespan
+        self.trailthickness = trailthickness
+        self.trailtcol = trailtcol
+        self.trailfire = trailfire
+        self.texture = texture
+
+
+class GroundBreakup (object):
+
+    def __init__ (self, body, breakupdata):
+
+        rv = lambda x: fx_uniform(*x) if isinstance(x, tuple) else float(x)
+        ri = lambda x: fx_randrange(*x) if isinstance(x, tuple) else int(x)
+        rd = lambda x: fx_randvec(*x) if isinstance(x, tuple) else x
+        for bkpd in breakupdata:
+            if bkpd.duration is not None:
+                duration = rv(bkpd.duration)
+            else:
+                duration = lambda: not body.alive
+            GroundBreakupPart(body=body,
+                              handle=bkpd.handle,
+                              duration=duration,
+                              offdir=rd(bkpd.offdir),
+                              offspeed=rv(bkpd.offspeed),
+                              tumbledir=rd(bkpd.tumbledir),
+                              tumblespeed=radians(rv(bkpd.tumblespeeddeg)),
+                              normrestfac=rv(bkpd.normrestfac),
+                              tangrestfac=rv(bkpd.tangrestfac),
+                              tumblerestfac=rv(bkpd.tumblerestfac),
+                              fixelev=rv(bkpd.fixelev),
+                              traildurfac=rv(bkpd.traildurfac),
+                              traillifespan=rv(bkpd.traillifespan),
+                              trailthickness=rv(bkpd.trailthickness),
+                              trailtcol=rv(bkpd.trailtcol),
+                              trailfire=bkpd.trailfire,
+                              texture=bkpd.texture)
 
 
