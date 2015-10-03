@@ -451,11 +451,10 @@ class FlowDebris (object):
         return task.cont
 
 
-class AirBreakupPart (object):
+class BreakupPart (object):
 
-    def __init__ (self, body, handle, termspeed, duration,
+    def __init__ (self, body, handle, duration,
                   offpos=None, offdir=None, offspeed=0.0,
-                  rollspeed=0.0, rollrad=0.0,
                   traildurfac=1.0, traillifespan=0.0,
                   trailthickness=0.0, trailendthfac=4.0,
                   trailspacing=1.0, trailtcol=0.0,
@@ -527,10 +526,95 @@ class AirBreakupPart (object):
         else:
             odir = offdir
             bvel = Vec3(0.0, 0.0, 0.0)
-        fvel = bvel + odir * offspeed
+        vel = bvel + odir * offspeed
         if quat is None:
             quat = Quat()
-            quat.setHpr(vectohpr(fvel))
+            quat.setHpr(vectohpr(vel))
+
+        self._pos0 = pos
+        self._vel0 = vel
+        self._quat0 = quat
+
+        self._duration = duration
+        self._time = 0.0
+
+        self._trails = []
+        if traildurfac > 0.0 and traillifespan > 0.0 and trailthickness > 0.0:
+            self._start_trail(traildurfac, traillifespan, trailthickness,
+                              trailendthfac, trailspacing, trailtcol, trailfire)
+
+        self.alive = True
+        # Before general loops, e.g. to have updated position in effect loops.
+        base.taskMgr.add(self._loop, "breakup-part-loop", sort=-1)
+
+
+    def _loop (self, task):
+
+        if not self.alive:
+            return task.done
+
+        dt = self.world.dt
+
+        self._time += dt
+
+        is_duration_func = callable(self._duration)
+        if is_duration_func:
+            done = self._duration()
+        else:
+            done = (self._time > self._duration)
+        if done:
+            self.destroy()
+            return task.done
+
+        if is_duration_func:
+            rd = 1.0
+        else:
+            rd = self._time / self._duration
+
+        self._move(dt, rd)
+
+        if not is_duration_func:
+            for trail, timefac in self._trails:
+                trd = self._time / (self._duration * timefac)
+                if trd < 1.0:
+                    trail.node.setSa((1.0 - trd)**2)
+                elif trail.alive:
+                    trail.destroy()
+
+        return task.cont
+
+
+    def _start_trail (self, timefac, lifespan, thickness, endthfac, spacing, tcol, fire_on):
+
+        pass
+
+
+
+class AirBreakupPart (BreakupPart):
+
+    def __init__ (self, body, handle, termspeed, duration,
+                  offpos=None, offdir=None, offspeed=0.0,
+                  rollspeed=0.0, rollrad=0.0,
+                  traildurfac=1.0, traillifespan=0.0,
+                  trailthickness=0.0, trailendthfac=4.0,
+                  trailspacing=1.0, trailtcol=0.0,
+                  trailfire=False,
+                  texture=None):
+
+        BreakupPart.__init__(self,
+                             body=body, handle=handle, duration=duration,
+                             offpos=offpos, offdir=offdir, offspeed=offspeed,
+                             traildurfac=traildurfac,
+                             traillifespan=traillifespan,
+                             trailthickness=trailthickness,
+                             trailendthfac=trailendthfac,
+                             trailspacing=trailspacing,
+                             trailtcol=trailtcol,
+                             trailfire=trailfire,
+                             texture=texture)
+        fvel = self._vel0
+        quat = self._quat0
+        pos = self._pos0
 
         fdir = unitv(fvel)
         tdir = unitv(quat.getRight().cross(fdir))
@@ -545,17 +629,6 @@ class AirBreakupPart (object):
         self._termspeed = termspeed
         self._rollspeed = rollspeed
         self._rollrad = rollrad
-        self._duration = duration
-        self._time = 0.0
-
-        self._trails = []
-        if traildurfac > 0.0 and traillifespan > 0.0 and trailthickness > 0.0:
-            self._start_trail(traildurfac, traillifespan, trailthickness,
-                              trailendthfac, trailspacing, trailtcol, trailfire)
-
-        self.alive = True
-        # Before general loops, e.g. to have updated position in effect loops.
-        base.taskMgr.add(self._loop, "breakup-part-loop", sort=-1)
 
 
     def destroy (self):
@@ -632,31 +705,6 @@ class AirBreakupPart (object):
                 loddirang=5,
                 loddirspcfac=5)
             self._trails.append((smoke, timefac))
-
-
-    def _loop (self, task):
-
-        if not self.alive:
-            return task.done
-
-        dt = self.world.dt
-
-        self._time += dt
-        if self._time > self._duration:
-            self.destroy()
-            return task.done
-        rd = self._time / self._duration
-
-        self._move(dt, rd)
-
-        for trail, timefac in self._trails:
-            trd = self._time / (self._duration * timefac)
-            if trd < 1.0:
-                trail.node.setSa((1.0 - trd)**2)
-            elif trail.alive:
-                trail.destroy()
-
-        return task.cont
 
 
     def _move (self, dt, rd):
@@ -771,7 +819,7 @@ class AirBreakup (object):
                            texture=bkpd.texture)
 
 
-class GroundBreakupPart (object):
+class GroundBreakupPart (BreakupPart):
 
     def __init__ (self, body, handle, duration,
                   offdir, offspeed, tumbledir, tumblespeed,
@@ -785,81 +833,26 @@ class GroundBreakupPart (object):
 
         offpos = None
 
-        if isinstance(body, tuple):
-            model, world = body
-            models = [model]
-            body = None
-            self.world = world
-        else:
-            self.world = body.world
-            models = list(body.models)
-            if base.with_world_shadows and body.shadow_node is not None:
-                models += [body.shadow_node]
-
-        self.node = self.world.node.attachNewNode("ground-breakup-part")
-        shader = make_shader(ambln=self.world.shdinp.ambln,
-                             dirlns=self.world.shdinp.dirlns)
-        self.node.setShader(shader)
-        if texture is not None:
-            set_texture(self.node, texture)
-
-        if isinstance(handle, basestring):
-            handles = [handle]
-        else:
-            handles = handle
-
-        offset = offpos
-        pos = None
-        quat = None
-        for model in models:
-            if model is None:
-                continue
-            for handle in handles:
-                nd = model.find("**/%s" % handle)
-                if not nd.isEmpty():
-                    if offset is None:
-                        offset = nd.getPos()
-                    if pos is None:
-                        # Must be done here because of wrtReparentTo below.
-                        if body is not None:
-                            pos = body.pos(offset=offset)
-                            quat = body.quat()
-                        else:
-                            pos = self.world.node.getRelativePoint(model, offset)
-                            quat = model.getQuat(self.world.node)
-                        self.node.setPos(pos)
-                        self.node.setQuat(quat)
-                        if offdir is None:
-                            offdir = unitv(offset)
-                    nd.wrtReparentTo(self.node)
-        if pos is None:
-            if offpos is not None:
-                pos = offpos
-                self.node.setPos(pos)
-            else:
-                raise StandardError(
-                    "No subnodes found for given handle, "
-                    "and no initial position given.")
-
-        if body is not None:
-            odir = self.world.node.getRelativeVector(body.node, offdir)
-            bvel = body.vel()
-        elif models[0] is not None:
-            odir = self.world.node.getRelativeVector(models[0], offdir)
-            bvel = Vec3(0.0, 0.0, 0.0)
-        else:
-            odir = offdir
-            bvel = Vec3(0.0, 0.0, 0.0)
-        fvel = bvel + odir * offspeed
-        if quat is None:
-            quat = Quat()
-            quat.setHpr(vectohpr(fvel))
+        BreakupPart.__init__(self,
+                             body=body, handle=handle, duration=duration,
+                             offpos=offpos, offdir=offdir, offspeed=offspeed,
+                             traildurfac=traildurfac,
+                             traillifespan=traillifespan,
+                             trailthickness=trailthickness,
+                             trailendthfac=trailendthfac,
+                             trailspacing=trailspacing,
+                             trailtcol=trailtcol,
+                             trailfire=trailfire,
+                             texture=texture)
+        pos = self._pos0
+        quat = self._quat0
+        vel = self._vel0
 
         angvel = tumbledir * tumblespeed
 
         self._pos = pos
         self._quat = quat
-        self._vel = fvel
+        self._vel = vel
         self._angvel = angvel
 
         self._norm_rest_fac = normrestfac
@@ -869,18 +862,6 @@ class GroundBreakupPart (object):
         self._fix_elev = fixelev
 
         self._at_rest = False
-
-        self._duration = duration
-        self._time = 0.0
-
-        self._trails = []
-        if traildurfac > 0.0 and traillifespan > 0.0 and trailthickness > 0.0:
-            self._start_trail(traildurfac, traillifespan, trailthickness,
-                              trailendthfac, trailspacing, trailtcol, trailfire)
-
-        self.alive = True
-        # Before general loops, e.g. to have updated position in effect loops.
-        base.taskMgr.add(self._loop, "breakup-part-loop", sort=-1)
 
 
     def destroy (self):
@@ -895,41 +876,6 @@ class GroundBreakupPart (object):
 
         if True:
             pass
-
-
-    def _loop (self, task):
-
-        if not self.alive:
-            return task.done
-
-        dt = self.world.dt
-
-        self._time += dt
-
-        if callable(self._duration):
-            done = self._duration()
-        else:
-            done = (self._time > self._duration)
-        if done:
-            self.destroy()
-            return task.done
-
-        if callable(self._duration):
-            rd = 1.0
-        else:
-            rd = self._time / self._duration
-
-        self._move(dt, rd)
-
-        if not callable(self._duration):
-            for trail, timefac in self._trails:
-                trd = self._time / (self._duration * timefac)
-                if trd < 1.0:
-                    trail.node.setSa((1.0 - trd)**2)
-                elif trail.alive:
-                    trail.destroy()
-
-        return task.cont
 
 
     def _move (self, dt, rd):
