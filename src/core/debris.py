@@ -497,7 +497,10 @@ class BreakupPart (object):
                 nd = model.find("**/%s" % handle)
                 if not nd.isEmpty():
                     if offset is None:
-                        offset = nd.getPos()
+                        if body is not None:
+                            offset = nd.getPos(body.node)
+                        else:
+                            offset = nd.getPos(self.world.node)
                     if pos is None:
                         # Must be done here because of wrtReparentTo below.
                         if body is not None:
