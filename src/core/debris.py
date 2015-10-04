@@ -459,7 +459,7 @@ class BreakupPart (object):
                   trailthickness=0.0, trailendthfac=4.0,
                   trailspacing=1.0, trailtcol=0.0,
                   trailfire=False,
-                  texture=None):
+                  keeptogether=False, texture=None):
 
         if isinstance(body, tuple):
             model, world = body
@@ -476,11 +476,12 @@ class BreakupPart (object):
                 shadow_model = None
 
         self.node = self.world.node.attachNewNode("breakup-part")
-        shader = make_shader(ambln=self.world.shdinp.ambln,
-                             dirlns=self.world.shdinp.dirlns)
-        self.node.setShader(shader)
-        if texture is not None:
-            set_texture(self.node, texture)
+        if not keeptogether:
+            shader = make_shader(ambln=self.world.shdinp.ambln,
+                                 dirlns=self.world.shdinp.dirlns)
+            self.node.setShader(shader)
+            if texture is not None:
+                set_texture(self.node, texture)
 
         if isinstance(handle, basestring):
             handles = [handle]
@@ -490,6 +491,7 @@ class BreakupPart (object):
         offset = offpos
         pos = None
         quat = None
+        self._together_nodes = []
         for model in models:
             if model is None:
                 continue
@@ -513,7 +515,11 @@ class BreakupPart (object):
                         self.node.setQuat(quat)
                         if offdir is None:
                             offdir = unitv(offset)
-                    nd.wrtReparentTo(self.node)
+                    if not keeptogether:
+                        nd.wrtReparentTo(self.node)
+                    else:
+                        offset2 = nd.getPos(self.node)
+                        self._together_nodes.append((nd, offset2))
         if pos is None:
             if offpos is not None:
                 pos = offpos
@@ -591,6 +597,14 @@ class BreakupPart (object):
             rd = self._time / self._duration
 
         self._move(dt, rd)
+
+        # Mirro the move to any kept-together nodes.
+        for node, offset in self._together_nodes:
+            if not node.isEmpty():
+                pos = node.getParent().getRelativePoint(self.node, offset)
+                node.setPos(pos)
+                quat = self.node.getQuat(node.getParent())
+                node.setQuat(quat)
 
         if not is_duration_func:
             for trail, timefac in self._trails:
@@ -840,7 +854,7 @@ class GroundBreakupPart (BreakupPart):
                   trailthickness=0.0, trailendthfac=4.0,
                   trailspacing=1.0, trailtcol=0.0,
                   trailfire=False,
-                  texture=None):
+                  keeptogether=False, texture=None):
 
         offpos = None
 
@@ -854,6 +868,7 @@ class GroundBreakupPart (BreakupPart):
                              trailspacing=trailspacing,
                              trailtcol=trailtcol,
                              trailfire=trailfire,
+                             keeptogether=keeptogether,
                              texture=texture)
         pos = self._pos0
         quat = self._quat0
@@ -935,7 +950,7 @@ class GroundBreakupData (object):
                   fixelev=0.0,
                   traildurfac=0.0, traillifespan=0.0, trailthickness=0.0,
                   trailtcol=0.0, trailfire=False,
-                  texture=None):
+                  keeptogether=False, texture=None):
 
         self.handle = handle
         self.breakprob = breakprob
@@ -953,6 +968,7 @@ class GroundBreakupData (object):
         self.trailthickness = trailthickness
         self.trailtcol = trailtcol
         self.trailfire = trailfire
+        self.keeptogether = keeptogether
         self.texture = texture
 
 
@@ -984,6 +1000,7 @@ class GroundBreakup (object):
                               trailthickness=rv(bkpd.trailthickness),
                               trailtcol=rv(bkpd.trailtcol),
                               trailfire=bkpd.trailfire,
+                              keeptogether=bkpd.keeptogether,
                               texture=bkpd.texture)
 
 
