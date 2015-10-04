@@ -464,13 +464,16 @@ class BreakupPart (object):
         if isinstance(body, tuple):
             model, world = body
             models = [model]
+            shadow_model = None
             body = None
             self.world = world
         else:
             self.world = body.world
             models = list(body.models)
             if base.with_world_shadows and body.shadow_node is not None:
-                models += [body.shadow_node]
+                shadow_model = body.shadow_node
+            else:
+                shadow_model = None
 
         self.node = self.world.node.attachNewNode("breakup-part")
         shader = make_shader(ambln=self.world.shdinp.ambln,
@@ -516,6 +519,11 @@ class BreakupPart (object):
                 raise StandardError(
                     "No subnodes found for given handle, "
                     "and no initial position given.")
+        if shadow_model is not None:
+            for handle in handles:
+                nd = shadow_model.find("**/%s" % handle)
+                if not nd.isEmpty():
+                    nd.removeNode()
 
         if body is not None:
             odir = self.world.node.getRelativeVector(body.node, offdir)
