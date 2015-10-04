@@ -548,6 +548,14 @@ class BreakupPart (object):
         base.taskMgr.add(self._loop, "breakup-part-loop", sort=-1)
 
 
+    def destroy (self):
+
+        if not self.alive:
+            return
+        self.node.removeNode()
+        self.alive = False
+
+
     def _loop (self, task):
 
         if not self.alive:
@@ -629,14 +637,6 @@ class AirBreakupPart (BreakupPart):
         self._termspeed = termspeed
         self._rollspeed = rollspeed
         self._rollrad = rollrad
-
-
-    def destroy (self):
-
-        if not self.alive:
-            return
-        self.node.removeNode()
-        self.alive = False
 
 
     def _start_trail (self, timefac, lifespan, thickness, endthfac, spacing, tcol, fire_on):
@@ -862,14 +862,6 @@ class GroundBreakupPart (BreakupPart):
         self._fix_elev = fixelev
 
         self._at_rest = False
-
-
-    def destroy (self):
-
-        if not self.alive:
-            return
-        self.node.removeNode()
-        self.alive = False
 
 
     def _start_trail (self, timefac, lifespan, thickness, endthfac, spacing, tcol, fire_on):
