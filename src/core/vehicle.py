@@ -384,8 +384,8 @@ class Vehicle (Body):
                                 shadowmap=self.world.shadow_texture)
 
             # Set up breakup.
-            for handle in ():
-                if randunit() > 0.6:
+            for handle in ("misc",):
+                if randunit() > 0.0:
                     for model in self.models:
                         nd = model.find("**/%s" % handle)
                         if not nd.isEmpty():

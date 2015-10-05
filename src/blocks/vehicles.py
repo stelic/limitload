@@ -6,11 +6,40 @@ from pandac.PandaModules import Vec3, Point3
 
 from src.blocks.weapons import TurretPkm, N2a38m
 from src.core.body import Body, HitboxData
+from src.core.debris import GroundBreakupData
 from src.core.effect import fire_n_smoke_2
 from src.core.misc import rgba, remove_subnodes, texture_subnodes
 from src.core.transl import *
 from src.core.turret import CustomTurret
 from src.core.vehicle import Vehicle
+
+
+def breakup_small (handle, prob=0.5):
+    return GroundBreakupData(handle=handle, breakprob=prob,
+                             duration=(8, 10),
+                             offdir=(-180, 180, 20, 70), offspeed=(8, 16),
+                             tumbledir=(-180, 180, -90, 90), tumblespeeddeg=(-500, 500),
+                             normrestfac=0.2, tangrestfac=0.7, tumblerestfac=0.2)
+
+
+def breakup_large (handle, prob=0.5):
+    return GroundBreakupData(handle=handle, breakprob=prob,
+                             duration=None,
+                             offdir=(-180, 180, 5, 15), offspeed=(7, 12),
+                             tumbledir=(-180, 180, 0, 40), tumblespeeddeg=(-250, 250),
+                             normrestfac=0.1, tangrestfac=0.3, tumblerestfac=0.1,
+                             keeptogether=True,
+                             traildurfac=1e6, traillifespan=0.45,
+                             trailthickness=4.0, trailspacing=0.2,
+                             trailtcol=0.5, trailfire=True)
+
+def breakup_large_low (handle, prob=0.5, elev=0.0):
+    return GroundBreakupData(handle=handle, breakprob=prob,
+                             duration=None,
+                             offdir=(-180, 180, 50, 70), offspeed=1.5,
+                             tumbledir=(-180, 180, 70, 85), tumblespeeddeg=(-150, 150),
+                             normrestfac=0.0, tangrestfac=0.0, tumblerestfac=0.0,
+                             fixelev=elev, keeptogether=True)
 
 
 class Ural375 (Vehicle):
@@ -223,11 +252,27 @@ class Tunguska (Vehicle):
     modelpath = ["models/vehicles/tunguska/tunguska-1.egg",
                  "models/vehicles/tunguska/tunguska-2.egg",
                  "models/vehicles/tunguska/tunguska-3.egg"]
+    sdmodelpath = "models/vehicles/tunguska/tunguska-shotdown.egg"
     shdmodelpath = "models/vehicles/tunguska/tunguska-shadow.egg"
     normalmap = "models/vehicles/tunguska/tunguska_nm.png"
     glossmap = "models/vehicles/tunguska/tunguska_gls.png"
     trkspdfac = [0.090]
     engsoundname = ""
+    breakupdata = [
+        breakup_small("turret_radar", prob=0.8),
+        breakup_small("turret_elev_left", prob=0.3),
+        breakup_small("turret_elev_right", prob=0.3),
+        breakup_large_low("turret_azim", prob=0.7, elev=2.3),
+        breakup_large("turret_azim", prob=0.3),
+        breakup_small("axle2_left", prob=0.5),
+        breakup_small("axle4_left", prob=0.5),
+        breakup_small("axle4_right", prob=0.5),
+        breakup_small("axle5_left", prob=0.5),
+        breakup_small("axle6_left", prob=0.5),
+        breakup_small("axle6_right", prob=0.5),
+        breakup_small("axle7_right", prob=0.5),
+        breakup_small("hatch", prob=0.6),
+    ]
 
     def __init__ (self, world, name, side, texture=None,
                   pos=None, hpr=None, speed=None, sink=None, damage=None,
@@ -332,6 +377,18 @@ class Abrams (Vehicle):
     glossmap = "models/vehicles/abrams/abrams_gls.png"
     trkspdfac = [0.040]
     engsoundname = ""
+    breakupdata = [
+        breakup_small("turret_elev", prob=0.3),
+        breakup_large_low("turret_azim", prob=0.7, elev=1.9),
+        breakup_large("turret_azim", prob=0.3),
+        breakup_small("axle3_left", prob=0.5),
+        breakup_small("axle4_right", prob=0.5),
+        breakup_small("axle6_left", prob=0.5),
+        breakup_small("axle6_right", prob=0.5),
+        breakup_small("axle7_left", prob=0.5),
+        breakup_small("axle8_left", prob=0.5),
+        breakup_small("axle8_right", prob=0.5),
+    ]
 
     def __init__ (self, world, name, side, texture=None,
                   pos=None, hpr=None, speed=None, sink=None, damage=None):
@@ -371,6 +428,18 @@ class Bradley (Vehicle):
     glossmap = "models/vehicles/bradley/bradley_gls.png"
     trkspdfac = [0.040]
     engsoundname = ""
+    breakupdata = [
+        breakup_small("turret_elev", prob=0.4),
+        breakup_large_low("turret_azim", prob=0.6, elev=2.5),
+        breakup_large("turret_azim", prob=0.4),
+        breakup_small("axle4_left", prob=0.5),
+        breakup_small("axle4_right", prob=0.5),
+        breakup_small("axle5_left", prob=0.5),
+        breakup_small("axle5_right", prob=0.5),
+        breakup_small("axle7_left", prob=0.5),
+        breakup_small("axle7_right", prob=0.5),
+        breakup_small("door", prob=0.7),
+    ]
 
     def __init__ (self, world, name, side, texture=None,
                   pos=None, hpr=None, speed=None, sink=None, damage=None):

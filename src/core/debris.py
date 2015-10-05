@@ -13,7 +13,7 @@ from src.core.misc import rgba, make_particles, bin_view_b2f
 from src.core.misc import unitv, vectohpr, sign, set_texture, vtof
 from src.core.misc import fx_uniform, fx_randrange, fx_choice, fx_randvec
 from src.core.shader import make_shader
-from src.core.trail import PolyBraid, PolyExhaust
+from src.core.trail import PolyBraid, PolyBurn, PolyExhaust
 
 
 class Debris (object):
@@ -898,7 +898,31 @@ class GroundBreakupPart (BreakupPart):
     def _start_trail (self, timefac, lifespan, thickness, endthfac, spacing, tcol, fire_on):
 
         if True:
-            pass
+            if fire_on:
+                fire = PolyBurn(
+                    parent=(self.node, self.world),
+                    pos=Vec3(0.0, 0.0, 0.0),
+                    numstrands=1,
+                    lifespan=lifespan,
+                    thickness=thickness,
+                    endthickness=thickness * 0.5,
+                    spacing=spacing,
+                    emitspeed=8.0,
+                    emitradius=1.2,
+                    offtang=0.0,
+                    texture="images/particles/explosion7-1.png",
+                    glowmap=rgba(255, 255, 255, 1.0),
+                    color=rgba(255, 255, 255, 1.0),
+                    endcolor=rgba(246, 112, 27, 1.0),
+                    dirlit=False,
+                    alphaexp=2.0,
+                    tcol=tcol,
+                    maxpoly=pycv(py=500, c=2000),
+                    dbin=3,
+                    frameskip=pycv(py=2, c=1),
+                    delay=0.0)
+                    #duration=duration)
+                self._trails.append((fire, timefac))
 
 
     def _move (self, dt, rd):
@@ -954,7 +978,7 @@ class GroundBreakupData (object):
                   normrestfac=0.2, tangrestfac=0.7, tumblerestfac=0.2,
                   fixelev=0.0,
                   traildurfac=0.0, traillifespan=0.0, trailthickness=0.0,
-                  trailtcol=0.0, trailfire=False,
+                  trailspacing=1.0, trailtcol=0.0, trailfire=False,
                   keeptogether=False, texture=None):
 
         self.handle = handle
@@ -971,6 +995,7 @@ class GroundBreakupData (object):
         self.traildurfac = traildurfac
         self.traillifespan = traillifespan
         self.trailthickness = trailthickness
+        self.trailspacing = trailspacing
         self.trailtcol = trailtcol
         self.trailfire = trailfire
         self.keeptogether = keeptogether
@@ -1003,6 +1028,7 @@ class GroundBreakup (object):
                               traildurfac=rv(bkpd.traildurfac),
                               traillifespan=rv(bkpd.traillifespan),
                               trailthickness=rv(bkpd.trailthickness),
+                              trailspacing=rv(bkpd.trailspacing),
                               trailtcol=rv(bkpd.trailtcol),
                               trailfire=bkpd.trailfire,
                               keeptogether=bkpd.keeptogether,
