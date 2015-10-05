@@ -577,6 +577,11 @@ class BreakupPart (object):
 
         if not self.alive:
             return task.done
+        if not self.world.alive:
+            # This prevents invalid altitude queries in _move, because
+            # _move is not executed by world (like it is for bodies).
+            self.destroy()
+            return task.done
 
         dt = self.world.dt
 
