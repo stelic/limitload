@@ -90,3 +90,42 @@ into a defensive maneuver, instead of letting him comfortably enter
 the attack phase.
 
 
+"Avalanche"
+-----------
+
+This skirmish is about attacking targets on the ground.
+
+In order to begin an accurate ground attack, player's aircraft has to be
+equipped with suitable armament. When an appropriate weapon is selected,
+the MFD view will be automatically changed to the infra-red camera view,
+where the player will be able to circle through the targets below.
+Camera search is automatic, so any ground object that is sufficiently close
+for its emission signature will be available for targeting. It is possible
+to attack ground targets with cannon as well, but cannon is often too weak
+to do any real damage to usual ground targets, and it requires fully manual
+aiming during the attack.
+
+Once the player is in ground attack mode, engaging ground targets is
+straightforward. It is only necessary that the camera is fixed on one of
+the targets, and the weapon can be fired when ready. In case of guided
+missiles (Kh-25/Х-25), if the target is within the needed angle,
+an intermittent tone is heard, and it switches to continuous tone when
+the missile can be fired. The player can use also unguided rockets
+(B8M1/Б8М1), but then mostly manual aiming is required to hit. The player
+will be able to see the target better with the help of the HUD reticle
+(made available from camera feed), but needs to make the right call when
+to open fire in order to strike the target. (The third type of ground attack
+weapons are bombs, but they are not available in this mission.)
+
+Although targets themselves are defenseless, they are not unprotected.
+Close to the armored vehicle group, there is scattered infantry armed
+with man-portable surface-to-air missiles. The missiles are weak and not
+very effective, but they are numerous and can be expected to come from
+anywhere around the vehicles. Particularly during a low altitude attack,
+the player is under the constant threat of suddenly catching a missile
+on his tail. Sometimes the missile is launched so close, that the player
+have very little time for appropriate reaction. To evade these missiles
+usually a few timely deployed decoys are enough, additional maneuvering
+is rarely necessary.
+
+
