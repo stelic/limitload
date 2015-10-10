@@ -9,7 +9,7 @@ from src.skirmish import *
 _, p_, n_, pn_ = make_tr_calls_skirmish(__file__)
 
 
-mission_shortdes = p_("mission name", "Air Strike")
+mission_shortdes = p_("mission name", "Avalanche")
 
 mission_longdes = p_("mission description", """
 Ground attack mission. A group of enemy vehicles is spotted in the area. It consists mostly of lightly armored IFVs, but some MBTs are reported too. To complete the task you must destroy the whole group. While vehicles themselves are defenseless against attack from air, keep in mind that enemy infantry, armed with Stingers, is scattered through surrounding hills.
@@ -45,8 +45,7 @@ def mission_start (gc):
     mission.switch_zone("zero")
 
     mc.world_day_time = hrmin_to_sec(*choice(
-            [(9, 45)] * 3 +
-            [(16, 35)] * 3 +
+            [(16, 35)] * 6 +
             [(2, 10)] * 1))
 
     return mission
@@ -63,7 +62,7 @@ def zone_zero_enter (zc, mc, gc):
                 terraintype="00-iraq",
                 skytype="default2",
                 stratusdens=0.0,
-                cumulusdens=0.6,
+                cumulusdens=0.0,
                 cirrusdens=1.2,
                 playercntl=2,
                 shotdownmusic=None)
@@ -114,12 +113,12 @@ def zone_zero_enter (zc, mc, gc):
 
     #SAM carpet
     zc.infantry = SamCarpet(zc.world, mtype=Stinger, mside="merc",
-                            targsides=["bstar"],
-                            avgfiretime=35.0, skiptime=10.0, maxrad=None, maxalt=None, rounds=32,
+                            targsides=["taymyr"],
+                            avgfiretime=25.0, skiptime=15.0, maxrad=None, maxalt=None, rounds=32,
                             carpetpos=zc.wp1pos, carpetradius=2500)
 
     #Waypoint data
-    zc.player.add_waypoint(name="wp1", longdes=_("Waypoint 1"), shortdes=_("WP1"),
+    zc.player.add_waypoint(name="wp1", longdes=_("waypoint 1"), shortdes=_("WP1"),
                            pos=zc.wp1pos, radius=4000, height=500)
 
 
@@ -129,8 +128,8 @@ def zone_zero_loop (zc, mc, gc):
 
     yield zc.world, 1.0
 
-    zc.player.show_message("notification", "left", _("Rain fire on the enemy below."), duration=1.0)
-    zc.player.show_message("notification", "left", _("Get going!"), duration=4.0)
+    zc.player.show_message("notification", "left", _("Destroy enemy armor below."), duration=1.0)
+    zc.player.show_message("notification", "left", _("Watch out for Stingers!"), duration=4.0)
 
     yield zc.world, 2.0
 
@@ -150,7 +149,7 @@ def zone_zero_loop (zc, mc, gc):
 
     mc.mission_completed = True
     zc.world.action_music.set_context("victory")
-    zc.player.show_message("notification", "left", _("Enemy vehicle group destroyed."), duration=1.0)
+    zc.player.show_message("notification", "left", _("Enemy armor group destroyed."), duration=1.0)
     zc.player.show_message("notification", "left", _("Good work."), duration=4.0)
 
     yield zc.world, 5.0
