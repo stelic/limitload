@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 script_dir="$(dirname $0 | xargs readlink -f)"
 # ...need absolute directory because cwd is changed below.
