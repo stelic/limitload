@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-05 22:56+0200\n"
+"POT-Creation-Date: 2015-10-13 00:45+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,12 +29,12 @@ msgstr ""
 msgid "Bonus objective completed."
 msgstr ""
 
-#: ../../../src/skirmish/genk/airstrike.py:12
+#: ../../../src/skirmish/genk/avalanche.py:12
 msgctxt "mission name"
-msgid "Air Strike"
+msgid "Avalanche"
 msgstr ""
 
-#: ../../../src/skirmish/genk/airstrike.py:14
+#: ../../../src/skirmish/genk/avalanche.py:14
 msgctxt "mission description"
 msgid ""
 "\n"
@@ -48,28 +48,28 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../../../src/skirmish/genk/airstrike.py:122
-msgid "Waypoint 1"
+#: ../../../src/skirmish/genk/avalanche.py:121
+msgid "waypoint 1"
 msgstr ""
 
-#: ../../../src/skirmish/genk/airstrike.py:122
+#: ../../../src/skirmish/genk/avalanche.py:121
 msgid "WP1"
 msgstr ""
 
-#: ../../../src/skirmish/genk/airstrike.py:132
-msgid "Rain fire on the enemy below."
+#: ../../../src/skirmish/genk/avalanche.py:131
+msgid "Destroy enemy armor below."
 msgstr ""
 
-#: ../../../src/skirmish/genk/airstrike.py:133
-msgid "Get going!"
+#: ../../../src/skirmish/genk/avalanche.py:132
+msgid "Watch out for Stingers!"
 msgstr ""
 
-#: ../../../src/skirmish/genk/airstrike.py:153
-msgid "Enemy vehicle group destroyed."
+#: ../../../src/skirmish/genk/avalanche.py:152
+msgid "Enemy armor group destroyed."
 msgstr ""
 
-#: ../../../src/skirmish/genk/airstrike.py:154
-#: ../../../src/skirmish/genk/incoming.py:178
+#: ../../../src/skirmish/genk/avalanche.py:153
+#: ../../../src/skirmish/genk/incoming.py:184
 msgid "Good work."
 msgstr ""
 
@@ -92,14 +92,22 @@ msgid ""
 "\n"
 msgstr ""
 
-#: ../../../src/skirmish/genk/incoming.py:173
+#: ../../../src/skirmish/genk/incoming.py:104
+msgid "Incoming enemy planes!"
+msgstr ""
+
+#: ../../../src/skirmish/genk/incoming.py:105
+msgid "Good luck!"
+msgstr ""
+
+#: ../../../src/skirmish/genk/incoming.py:179
 msgid "All enemy planes destroyed."
 msgstr ""
 
-#: ../../../src/skirmish/genk/incoming.py:175
+#: ../../../src/skirmish/genk/incoming.py:181
 msgid "No missile was fired."
 msgstr ""
 
-#: ../../../src/skirmish/genk/incoming.py:176
+#: ../../../src/skirmish/genk/incoming.py:182
 msgid "Excellent work."
 msgstr ""
