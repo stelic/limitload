@@ -268,9 +268,9 @@ class ComtowerRussian1 (Building):
                           damage=damage)
 
 
-class OutpostImperial1 (Building):
+class OutpostUs1 (Building):
 
-    species = "outpost-imperial-1"
+    species = "outpost-us-1"
     basesink = 0.0
     strength = 400
     minhitdmg = 1
@@ -296,9 +296,9 @@ class OutpostImperial1 (Building):
                           damage=damage)
 
 
-class OutpostImperial2 (Building):
+class OutpostUs2 (Building):
 
-    species = "outpost-imperial-2"
+    species = "outpost-us-2"
     basesink = 0.0
     strength = 900
     minhitdmg = 100
@@ -345,9 +345,9 @@ class OutpostImperial2 (Building):
                           damage=damage)
 
 
-class OutpostImperial3 (Building):
+class OutpostUs3 (Building):
 
-    species = "outpost-imperial-3"
+    species = "outpost-us-3"
     basesink = 0.0
     strength = 40000
     minhitdmg = None
