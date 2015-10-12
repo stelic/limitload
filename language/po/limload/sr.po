@@ -2726,19 +2726,3 @@ msgstr "УСАФ 600 гал"
 #: ../../../src/blocks/weapons.py:1987
 msgid "US-600"
 msgstr "УС-600"
-
-#~ msgctxt "main menu: show game options"
-#~ msgid "Options"
-#~ msgstr "Опције"
-
-#~ msgctxt "main menu: show player manual"
-#~ msgid "Manual"
-#~ msgstr "Упутство"
-
-#~ msgctxt "main menu: show extras (funny stuff, etc.)"
-#~ msgid "Extras"
-#~ msgstr "Прилози"
-
-#~ msgctxt "main menu: show game credits (people names, etc.)"
-#~ msgid "Credits"
-#~ msgstr "Заслуге"

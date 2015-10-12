@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: limload-genk\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2015-09-05 22:56+0200\n"
+"POT-Creation-Date: 2015-10-13 00:45+0200\n"
 "PO-Revision-Date: 2015-09-05 23:03+0200\n"
 "Last-Translator: Nikola Milentijevic <nikolmiv@gmail.com>\n"
 "Language-Team: Serbian\n"
@@ -27,13 +27,13 @@ msgstr "Задатак пропао."
 msgid "Bonus objective completed."
 msgstr "Бонус циљеви извршени."
 
-#: ../../../src/skirmish/genk/airstrike.py:12
+#: ../../../src/skirmish/genk/avalanche.py:12
 msgctxt "mission name"
-msgid "Air Strike"
-msgstr "Ваздушни удар"
+msgid "Avalanche"
+msgstr "Лавина"
 
 # well-spelled: ИФВ, МБТ, стингерима
-#: ../../../src/skirmish/genk/airstrike.py:14
+#: ../../../src/skirmish/genk/avalanche.py:14
 msgctxt "mission description"
 msgid ""
 "\n"
@@ -56,28 +56,29 @@ msgstr ""
 "— Нема.\n"
 "\n"
 
-#: ../../../src/skirmish/genk/airstrike.py:122
-msgid "Waypoint 1"
+#: ../../../src/skirmish/genk/avalanche.py:121
+msgid "waypoint 1"
 msgstr "путна тачка 1"
 
-#: ../../../src/skirmish/genk/airstrike.py:122
+#: ../../../src/skirmish/genk/avalanche.py:121
 msgid "WP1"
 msgstr "ПТ1"
 
-#: ../../../src/skirmish/genk/airstrike.py:132
-msgid "Rain fire on the enemy below."
-msgstr "Распали по непријатељу испод."
+#: ../../../src/skirmish/genk/avalanche.py:131
+msgid "Destroy enemy armor below."
+msgstr "Уништи непријатељски оклоп доле."
 
-#: ../../../src/skirmish/genk/airstrike.py:133
-msgid "Get going!"
-msgstr "Мрдај!"
+# well-spelled: стингере
+#: ../../../src/skirmish/genk/avalanche.py:132
+msgid "Watch out for Stingers!"
+msgstr "Пази на стингере!"
 
-#: ../../../src/skirmish/genk/airstrike.py:153
-msgid "Enemy vehicle group destroyed."
-msgstr "Непријатељска група возила уништена."
+#: ../../../src/skirmish/genk/avalanche.py:152
+msgid "Enemy armor group destroyed."
+msgstr "Непријатељска оклопна група уништена."
 
-#: ../../../src/skirmish/genk/airstrike.py:154
-#: ../../../src/skirmish/genk/incoming.py:178
+#: ../../../src/skirmish/genk/avalanche.py:153
+#: ../../../src/skirmish/genk/incoming.py:184
 msgid "Good work."
 msgstr "Добро обављено."
 
@@ -109,14 +110,22 @@ msgstr ""
 "— Немој да испалиш ниједну ракету.\n"
 "\n"
 
-#: ../../../src/skirmish/genk/incoming.py:173
+#: ../../../src/skirmish/genk/incoming.py:104
+msgid "Incoming enemy planes!"
+msgstr "Стижу непријатељски авиони!"
+
+#: ../../../src/skirmish/genk/incoming.py:105
+msgid "Good luck!"
+msgstr "Са срећом!"
+
+#: ../../../src/skirmish/genk/incoming.py:179
 msgid "All enemy planes destroyed."
 msgstr "Сви непријатељски авиони уништени."
 
-#: ../../../src/skirmish/genk/incoming.py:175
+#: ../../../src/skirmish/genk/incoming.py:181
 msgid "No missile was fired."
 msgstr "Није испаљена ниједна ракета."
 
-#: ../../../src/skirmish/genk/incoming.py:176
+#: ../../../src/skirmish/genk/incoming.py:182
 msgid "Excellent work."
 msgstr "Изврсно обављено."
