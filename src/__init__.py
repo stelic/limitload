@@ -8,7 +8,7 @@ from pandac.PandaModules import Filename
 
 
 PACKAGE_NAME = "limload"
-PACKAGE_VERSION = "0.19"
+PACKAGE_VERSION = "0.20"
 
 USE_COMPILED = True
 
