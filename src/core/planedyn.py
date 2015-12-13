@@ -3937,19 +3937,22 @@ class PlaneDynamics (object):
     @staticmethod
     def correct_turn_climb (cr, tr, crmax, trmax, wtcr=0.5):
 
-        if cr > 0.0:
-            assert 0.0 <= wtcr <= 1.0
-            wttr = 1.0 - wtcr
-            crref = crmax
-            trref = trmax
-            cr1rel = abs(cr) / crref
-            tr1rel = abs(tr) / trref
-            cr2rel = (cr1rel * wtcr) / (cr1rel * wtcr + tr1rel * wttr)
-            tr2rel = (tr1rel * wttr) / (tr1rel * wttr + cr1rel * wtcr)
-            if cr2rel < cr1rel:
-                cr = cr2rel * crref * sign(cr)
-            if tr2rel < tr1rel:
-                tr = tr2rel * trref * sign(tr)
+        if not 0.0 <= wtcr <= 1.0:
+            raise StandardError(
+                "Coupling weighting parameter out of range "
+                "(0.0 <= wtcr <= 1.0; got %.5f)." % wtcr)
+        wttr = 1.0 - wtcr
+        crref = crmax
+        trref = trmax
+        cr1rel = abs(cr) / crref
+        tr1rel = abs(tr) / trref
+        dneps = 1e-6
+        cr2rel = (cr1rel * wtcr) / (cr1rel * wtcr + tr1rel * wttr + dneps)
+        tr2rel = (tr1rel * wttr) / (tr1rel * wttr + cr1rel * wtcr + dneps)
+        if cr2rel < cr1rel:
+            cr = cr2rel * crref * sign(cr)
+        if tr2rel < tr1rel:
+            tr = tr2rel * trref * sign(tr)
 
         return cr, tr
 
