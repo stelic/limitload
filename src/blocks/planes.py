@@ -3127,51 +3127,6 @@ class B52f (Plane):
     irmuffle = 0.5
     iraspect = 0.3
 
-    # minmass = 92000.0
-    # maxmass = 190000.0
-    # wingarea = 300.0
-    # wingaspect = 8.5
-    # wingspeff = 0.85
-    # zlaoa = radians(-4.0)
-    # maxaoa = radians(12.0)
-    # maxthrust = 170e3 * 4
-    # maxthrustab = None
-    # thrustincab = None
-    # maxload = 2.5
-    # refmass = 130000.0
-    # maxspeedz = 260.0
-    # maxspeedabz = None
-    # maxclimbratez = 50.0
-    # cloptspeedz = 240.0
-    # maxspeedh = 230.0
-    # maxspeedabh = None
-    # maxrollratez = radians(36.0)
-    # maxpitchratez = radians(6.0)
-    # maxfuel = 65000.0
-    # refsfcz = 0.45 / 3.6e4
-    # refsfcabz = None
-    # sfcincab = None
-    # reldragbrake = 0.0
-
-    # strength = None
-    # minhitdmg = None
-    # maxhitdmg = None
-    # dmgtime = None
-    # visualtype = VISTYPE.TRANSPORT
-    # visualangle = (radians(15.0), radians(20.0), radians(100.0))
-    # radarrange = None
-    # radarangle = None
-    # irstrange = None
-    # irstangle = None
-    # tvrange = None
-    # tvangle = None
-    # rwrwash = None
-    # datalinkrecv = False
-    # datalinksend = False
-    # rcs = 30.0
-    # irmuffle = 0.4
-    # iraspect = 0.3
-
     hitboxdata = [
         HitboxData(name="hull",
                    colldata=[(Point3(0.0,   2.2, 0.3), 1.6, 24.0, 2.2),
@@ -3220,6 +3175,7 @@ class B52f (Plane):
     modelpath = ["models/aircraft/b52f/b52f-1.egg",
                  "models/aircraft/b52f/b52f-2.egg",
                  "models/aircraft/b52f/b52f-3.egg"]
+    sdmodelpath = "models/aircraft/b52f/b52f-shotdown.egg"
     shdmodelpath = "models/aircraft/b52f/b52f-shadow.egg"
     glossmap = "models/aircraft/b52f/b52f_gls.png"
     engsoundname = "engine-b1b"
@@ -3592,6 +3548,7 @@ class E3b (Plane):
     modelpath = ["models/aircraft/e3b/e3b-1.egg",
                  "models/aircraft/e3b/e3b-2.egg",
                  "models/aircraft/e3b/e3b-3.egg"]
+    sdmodelpath = "models/aircraft/e3b/e3b-shotdown.egg"
     shdmodelpath = "models/aircraft/e3b/e3b-shadow.egg"
     glossmap = "models/aircraft/e3b/e3b_gls.png"
     engsoundname = "engine-airliner"
@@ -3887,6 +3844,7 @@ class Il76 (Plane):
     modelpath = ["models/aircraft/il76/il76-1.egg",
                  "models/aircraft/il76/il76-2.egg",
                  "models/aircraft/il76/il76-3.egg"]
+    sdmodelpath = "models/aircraft/il76/il76-shotdown.egg"
     shdmodelpath = "models/aircraft/il76/il76-shadow.egg"
     glossmap = "models/aircraft/il76/il76_gls.png"
     engsoundname = "engine-il76"
@@ -4208,6 +4166,7 @@ class An124 (Plane):
     modelpath = ["models/aircraft/an124/an124-1.egg",
                  "models/aircraft/an124/an124-2.egg",
                  "models/aircraft/an124/an124-3.egg"]
+    sdmodelpath = "models/aircraft/an124/an124-shotdown.egg"
     shdmodelpath = "models/aircraft/an124/an124-shadow.egg"
     glossmap = "models/aircraft/an124/an124_gls.png"
     engsoundname = ""
@@ -4502,6 +4461,7 @@ class An12 (Plane):
     modelpath = ["models/aircraft/an12/an12-1.egg",
                  "models/aircraft/an12/an12-2.egg",
                  "models/aircraft/an12/an12-3.egg"]
+    sdmodelpath = "models/aircraft/an12/an12-shotdown.egg"
     shdmodelpath = "models/aircraft/an12/an12-shadow.egg"
     glossmap = "models/aircraft/an12/an12_gls.png"
     engsoundname = "engine-c130"
@@ -5774,6 +5734,7 @@ class Boeing747400 (Plane):
     modelpath = ["models/aircraft/boeing747400/boeing747400-1.egg",
                  "models/aircraft/boeing747400/boeing747400-2.egg",
                  "models/aircraft/boeing747400/boeing747400-3.egg"]
+    sdmodelpath = "models/aircraft/boeing747400/boeing747400-shotdown.egg"
     shdmodelpath = "models/aircraft/boeing747400/boeing747400-shadow.egg"
     glossmap = "models/aircraft/boeing747400/boeing747400_gls.png"
     engsoundname = "engine-airliner"
