@@ -146,7 +146,8 @@ def parse_spec_file (file_path):
             raise StandardError(
                 "Unknown specification line type '%s' at %s:%d."
                 % (key, file_path, lno))
-    finalize_item(last_lic_spec, last_lic_spec_lno)
+    if last_lic_spec is not None:
+        finalize_item(last_lic_spec, last_lic_spec_lno)
 
     return lic_specs
 
