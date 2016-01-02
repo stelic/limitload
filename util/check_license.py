@@ -98,7 +98,7 @@ def find_spec_for_file (file_path, lic_specs):
     for lic_spec in lic_specs:
         if file_path in lic_spec.file_paths:
             ref_lic_spec = lic_spec
-            break
+            # No break, because last wins in case of duplicates.
     return ref_lic_spec
 
 
