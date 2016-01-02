@@ -17,9 +17,35 @@ resource_dir_paths = [
     "models",
 ]
 
-ignored_by_file_name = set([
+ignored_by_file_name = frozenset([
     "makefile",
 ])
+
+known_licenses_free = frozenset([
+    "public domain",
+    "GPL 2", "GPL 3",
+    "CC0", "CC0 1.0",
+    "CC-by", "CC-by 2.0", "CC-by 2.5", "CC-by 3.0", "CC-by 4.0",
+    "CC-by-SA", "CC-by-SA 2.0", "CC-by-SA 2.5", "CC-by-SA 3.0", "CC-by-SA 4.0",
+])
+
+known_licenses_nonfree = frozenset([
+    "proprietary",
+    "CC-by-NC", "CC-by-NC 2.0", "CC-by-NC 2.5", "CC-by-NC 3.0", "CC-by-NC 4.0",
+    "CC-by-ND", "CC-by-ND 2.0", "CC-by-ND 2.5", "CC-by-ND 3.0", "CC-by-ND 4.0",
+    "CC-by-NC-ND", "CC-by-NC-ND 2.0", "CC-by-NC-ND 2.5", "CC-by-NC-ND 3.0", "CC-by-NC-ND 4.0",
+    "unknown",
+])
+
+known_licenses_nonfree_minor = frozenset([
+    "unknown-minor",
+])
+
+known_licenses = set()
+known_licenses.update(known_licenses_free)
+known_licenses.update(known_licenses_nonfree)
+known_licenses.update(known_licenses_nonfree_minor)
+known_licenses = frozenset(known_licenses)
 
 
 def main ():
@@ -59,14 +85,24 @@ def run_coverage (options):
     file_paths = collect_file_paths(paths)
 
     not_covered_file_paths = []
+    unknown_license_file_paths = []
     for file_path in file_paths:
         lic_spec = find_spec_for_file(file_path, lic_specs)
         if lic_spec is None:
             not_covered_file_paths.append(file_path)
+        else:
+            lic_names = comma_sep_string_to_list(lic_spec.license)
+            for lic_name in lic_names:
+                if lic_name not in known_licenses:
+                    unknown_license_file_paths.append((file_path, lic_name))
     if not_covered_file_paths:
         report("Files not covered by licensing:\n"
                "%s"
                % "\n".join("  %s" % p for p in not_covered_file_paths))
+    if unknown_license_file_paths:
+        report("Files with unknown license names:\n"
+               "%s"
+               % "\n".join("  %s: %s" % (p[0], p[1]) for p in unknown_license_file_paths))
 
 
 def run_info (options):
