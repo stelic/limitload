@@ -193,11 +193,11 @@ def parse_lic_spec_file (file_path):
                 lic_specs.append(last_lic_spec)
             last_lic_spec.file_path_glob += " " + value
         elif key == "copyright":
-            last_lic_spec.copyright_list += " " + value
+            last_lic_spec.copyright += " " + value
         elif key == "author":
-            last_lic_spec.author_list += " " + value
+            last_lic_spec.author += " " + value
         elif key == "license":
-            last_lic_spec.license_list += " " + value
+            last_lic_spec.license += " " + value
         else:
             raise StandardError(
                 "Unknown specification line type '%s' at %s:%d."
@@ -219,13 +219,13 @@ def simplify (s):
 
 class LicSpecItem (object):
 
-    def __init__ (self, file_path_glob="", copyright_list="",
-                  author_list="", license_list=""):
+    def __init__ (self, file_path_glob="", copyright="",
+                  author="", license=""):
 
         self.file_path_glob = file_path_glob
-        self.copyright_list = copyright_list
-        self.author_list = author_list
-        self.license_list = license_list
+        self.copyright = copyright
+        self.author = author
+        self.license = license
 
         self.file_paths = None
 
@@ -233,32 +233,34 @@ class LicSpecItem (object):
     def simplify_fields (self):
 
         self.file_path_glob = simplify(self.file_path_glob)
-        self.copyright_list = simplify(self.copyright_list)
-        self.author_list = simplify(self.author_list)
-        self.license_list = simplify(self.license_list)
+        self.copyright = simplify(self.copyright)
+        self.author = simplify(self.author)
+        self.license = simplify(self.license)
 
 
     def validate (self):
 
         if self.file_path_glob == "":
             raise LicSpecError("File path glob not set.")
-        if self.copyright_list == "":
+        if self.copyright == "":
             pass
-        if self.author_list == "":
+        if self.author == "":
             pass
-        if self.license_list == "":
+        if self.license == "":
             raise LicSpecError("License list not set.")
 
 
     def expand_glob (self):
 
         self.file_paths = set()
-        for path in glob.glob(self.file_path_glob):
-            if os.path.isdir(path):
-                for sub_path in collect_file_paths([path]):
-                    self.file_paths.add(sub_path)
-            else:
-                self.file_paths.add(path)
+        path_globs = [x.strip() for x in self.file_path_glob.split(",")]
+        for path_glob in path_globs:
+            for path in glob.glob(path_glob):
+                if os.path.isdir(path):
+                    for sub_path in collect_file_paths([path]):
+                        self.file_paths.add(sub_path)
+                else:
+                    self.file_paths.add(path)
 
 
 class LicSpecError (Exception):
