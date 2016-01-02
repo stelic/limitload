@@ -183,7 +183,7 @@ class LicSpecItem (object):
         if self.file_path_glob is None:
             raise LicSpecError("File path glob not set.")
         if self.copyright_list is None:
-            raise LicSpecError("Copyright list not set.")
+            pass
         if self.author_list is None:
             pass
         if self.license_list is None:
