@@ -15,7 +15,11 @@ def main ():
         help="The file paths for which to print the licensing information.")
     arg = ap.parse_args()
 
-    lic_specs = parse_spec_file("LICENSE.resources")
+    lic_spec_file_path = "LICENSE.resources"
+    if os.path.isfile(lic_spec_file_path):
+        lic_specs = parse_spec_file(lic_spec_file_path)
+    else:
+        lic_specs = []
 
     if arg.paths:
         print_licensing_info(lic_specs, arg.paths)
