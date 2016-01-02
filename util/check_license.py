@@ -47,6 +47,8 @@ known_licenses.update(known_licenses_nonfree)
 known_licenses.update(known_licenses_nonfree_minor)
 known_licenses = frozenset(known_licenses)
 
+license_name_not_covered = "NOT COVERED"
+
 
 def main ():
 
@@ -66,6 +68,23 @@ def main ():
     ap_info.set_defaults(func=run_info)
     ap_info.add_argument("paths", nargs="*",
         help="File paths for which to show licensing information.")
+
+    ap_lic = subps.add_parser(
+        "license",
+        help="Show only licenses per file.")
+    ap_lic.set_defaults(func=run_license)
+    ap_lic.add_argument("paths", nargs="*",
+        help="File paths for which to show licenses.")
+    ap_lic_grp_nf = ap_lic.add_mutually_exclusive_group()
+    ap_lic_grp_nf.add_argument(
+        "-n", "--non-free",
+        action="store_true", default=False,
+        help="Only show files with non-free licenses.")
+    ap_lic_grp_nf.add_argument(
+        "-N", "--strict-non-free",
+        action="store_true", default=False,
+        help="Only show files with non-free licenses, "
+             "including those with minor content.")
 
     args = sys.argv[1:]
     if len(args) == 0:
@@ -115,7 +134,7 @@ def run_info (options):
 
     file_paths = collect_file_paths(paths)
 
-    no_lic = LicSpecItem(license="NOT-COVERED")
+    no_lic = LicSpecItem(license=license_name_not_covered)
     file_paths_by_licensing_format = {}
     for file_path in file_paths:
         lic_spec = find_spec_for_file(file_path, lic_specs)
@@ -136,6 +155,33 @@ def run_info (options):
         blocks.append("\n")
     blocks.pop(-1) # last newline
     report("".join(blocks))
+
+
+def run_license (options):
+
+    paths = options.paths
+    if len(paths) == 0:
+        paths.extend(resource_dir_paths)
+
+    lic_specs = get_lic_specs()
+
+    file_paths = collect_file_paths(paths)
+
+    no_lic = LicSpecItem(license=license_name_not_covered)
+    for file_path in file_paths:
+        lic_spec = find_spec_for_file(file_path, lic_specs)
+        if lic_spec is None:
+            lic_spec = no_lic
+        lic_names = comma_sep_string_to_list(lic_spec.license)
+        if options.strict_non_free:
+            show = all((x in known_licenses_nonfree or
+                        x in known_licenses_nonfree_minor) for x in lic_names)
+        elif options.non_free:
+            show = all(x in known_licenses_nonfree for x in lic_names)
+        else:
+            show = True
+        if show:
+            report("%s: %s" % (file_path, lic_spec.license))
 
 
 def report (msg):
