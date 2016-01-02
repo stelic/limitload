@@ -1,0 +1,20 @@
+# This file contains licensing and authorship specifications
+# for non-textural resource files. These are the files found
+# in following directories:
+#     audio
+#     fonts
+#     images
+#     models
+#
+# Each specification item contains a glob expression that selects one
+# or more files (file:), the copyright holder list (copyright:), optionally
+# the author list (copyright:) if different from the copyright holder list,
+# and the license list (license:).
+#
+# The script util/check_license.py can be used to verify that
+# all resource files are covered by this specification.
+# If run without arguments, it will print all resource file paths
+# which are not covered by any of the existing specification items.
+# It can also be run with paths to one or more files as arguments,
+# in which case it will print the licensing information for those files.
+
