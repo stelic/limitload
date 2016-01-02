@@ -57,6 +57,7 @@ def run_coverage (options):
     lic_specs = get_lic_specs()
 
     file_paths = collect_file_paths(paths)
+
     not_covered_file_paths = []
     for file_path in file_paths:
         lic_spec = find_spec_for_file(file_path, lic_specs)
@@ -148,39 +149,52 @@ def parse_lic_spec_file (file_path):
             raise StandardError(
                 "Bad specification item at %s:%d: %s"
                 % (file_path, lno, str(e)))
+        item.simplify_fields()
         item.expand_glob()
 
     lic_specs = []
     last_lic_spec_lno = None
     last_lic_spec = None
+    last_lic_key = None
     for i, line in enumerate(lines):
         lno = i + 1
         pos = line.find("#")
         if pos >= 0:
             line = line[:pos]
-        line = line.strip()
+        line = line.rstrip()
         if not line:
             continue
-        lst = line.split(":", 2)
-        if len(lst) != 2:
-            raise StandardError(
-                "Missing colon in specification line at %s:%d."
-                % (file_path, lno))
-        key, value = [el.strip() for el in lst]
+        if line[0].isalpha():
+            lst = line.split(":", 2)
+        else:
+            lst = [line]
+        if len(lst) == 2:
+            new_key = True
+            key, value = [el.strip() for el in lst]
+            last_lic_key = key
+        else:
+            if last_lic_key is None:
+                raise StandardError(
+                    "No specification item started at %s:%d."
+                    % (file_path, lno))
+            new_key = False
+            key = last_lic_key
+            value = lst[0]
         if key == "file":
-            if last_lic_spec is not None:
-                finalize_item(last_lic_spec, last_lic_spec_lno)
-            # Start new item.
-            last_lic_spec_lno = lno
-            last_lic_spec = LicSpecItem()
-            lic_specs.append(last_lic_spec)
-            last_lic_spec.file_path_glob = value
+            if new_key:
+                if last_lic_spec is not None:
+                    finalize_item(last_lic_spec, last_lic_spec_lno)
+                # Start new item.
+                last_lic_spec_lno = lno
+                last_lic_spec = LicSpecItem()
+                lic_specs.append(last_lic_spec)
+            last_lic_spec.file_path_glob += " " + value
         elif key == "copyright":
-            last_lic_spec.copyright_list = simplify(value)
+            last_lic_spec.copyright_list += " " + value
         elif key == "author":
-            last_lic_spec.author_list = simplify(value)
+            last_lic_spec.author_list += " " + value
         elif key == "license":
-            last_lic_spec.license_list = simplify(value)
+            last_lic_spec.license_list += " " + value
         else:
             raise StandardError(
                 "Unknown specification line type '%s' at %s:%d."
@@ -202,8 +216,8 @@ def simplify (s):
 
 class LicSpecItem (object):
 
-    def __init__ (self, file_path_glob=None, copyright_list=None,
-                  author_list=None, license_list=None):
+    def __init__ (self, file_path_glob="", copyright_list="",
+                  author_list="", license_list=""):
 
         self.file_path_glob = file_path_glob
         self.copyright_list = copyright_list
@@ -213,15 +227,23 @@ class LicSpecItem (object):
         self.file_paths = None
 
 
+    def simplify_fields (self):
+
+        self.file_path_glob = simplify(self.file_path_glob)
+        self.copyright_list = simplify(self.copyright_list)
+        self.author_list = simplify(self.author_list)
+        self.license_list = simplify(self.license_list)
+
+
     def validate (self):
 
-        if self.file_path_glob is None:
+        if self.file_path_glob == "":
             raise LicSpecError("File path glob not set.")
-        if self.copyright_list is None:
+        if self.copyright_list == "":
             pass
-        if self.author_list is None:
+        if self.author_list == "":
             pass
-        if self.license_list is None:
+        if self.license_list == "":
             raise LicSpecError("License list not set.")
 
 
