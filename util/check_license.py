@@ -69,18 +69,18 @@ def main ():
     ap_info.add_argument("paths", nargs="*",
         help="File paths for which to show licensing information.")
 
-    ap_lic = subps.add_parser(
-        "license",
-        help="Show only licenses per file.")
-    ap_lic.set_defaults(func=run_license)
-    ap_lic.add_argument("paths", nargs="*",
-        help="File paths for which to show licenses.")
-    ap_lic_grp_nf = ap_lic.add_mutually_exclusive_group()
-    ap_lic_grp_nf.add_argument(
+    ap_list = subps.add_parser(
+        "list",
+        help="List licenses for files.")
+    ap_list.set_defaults(func=run_list)
+    ap_list.add_argument("paths", nargs="*",
+        help="File paths for which to list licenses.")
+    ap_list_grp_nf = ap_list.add_mutually_exclusive_group()
+    ap_list_grp_nf.add_argument(
         "-n", "--non-free",
         action="store_true", default=False,
         help="Only show files with non-free licenses.")
-    ap_lic_grp_nf.add_argument(
+    ap_list_grp_nf.add_argument(
         "-N", "--strict-non-free",
         action="store_true", default=False,
         help="Only show files with non-free licenses, "
@@ -157,7 +157,7 @@ def run_info (options):
     report("".join(blocks))
 
 
-def run_license (options):
+def run_list (options):
 
     paths = options.paths
     if len(paths) == 0:
