@@ -164,22 +164,25 @@ def parse_lic_spec_file (file_path):
         line = line.rstrip()
         if not line:
             continue
-        if line[0].isalpha():
+
+        if not line[0].isspace():
             lst = line.split(":", 2)
-        else:
-            lst = [line]
-        if len(lst) == 2:
+            if len(lst) != 2:
+                raise StandardError(
+                    "Missing colon in specification line at %s:%d."
+                    % (file_path, lno))
             new_key = True
             key, value = [el.strip() for el in lst]
             last_lic_key = key
         else:
             if last_lic_key is None:
                 raise StandardError(
-                    "No specification item started at %s:%d."
+                    "No specification item started yet at %s:%d."
                     % (file_path, lno))
             new_key = False
             key = last_lic_key
-            value = lst[0]
+            value = line
+
         if key == "file":
             if new_key:
                 if last_lic_spec is not None:
