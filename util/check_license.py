@@ -194,11 +194,11 @@ class LicSpecItem (object):
 
         self.file_paths = set()
         for path in glob.glob(self.file_path_glob):
-            if not os.path.isfile(path):
-                raise StandardError(
-                    "Path '%s' obtained from glob '%s' is not a file."
-                    % (path, self.file_path_glob))
-            self.file_paths.add(path)
+            if os.path.isdir(path):
+                for sub_path in collect_file_paths([path]):
+                    self.file_paths.add(sub_path)
+            else:
+                self.file_paths.add(path)
 
 
 class LicSpecError (Exception):
