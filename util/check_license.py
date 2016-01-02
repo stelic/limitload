@@ -8,38 +8,55 @@ import re
 import sys
 
 
+lic_spec_file_path = "LICENSE.resources"
+
+resource_dir_paths = [
+    "audio",
+    "fonts",
+    "images",
+    "models",
+]
+
+ignored_by_file_name = set([
+    "makefile",
+])
+
+
 def main ():
 
     ap = ArgumentParser()
-    ap.add_argument("paths", nargs="*",
-        help="The file paths for which to print the licensing information.")
-    arg = ap.parse_args()
+    subps = ap.add_subparsers()
 
-    lic_spec_file_path = "LICENSE.resources"
-    if os.path.isfile(lic_spec_file_path):
-        lic_specs = parse_spec_file(lic_spec_file_path)
-    else:
-        lic_specs = []
+    ap_cov = subps.add_parser(
+        "coverage",
+        help="Check licensing coverage for files. [default]")
+    ap_cov.set_defaults(func=run_coverage)
+    ap_cov.add_argument("paths", nargs="*",
+        help="File paths for which to check coverage.")
 
-    if arg.paths:
-        print_licensing_info(lic_specs, arg.paths)
-    else:
-        check_licensing_coverage(lic_specs, dir_paths=[
-            "audio",
-            "fonts",
-            "images",
-            "models",
-        ])
+    ap_info = subps.add_parser(
+        "info",
+        help="Show licensing information for files.")
+    ap_info.set_defaults(func=run_info)
+    ap_info.add_argument("paths", nargs="*",
+        help="File paths for which to show licensing information.")
 
-
-def report (msg):
-
-    sys.stdout.write("%s\n" % msg)
+    args = sys.argv[1:]
+    if len(args) == 0:
+        args.append("coverage")
+    options = ap.parse_args(args)
+    options.func(options)
 
 
-def check_licensing_coverage (lic_specs, dir_paths):
+def run_coverage (options):
 
-    file_paths = collect_file_paths(dir_paths)
+    paths = options.paths
+    if len(paths) == 0:
+        paths.extend(resource_dir_paths)
+
+    lic_specs = get_lic_specs()
+
+    file_paths = collect_file_paths(paths)
     not_covered_file_paths = []
     for file_path in file_paths:
         lic_spec = find_spec_for_file(file_path, lic_specs)
@@ -51,14 +68,27 @@ def check_licensing_coverage (lic_specs, dir_paths):
                % "\n".join("  %s" % p for p in not_covered_file_paths))
 
 
-def print_licensing_info (lic_specs, paths):
+def run_info (options):
+
+    paths = options.paths
+    if len(paths) == 0:
+        paths.extend(resource_dir_paths)
+
+    lic_specs = get_lic_specs()
 
     file_paths = collect_file_paths(paths)
 
     for file_path in file_paths:
         lic_spec = find_spec_for_file(file_path, lic_specs)
-        if lic_spec is None:
-            report("File '%s' not covered by licensing." % file_path)
+        if lic_spec is not None:
+            pass
+        else:
+            pass
+
+
+def report (msg):
+
+    sys.stdout.write("%s\n" % msg)
 
 
 def find_spec_for_file (file_path, lic_specs):
@@ -90,19 +120,24 @@ def collect_file_paths (paths):
     return file_paths
 
 
-_ignored_by_file_name = set([
-    "makefile",
-])
-
 def is_file_ignored (file_path):
 
     file_name = os.path.basename(file_path)
-    if file_name in _ignored_by_file_name:
+    if file_name in ignored_by_file_name:
         return True
     return False
 
 
-def parse_spec_file (file_path):
+def get_lic_specs ():
+
+    if os.path.isfile(lic_spec_file_path):
+        lic_specs = parse_lic_spec_file(lic_spec_file_path)
+    else:
+        lic_specs = []
+    return lic_specs
+
+
+def parse_lic_spec_file (file_path):
 
     lines = open(file_path).readlines()
 
