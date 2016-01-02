@@ -79,12 +79,27 @@ def run_info (options):
 
     file_paths = collect_file_paths(paths)
 
+    no_lic = LicSpecItem(license="NOT-COVERED")
+    file_paths_by_licensing_format = {}
     for file_path in file_paths:
         lic_spec = find_spec_for_file(file_path, lic_specs)
-        if lic_spec is not None:
-            pass
-        else:
-            pass
+        if lic_spec is None:
+            lic_spec = no_lic
+        lic_fmt = lic_spec.to_string(exclude_file=True)
+        if lic_fmt not in file_paths_by_licensing_format:
+            file_paths_by_licensing_format[lic_fmt] = []
+        file_paths_by_licensing_format[lic_fmt].append(file_path)
+
+    sorted_items = sorted(file_paths_by_licensing_format.items(),
+                          key=lambda x: x[1])
+    blocks = []
+    for lic_fmt, file_paths in sorted_items:
+        file_fmt = "".join(string_list_to_lines("file: ", file_paths))
+        blocks.append(file_fmt)
+        blocks.append(lic_fmt)
+        blocks.append("\n")
+    blocks.pop(-1) # last newline
+    report("".join(blocks))
 
 
 def report (msg):
@@ -217,6 +232,27 @@ def simplify (s):
     return s
 
 
+def comma_sep_string_to_list (s):
+
+    items = [x.strip() for x in s.split(",")]
+    items = [x for x in items if x]
+    return items
+
+
+def string_list_to_lines (head, items):
+
+    lines = []
+    if len(items) >= 2:
+        indent = " " * len(head)
+        lines.append(head + items[0] + "," + "\n")
+        for file_path in items[1:-1]:
+            lines.append(indent + file_path + "," + "\n")
+        lines.append(indent + items[-1] + "\n")
+    elif len(items) == 1:
+        lines.append(head + items[0] + "\n")
+    return lines
+
+
 class LicSpecItem (object):
 
     def __init__ (self, file_path_glob="", copyright="",
@@ -252,8 +288,10 @@ class LicSpecItem (object):
 
     def expand_glob (self):
 
+        if self.file_paths is not None:
+            return
         self.file_paths = set()
-        path_globs = [x.strip() for x in self.file_path_glob.split(",")]
+        path_globs = comma_sep_string_to_list(self.file_path_glob)
         for path_glob in path_globs:
             for path in glob.glob(path_glob):
                 if os.path.isdir(path):
@@ -261,6 +299,31 @@ class LicSpecItem (object):
                         self.file_paths.add(sub_path)
                 else:
                     self.file_paths.add(path)
+
+
+    def to_string (self, exclude_file=False):
+
+        lines = []
+
+        if not exclude_file:
+            if self.file_paths is None:
+                self.expand_glob()
+            file_paths = sorted(self.file_paths)
+            lines.extend(string_list_to_lines("file: ", file_paths))
+
+        if True:
+            copyrights = comma_sep_string_to_list(self.copyright)
+            lines.extend(string_list_to_lines("copyright: ", copyrights))
+
+        if True:
+            authors = comma_sep_string_to_list(self.author)
+            lines.extend(string_list_to_lines("author: ", authors))
+
+        if True:
+            licenses = comma_sep_string_to_list(self.license)
+            lines.extend(string_list_to_lines("license: ", licenses))
+
+        return "".join(lines)
 
 
 class LicSpecError (Exception):
