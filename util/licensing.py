@@ -215,6 +215,7 @@ def collect_file_paths (paths):
         else:
             raise StandardError("File '%s' does not exist." % path)
     file_paths.sort()
+    file_paths = map(norm_path_sep, file_paths)
     return file_paths
 
 
@@ -305,6 +306,12 @@ def parse_lic_spec_file (file_path):
     return lic_specs
 
 
+def norm_path_sep (path):
+
+    path = path.replace("\\", "/")
+    return path
+
+
 _simplify_whitespace_rx = re.compile("[ \t]+")
 
 def simplify (s):
@@ -376,6 +383,7 @@ class LicSpecItem (object):
         path_globs = comma_sep_string_to_list(self.file_path_glob)
         for path_glob in path_globs:
             for path in glob.glob(path_glob):
+                path = norm_path_sep(path)
                 if os.path.isdir(path):
                     for sub_path in collect_file_paths([path]):
                         self.file_paths.add(sub_path)
