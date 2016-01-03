@@ -263,7 +263,7 @@ def parse_lic_spec_file (file_path):
             continue
 
         if not line[0].isspace():
-            lst = line.split(":", 2)
+            lst = line.split(":", 1)
             if len(lst) != 2:
                 raise StandardError(
                     "Missing colon in specification line at %s:%d."
