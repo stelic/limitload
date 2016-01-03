@@ -105,15 +105,18 @@ def run_coverage (options):
 
     not_covered_file_paths = []
     unknown_license_file_paths = []
+    any_bad = False
     for file_path in file_paths:
         lic_spec = find_spec_for_file(file_path, lic_specs)
         if lic_spec is None:
             not_covered_file_paths.append(file_path)
+            any_bad = True
         else:
             lic_names = comma_sep_string_to_list(lic_spec.license)
             for lic_name in lic_names:
                 if lic_name not in known_licenses:
                     unknown_license_file_paths.append((file_path, lic_name))
+                    any_bad = True
     if not_covered_file_paths:
         report("Files not covered by licensing:\n"
                "%s"
@@ -122,6 +125,8 @@ def run_coverage (options):
         report("Files with unknown license names:\n"
                "%s"
                % "\n".join("  %s: %s" % (p[0], p[1]) for p in unknown_license_file_paths))
+    if not any_bad:
+        report("All files covered by licensing.")
 
 
 def run_info (options):
