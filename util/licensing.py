@@ -21,7 +21,7 @@ ignored_by_file_name = frozenset([
     "makefile",
 ])
 
-known_licenses_free = frozenset([
+recognized_licenses_free = frozenset([
     "public domain",
     "GPL 2", "GPL 3",
     "CC0", "CC0 1.0",
@@ -30,7 +30,7 @@ known_licenses_free = frozenset([
     "OFL 1.0", "OFL 1.1",
 ])
 
-known_licenses_nonfree = frozenset([
+recognized_licenses_nonfree = frozenset([
     "proprietary",
     "CC-by-NC", "CC-by-NC 2.0", "CC-by-NC 2.5", "CC-by-NC 3.0", "CC-by-NC 4.0",
     "CC-by-ND", "CC-by-ND 2.0", "CC-by-ND 2.5", "CC-by-ND 3.0", "CC-by-ND 4.0",
@@ -38,15 +38,15 @@ known_licenses_nonfree = frozenset([
     "unknown",
 ])
 
-known_licenses_nonfree_minor = frozenset([
+recognized_licenses_nonfree_minor = frozenset([
     "unknown-minor",
 ])
 
-known_licenses = set()
-known_licenses.update(known_licenses_free)
-known_licenses.update(known_licenses_nonfree)
-known_licenses.update(known_licenses_nonfree_minor)
-known_licenses = frozenset(known_licenses)
+recognized_licenses = set()
+recognized_licenses.update(recognized_licenses_free)
+recognized_licenses.update(recognized_licenses_nonfree)
+recognized_licenses.update(recognized_licenses_nonfree_minor)
+recognized_licenses = frozenset(recognized_licenses)
 
 license_name_not_covered = "NOT COVERED"
 
@@ -105,7 +105,7 @@ def run_coverage (options):
     file_paths = collect_file_paths(paths)
 
     not_covered_file_paths = []
-    unknown_license_file_paths = []
+    unrecognized_license_file_paths = []
     any_bad = False
     for file_path in file_paths:
         lic_spec = find_spec_for_file(file_path, lic_specs)
@@ -115,17 +115,17 @@ def run_coverage (options):
         else:
             lic_names = comma_sep_string_to_list(lic_spec.license)
             for lic_name in lic_names:
-                if lic_name not in known_licenses:
-                    unknown_license_file_paths.append((file_path, lic_name))
+                if lic_name not in recognized_licenses:
+                    unrecognized_license_file_paths.append((file_path, lic_name))
                     any_bad = True
     if not_covered_file_paths:
         report("Files not covered by licensing:\n"
                "%s"
                % "\n".join("  %s" % p for p in not_covered_file_paths))
-    if unknown_license_file_paths:
+    if unrecognized_license_file_paths:
         report("Files with unknown license names:\n"
                "%s"
-               % "\n".join("  %s: %s" % (p[0], p[1]) for p in unknown_license_file_paths))
+               % "\n".join("  %s: %s" % (p[0], p[1]) for p in unrecognized_license_file_paths))
     if not any_bad:
         report("All files covered by licensing.")
 
@@ -180,10 +180,10 @@ def run_list (options):
             lic_spec = no_lic
         lic_names = comma_sep_string_to_list(lic_spec.license)
         if options.strict_non_free:
-            show = all((x in known_licenses_nonfree or
-                        x in known_licenses_nonfree_minor) for x in lic_names)
+            show = all((x in recognized_licenses_nonfree or
+                        x in recognized_licenses_nonfree_minor) for x in lic_names)
         elif options.non_free:
-            show = all(x in known_licenses_nonfree for x in lic_names)
+            show = all(x in recognized_licenses_nonfree for x in lic_names)
         else:
             show = True
         if show:
