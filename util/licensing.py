@@ -123,7 +123,7 @@ def run_coverage (options):
                "%s"
                % "\n".join("  %s" % p for p in not_covered_file_paths))
     if unrecognized_license_file_paths:
-        report("Files with unknown license names:\n"
+        report("Files with unrecognized licenses:\n"
                "%s"
                % "\n".join("  %s: %s" % (p[0], p[1]) for p in unrecognized_license_file_paths))
     if not any_bad:
@@ -251,7 +251,7 @@ def parse_lic_spec_file (file_path):
             item.validate()
         except LicSpecError as e:
             raise StandardError(
-                "Bad specification item at %s:%d: %s"
+                "Bad licensing item at %s:%d: %s"
                 % (file_path, lno, str(e)))
         item.simplify_fields()
         item.expand_glob()
@@ -273,7 +273,7 @@ def parse_lic_spec_file (file_path):
             lst = line.split(":", 1)
             if len(lst) != 2:
                 raise StandardError(
-                    "Missing colon in specification line at %s:%d."
+                    "Missing colon in licensing field at %s:%d."
                     % (file_path, lno))
             new_key = True
             key, value = [el.strip() for el in lst]
@@ -281,7 +281,7 @@ def parse_lic_spec_file (file_path):
         else:
             if last_lic_key is None:
                 raise StandardError(
-                    "No specification item started yet at %s:%d."
+                    "No licensing field started yet at %s:%d."
                     % (file_path, lno))
             new_key = False
             key = last_lic_key
@@ -304,7 +304,7 @@ def parse_lic_spec_file (file_path):
             last_lic_spec.license += " " + value
         else:
             raise StandardError(
-                "Unknown specification line type '%s' at %s:%d."
+                "Unknown licensing field '%s:' at %s:%d."
                 % (key, file_path, lno))
     if last_lic_spec is not None:
         finalize_item(last_lic_spec, last_lic_spec_lno)
@@ -372,13 +372,13 @@ class LicSpecItem (object):
     def validate (self):
 
         if self.file_path_glob == "":
-            raise LicSpecError("File path glob not set.")
+            raise LicSpecError("File path not set.")
         if self.copyright == "":
             pass
         if self.author == "":
             pass
         if self.license == "":
-            raise LicSpecError("License list not set.")
+            raise LicSpecError("License not set.")
 
 
     def expand_glob (self):
