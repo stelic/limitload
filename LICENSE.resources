@@ -18,3 +18,128 @@
 # It can also be run with paths to one or more files as arguments,
 # in which case it will print the licensing information for those files.
 
+file: audio/music/limitload-action*.ogg
+copyright: Stefan Ilić <stef@sezampro.rs>
+author: Nikola Tomić <djnykk@gmail.com>
+license: CC-by-SA 4.0
+
+file: audio/music/pobeda.ogg
+license: public domain
+
+file: fonts/Days.otf
+author: Aleksandr Kalachev, Alexey Maslov, Jovanny Lemonad
+license: OFL 1.1
+
+file: fonts/Furore.otf
+author: Daniel Pouzeot
+license: OFL 1.1
+
+file: fonts/Russo.ttf
+author: Jovanny Lemonad <lemonad@jovanny.ru>
+license: OFL 1.1
+
+file: images/_*.png
+copyright: Stefan Ilić <stef@sezampro.rs>
+license: CC-by-SA 4.0
+
+file: images/cockpit/*
+copyright: Stefan Ilić <stef@sezampro.rs>, Nikola Milentijević <nikolmiv@gmail.com>
+license: CC-by-SA 4.0
+
+file: images/fire/*
+copyright: SoylentGreen [https://commons.wikimedia.org/wiki/User:SoylentGreen], Stefan Ilić <stef@sezampro.rs>
+license: CC-by-SA 3.0
+
+file: images/particles/exhaust*.png
+copyright: Stefan Ilić <stef@sezampro.rs>
+license: CC-by-SA 4.0
+
+file: images/particles/explosion5*.png
+copyright: Stefan Ilić <stef@sezampro.rs>
+license: CC-by-SA 4.0
+
+file: images/particles/explosion6*.png
+copyright: Killst4r
+license: unknown
+
+file: images/particles/explosion7*.png
+copyright: Killst4r
+license: unknown
+
+file: images/particles/smoke1*.png
+copyright: Panda3D
+license: BSD 3-Clause
+
+file: images/particles/smoke6*.png
+copyright: Killst4r
+license: unknown
+
+file: images/particles/flare*.png
+copyright: Stefan Ilić <stef@sezampro.rs>
+license: CC-by-SA 4.0
+
+file: images/sky/*
+copyright: Stefan Ilić <stef@sezampro.rs>
+license: CC-by-SA 4.0
+
+file: images/sky/cloud_tex.png
+copyright: Niniane Wang <niniane@ofb.net>
+license: unknown
+
+file: images/sky/moon.png
+copyright: Gregory H. Revera
+license: CC-by-SA 3.0
+
+file: images/terrain/_*.png
+copyright: Stefan Ilić <stef@sezampro.rs>
+license: CC-by-SA 4.0
+
+file: images/terrain/02-iraq/*
+license: public domain
+
+file: images/terrain/heightmaps/*
+license: public domain
+
+file: images/terrain/water*.png
+copyright: Stefan Ilić <stef@sezampro.rs>
+license: CC-by-SA 4.0
+
+file: images/ui/*
+copyright: Stefan Ilić <stef@sezampro.rs>, Nikola Milentijević <nikolmiv@gmail.com>
+license: CC-by-SA 4.0
+
+file: models/aircraft/_*.png
+copyright: Stefan Ilić <stef@sezampro.rs>
+license: CC-by-SA 4.0
+
+file: models/aircraft/mig29/*
+copyright: Gary R. Neely <grneely@gmail.com>, Stefan Ilić <stef@sezampro.rs>
+license: GPL 2
+
+file: models/aircraft/f14/*
+copyright: Alexis Bory <alexis.bory@gmail.com>, Stefan Ilić <stef@sezampro.rs>
+license: GPL 2
+
+file: models/aircraft/f15/*
+copyright: Toby, Stefan Ilić <stef@sezampro.rs>
+license: unknown
+
+file: models/aircraft/f16/*
+copyright: Erik Hofman <erik@ehofman.com>, Stefan Ilić <stef@sezampro.rs>
+license: GPL 2
+
+file: models/aircraft/pilots/*
+copyright: Erik Hofman <erik@ehofman.com>, Stefan Ilić <stef@sezampro.rs>
+license: GPL 2
+
+file: models/vehicles/abrams/*
+author: unknown
+license: unknown
+
+file: models/vehicles/bradley/*
+author: unknown
+license: unknown
+
+file: models/weapons/*
+copyright: Stefan Ilić <stef@sezampro.rs>
+license: CC-by-SA 4.0
