@@ -24,6 +24,7 @@ ignored_by_file_name = frozenset([
 recognized_licenses_free = frozenset([
     "public domain",
     "GPL 2", "GPL 3",
+    "BSD 3-clause", "BSD 2-clause",
     "CC0", "CC0 1.0",
     "CC-by", "CC-by 2.0", "CC-by 2.5", "CC-by 3.0", "CC-by 4.0",
     "CC-by-SA", "CC-by-SA 2.0", "CC-by-SA 2.5", "CC-by-SA 3.0", "CC-by-SA 4.0",
