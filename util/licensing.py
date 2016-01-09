@@ -29,6 +29,7 @@ recognized_licenses_free = frozenset([
     "CC-by", "CC-by 2.0", "CC-by 2.5", "CC-by 3.0", "CC-by 4.0",
     "CC-by-SA", "CC-by-SA 2.0", "CC-by-SA 2.5", "CC-by-SA 3.0", "CC-by-SA 4.0",
     "OFL 1.0", "OFL 1.1",
+    "custom-free",
 ])
 
 recognized_licenses_nonfree = frozenset([
