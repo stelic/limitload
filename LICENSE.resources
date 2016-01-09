@@ -30,13 +30,25 @@ file: fonts/Days.otf
 author: Aleksandr Kalachev, Alexey Maslov, Jovanny Lemonad
 license: OFL 1.1
 
+file: fonts/DejaVu*
+author: various [http://dejavu-fonts.org/wiki/Main_Page]
+license: custom-free [http://dejavu-fonts.org/wiki/License]
+
 file: fonts/Furore.otf
 author: Daniel Pouzeot
 license: OFL 1.1
 
+file: fonts/red-october-regular*.otf
+copyright: Ivan Filipov [http://www.neogrey.com/]
+license: CC-by-SA 4.0
+
 file: fonts/Russo.ttf
 author: Jovanny Lemonad <lemonad@jovanny.ru>
 license: OFL 1.1
+
+file: fonts/TeXGyreAdventor*
+copyright: Bogusław Jackowski, Janusz M. Nowacki
+license: LPPL 1.3
 
 file: images/_*.png
 copyright: Stefan Ilić <stef@sezampro.rs>
@@ -49,6 +61,10 @@ license: CC-by-SA 4.0
 file: images/fire/*
 copyright: SoylentGreen [https://commons.wikimedia.org/wiki/User:SoylentGreen], Stefan Ilić <stef@sezampro.rs>
 license: CC-by-SA 3.0
+
+file: images/particles/airplanedebris*.png
+author: unknown
+license: unknown
 
 file: images/particles/exhaust*.png
 copyright: Stefan Ilić <stef@sezampro.rs>
@@ -68,7 +84,7 @@ license: unknown
 
 file: images/particles/smoke1*.png
 copyright: Panda3D
-license: BSD 3-Clause
+license: BSD 3-clause
 
 file: images/particles/smoke6*.png
 copyright: Killst4r
