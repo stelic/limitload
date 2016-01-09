@@ -115,7 +115,8 @@ def run_coverage (options):
             not_covered_file_paths.append(file_path)
             any_bad = True
         else:
-            lic_names = comma_sep_string_to_list(lic_spec.license)
+            lic_names = [split_with_address(x)[0]
+                         for x in comma_sep_string_to_list(lic_spec.license)]
             for lic_name in lic_names:
                 if lic_name not in recognized_licenses:
                     unrecognized_license_file_paths.append((file_path, lic_name))
@@ -180,7 +181,8 @@ def run_list (options):
         lic_spec = find_spec_for_file(file_path, lic_specs)
         if lic_spec is None:
             lic_spec = no_lic
-        lic_names = comma_sep_string_to_list(lic_spec.license)
+        lic_names = [split_with_address(x)[0]
+                     for x in comma_sep_string_to_list(lic_spec.license)]
         if options.strict_non_free:
             show = all((x in recognized_licenses_nonfree or
                         x in recognized_licenses_nonfree_minor) for x in lic_names)
@@ -320,12 +322,12 @@ def norm_path_sep (path):
     return path
 
 
-_simplify_whitespace_rx = re.compile("[ \t]+")
+simplify_whitespace_rx = re.compile(r"[ \t]+")
 
 def simplify (s):
 
     s = s.strip()
-    s = _simplify_whitespace_rx.sub(s, " ")
+    s = simplify_whitespace_rx.sub(s, " ")
     return s
 
 
@@ -348,6 +350,19 @@ def string_list_to_lines (head, items):
     elif len(items) == 1:
         lines.append(head + items[0] + "\n")
     return lines
+
+
+split_address_rx = re.compile(r"[<\[](.*?)[>\]]")
+
+def split_with_address (s):
+
+    addresses = split_address_rx.findall(s)
+    if addresses:
+        m = split_address_rx.search(s)
+        name = s[:m.start()].strip()
+    else:
+        name = s.strip()
+    return name, addresses
 
 
 class LicSpecItem (object):
