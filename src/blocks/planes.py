@@ -4413,46 +4413,34 @@ class An12 (Plane):
 
     hitboxdata = [
         HitboxData(name="hull",
-                   # colldata=[(Point3(0.0,  10.0, 0.0), 2.1),
-                             # (Point3(0.0,  5.5,  0.0), 3.2),
-                             # (Point3(0.0,  0.0,  0.0), 3.2),
-                             # (Point3(0.0, -5.5,  0.2), 3.2),
-                             # (Point3(0.0, -10.8, 1.5), 2.6),
-                             # (Point3(0.0, -15.8, 3.0), 2.6)],
-                   colldata=[(Point3(0.0,   2.6, 0.2), 2.4, 10.8, 2.3),
-                             (Point3(0.0, -11.0, 1.5), 2.1,  2.8, 2.6),
-                             (Point3(0.0, -16.3, 5.0), 0.5,  2.5, 3.4),
-                             (Point3(0.0, -17.2, 2.3), 6.1,  1.4, 0.2)],
+                   colldata=[(Point3(0.0,   1.92, 0.37), 2.31, 9.05, 1.97),
+                             (Point3(0.0, -10.72, 1.55), 2.14, 3.59, 1.65),
+                             (Point3(0.0, -16.51, 4.54), 0.26, 2.19, 3.00),
+                             (Point3(0.0, -17.16, 2.39), 6.14, 1.01, 0.20)],
                    longdes=_("hull"), shortdes=_("HULL"),
                    selectable=True),
         HitboxData(name="reng1",
-                   colldata=[(Point3(+4.9, 1.5, 1.6), 1.2)],
+                   colldata=[(Point3(+4.63, 1.74, 1.77), 1.1)],
                    longdes=_("right engine 1"), shortdes=_("RENG1"),
                    selectable=True),
         HitboxData(name="leng1",
-                   colldata=[(Point3(-4.9, 1.5, 1.6), 1.2)],
+                   colldata=[(Point3(-4.63, 1.74, 1.77), 1.1)],
                    longdes=_("left engine 1"), shortdes=_("LENG1"),
                    selectable=True),
         HitboxData(name="reng2",
-                   colldata=[(Point3(+9.7, 0.7, 1.6), 1.0),],
+                   colldata=[(Point3(+9.57, 0.88, 1.75), 1.1)],
                    longdes=_("right engine 2"), shortdes=_("RENG2"),
                    selectable=True),
         HitboxData(name="leng2",
-                   colldata=[(Point3(-9.7, 0.7, 1.6), 1.0)],
+                   colldata=[(Point3(-9.57, 0.88, 1.75), 1.1)],
                    longdes=_("left engine 2"), shortdes=_("LENG2"),
                    selectable=True),
         HitboxData(name="rwng",
-                   # colldata=[(Point3(+3.1,  -1.3, 2.0), 1.6),
-                             # (Point3(+7.6,  -1.8, 2.0), 1.6),
-                             # (Point3(+12.3, -2.2, 2.0), 1.6)],
-                   colldata=[(Point3(+10.4, -1.5, 2.0), 8.1, 2.1, 0.45)],
+                   colldata=[(Point3(+10.60, -1.30, 2.27), 8.27, 1.80, 0.30)],
                    longdes=_("right wing"), shortdes=_("RWNG"),
                    selectable=True),
         HitboxData(name="lwng",
-                   # colldata=[(Point3(-3.1,  -1.3, 2.0), 1.6),
-                             # (Point3(-7.6,  -1.8, 2.0), 1.6),
-                             # (Point3(-12.3, -2.2, 2.0), 1.6)],
-                   colldata=[(Point3(-10.4, -1.5, 2.0), 8.1, 2.1, 0.45)],
+                   colldata=[(Point3(-10.60, -1.30, 2.27), 8.27, 1.80, 0.30)],
                    longdes=_("left wing"), shortdes=_("LWNG"),
                    selectable=True),
     ]
@@ -4577,12 +4565,12 @@ class An12 (Plane):
                 fcolor=rgba(255, 255, 255, 1.0),
                 fcolorend=rgba(238, 92, 16, 1.0),
                 ftcol=0.6,
-                fpos=Vec3(4.9, 1.7, 1.5),
+                fpos=Vec3(+4.63, 1.74, 1.77),
                 fpoolsize=10,
                 flength=16.0,
                 fspeed=20,
                 fdelay=fx_uniform(1.0, 2.0),
-                spos=Vec3(4.9, 1.7, 1.5),
+                spos=Vec3(+4.63, 1.74, 1.77),
                 slifespan=1.8,
                 stcol=0.1)
             self._props["right-1"].targrpm = 0
@@ -4596,12 +4584,12 @@ class An12 (Plane):
                 fcolor=rgba(255, 255, 255, 1.0),
                 fcolorend=rgba(238, 92, 16, 1.0),
                 ftcol=0.6,
-                fpos=Vec3(-4.9, 1.7, 1.5),
+                fpos=Vec3(-4.63, 1.74, 1.77),
                 fpoolsize=10,
                 flength=16.0,
                 fspeed=20,
                 fdelay=fx_uniform(1.0, 2.0),
-                spos=Vec3(-4.9, 1.7, 1.5),
+                spos=Vec3(-4.63, 1.74, 1.77),
                 slifespan=1.8,
                 stcol=0.1)
             self._props["left-1"].targrpm = 0
@@ -4615,12 +4603,12 @@ class An12 (Plane):
                 fcolor=rgba(255, 255, 255, 1.0),
                 fcolorend=rgba(238, 92, 16, 1.0),
                 ftcol=0.6,
-                fpos=Vec3(9.7, 1.0, 1.5),
+                fpos=Vec3(+9.57, 0.88, 1.75),
                 fpoolsize=10,
                 flength=16.0,
                 fspeed=20,
                 fdelay=fx_uniform(1.0, 2.0),
-                spos=Vec3(9.7, 1.0, 1.5),
+                spos=Vec3(+9.57, 0.88, 1.75),
                 slifespan=1.8,
                 stcol=0.1)
             self._props["right-2"].targrpm = 0
@@ -4634,12 +4622,324 @@ class An12 (Plane):
                 fcolor=rgba(255, 255, 255, 1.0),
                 fcolorend=rgba(238, 92, 16, 1.0),
                 ftcol=0.6,
-                fpos=Vec3(-9.7, 1.0, 1.5),
+                fpos=Vec3(-9.57, 0.88, 1.75),
                 fpoolsize=10,
                 flength=16.0,
                 fspeed=20,
                 fdelay=fx_uniform(1.0, 2.0),
-                spos=Vec3(-9.7, 1.0, 1.5),
+                spos=Vec3(-9.57, 0.88, 1.75),
+                slifespan=1.8,
+                stcol=0.1)
+            self._props["left-2"].targrpm = 0
+            self._hbx_leng2.out = True
+        if (self._hbx_reng1.hitpoints <= 0 and self._hbx_reng2.hitpoints <= 0) or (self._hbx_leng1.hitpoints <= 0 and self._hbx_leng2.hitpoints <= 0):
+            self._failure_full = True
+
+        if self._failure_full:
+            if self._shotdown_modelnode is not None:
+                self.modelnode.removeNode()
+                self.modelnode = self._shotdown_modelnode
+                self.modelnode.reparentTo(self.node)
+                self.models = self._shotdown_models
+                self.fardists = self._shotdown_fardists
+                self.texture = self._shotdown_texture
+            breakupdata = None
+            if breakupdata is not None:
+                for bkpd in breakupdata:
+                    bkpd.texture = self.texture
+                AirBreakup(self, breakupdata)
+            self._shotdown_modelnode = None
+
+            self.set_shotdown(3.0)
+
+            if self.engine_sound is not None:
+                self.engine_sound.stop()
+
+            for trail in self.exhaust_trails:
+                trail.destroy()
+            self.exhaust_trails = []
+
+            # Set up falling autopilot.
+            ap = self._init_shotdown_1(obody, chbx, cpos)
+            self._act_input_controlout = ap
+
+        return False
+
+
+class An22 (Plane):
+
+    species = "an22"
+    longdes = _("Antonov An-22")
+    shortdes = _("An-22")
+
+    # FIXME: Data as if turbofan-powered. Switch to turboprop when available.
+    minmass = 114000.0
+    maxmass = 250000.0
+    wingarea = 345.0
+    wingaspect = 12.0
+    wingspeff = 0.92
+    zlaoa = radians(-3.0)
+    maxaoa = radians(9.0)
+    maxthrust = 200e3 * 4
+    maxthrustab = None
+    thrustincab = None
+    maxload = 2.5
+    refmass = 210000.0
+    maxspeedz = 180.0
+    maxspeedabz = None
+    maxclimbratez = 10.0
+    cloptspeedz = 170.0
+    maxspeedh = 200.0
+    maxspeedabh = None
+    maxrollratez = radians(24.0)
+    maxpitchratez = radians(4.0)
+    maxfuel = 105000.0
+    refsfcz = 0.30 / 3.6e4
+    refsfcabz = None
+    sfcincab = None
+    reldragbrake = 0.0
+
+    strength = None
+    minhitdmg = None
+    maxhitdmg = None
+    dmgtime = None
+    visualtype = VISTYPE.TRANSPORT
+    visualangle = (radians(20.0), radians(30.0), radians(110.0))
+    radarrange = None
+    radarangle = None
+    irstrange = None
+    irstangle = None
+    tvrange = None
+    tvangle = None
+    rwrwash = None
+    datalinkrecv = False
+    datalinksend = False
+    rcs = 44.0
+    irmuffle = 0.2
+    iraspect = 0.1
+    proprpm = 2000.0
+    proprtclkw = True
+
+    hitboxdata = [
+        HitboxData(name="hull",
+                   colldata=[(Point3(0.0,  4.51,  0.58),  3.06, 20.15, 3.14),
+                             (Point3(0.0, -1.46, -1.46),  4.79, 11.15, 1.43),
+                             (Point3(0.0, -18.83, 1.79),  3.19,  3.17, 2.56),
+                             (Point3(0.0, -24.48, 2.66),  2.55,  4.47, 1.69),
+                             (Point3(0.0, -28.16, 3.96), 10.07,  2.02, 0.32)],
+                   longdes=_("hull"), shortdes=_("HULL"),
+                   selectable=True),
+        HitboxData(name="reng1",
+                   colldata=[(Point3(+6.9, 4.1, 1.9), 1.6)],
+                   longdes=_("right engine 1"), shortdes=_("RENG1"),
+                   selectable=True),
+        HitboxData(name="leng1",
+                   colldata=[(Point3(-6.9, 4.1, 1.9), 1.6)],
+                   longdes=_("left engine 1"), shortdes=_("LENG1"),
+                   selectable=True),
+        HitboxData(name="reng2",
+                   colldata=[(Point3(+13.4, 3.3, 1.9), 1.6)],
+                   longdes=_("right engine 2"), shortdes=_("RENG2"),
+                   selectable=True),
+        HitboxData(name="leng2",
+                   colldata=[(Point3(-13.4, 3.3, 1.9), 1.6)],
+                   longdes=_("left engine 2"), shortdes=_("LENG2"),
+                   selectable=True),
+        HitboxData(name="rwng",
+                   colldata=[(Point3(+10.10, -0.61,  2.98), 10.10, 3.75, 0.65),
+                             (Point3(+26.28, -1.21,  2.35),  6.08, 2.34, 0.56)],
+                   longdes=_("right wing"), shortdes=_("RWNG"),
+                   selectable=True),
+        HitboxData(name="lwng",
+                   colldata=[(Point3(-10.10, -0.61,  2.98), 10.10, 3.75, 0.65),
+                             (Point3(-26.28, -1.21,  2.35),  6.08, 2.34, 0.56)],
+                   longdes=_("left wing"), shortdes=_("LWNG"),
+                   selectable=True),
+    ]
+    #vortexdata = [Point3(-20.1, -2.4, 2.3), Point3(20.1, -2.4, 2.3)]
+    fmodelpath = "models/aircraft/an22/an22.egg"
+    modelpath = ["models/aircraft/an22/an22-1.egg",
+                 "models/aircraft/an22/an22-2.egg",
+                 "models/aircraft/an22/an22-3.egg"]
+    sdmodelpath = "models/aircraft/an22/an22-shotdown.egg"
+    shdmodelpath = "models/aircraft/an22/an22-shadow.egg"
+    glossmap = "models/aircraft/an22/an22_gls.png"
+    engsoundname = "engine-c130"
+    flybysoundname = ""
+
+    def __init__ (self, world, name, side, skill=None, texture=None,
+                  fuelfill=None, pos=None, hpr=None, speed=None,
+                  damage=None, faillvl=None, trammo=[400]):
+
+        Plane.__init__(self, world=world, name=name, side=side, skill=skill,
+                       texture=texture,
+                       fuelfill=fuelfill, pos=pos, hpr=hpr, speed=speed,
+                       damage=damage, faillvl=faillvl)
+
+        # Turrets.
+        turret = CustomTurret(parent=self,
+                              world=world, name=("%s-turret" % name), side=side,
+                              turnrate=radians(120.0), elevrate=radians(120.0),
+                              hcenter=180, harc=120, pcenter=0, parc=150,
+                              modelpath=(self.node, "turret"),
+                              texture=texture, normalmap=self.normalmap,
+                              glossmap=self.glossmap, glowmap=self.glowmap)
+        self.turrets.append(turret)
+
+        cannon1 = Nr23(parent=turret,
+                       mpos=Point3(-0.11, -20.00, 2.43),
+                       mhpr=Vec3(0.0, 0.0, 0.0),
+                       mltpos=Point3(0.0, -20.40, 2.43),
+                       ammo=(trammo[0] // 2), viseach=5)
+        turret.add_cannon(cannon1)
+        cannon2 = Nr23(parent=turret,
+                       mpos=Point3(+0.11, -20.00, 2.43),
+                       mhpr=Vec3(0.0, 0.0, 0.0),
+                       mltpos=None,
+                       ammo=(trammo[0] // 2), viseach=5)
+        turret.add_cannon(cannon2)
+
+        self._hbx_hull.hitpoints = 170
+        self._hbx_reng1.hitpoints = 30
+        self._hbx_leng1.hitpoints = 30
+        self._hbx_reng2.hitpoints = 30
+        self._hbx_leng2.hitpoints = 30
+        self._hbx_rwng.hitpoints = 85
+        self._hbx_lwng.hitpoints = 85
+
+        self._hbx_hull.minhitdmg = 0
+        self._hbx_reng1.minhitdmg = 0
+        self._hbx_leng1.minhitdmg = 0
+        self._hbx_reng2.minhitdmg = 0
+        self._hbx_leng2.minhitdmg = 0
+        self._hbx_rwng.minhitdmg = 0
+        self._hbx_lwng.minhitdmg = 0
+
+        self._hbx_hull.maxhitdmg = 90
+        self._hbx_reng1.maxhitdmg = 20
+        self._hbx_leng1.maxhitdmg = 20
+        self._hbx_reng2.maxhitdmg = 20
+        self._hbx_leng2.maxhitdmg = 20
+        self._hbx_rwng.maxhitdmg = 40
+        self._hbx_lwng.maxhitdmg = 40
+
+        self._hbx_hull.out = False
+        self._hbx_reng1.out = False
+        self._hbx_leng1.out = False
+        self._hbx_reng2.out = False
+        self._hbx_leng2.out = False
+        self._hbx_rwng.out = False
+        self._hbx_lwng.out = False
+
+        self._failure_full = False
+
+    def collide (self, obody, chbx, cpos):
+
+        inert = Body.collide(self, obody, chbx, cpos)
+        if inert:
+            return True
+
+        if obody.hitforce > chbx.minhitdmg:
+            chbx.hitpoints -= obody.hitforce
+        if obody.hitforce > chbx.maxhitdmg and chbx.hitpoints > 0:
+            chbx.hitpoints = 0
+
+        if self._hbx_hull.hitpoints <= 0 and not self._hbx_hull.out:
+            self.explode_minor(offset=self._hbx_hull.center)
+            fire_n_smoke_1(
+                parent=self, store=self.damage_trails,
+                sclfact=1.8,
+                emradfact=fx_uniform(1.0, 1.4),
+                fpos=None,
+                spos=Vec3(0.0, -5.4, 0.2),
+                slifespan=3.0,
+                stcol=0.2)
+            self._hbx_hull.out = True
+            self._failure_full = True
+        if self._hbx_rwng.hitpoints <= 0 and not self._hbx_rwng.out:
+            self.explode_minor(offset=self._hbx_rwng.center)
+            self._hbx_reng1.hitpoints = 0
+            self._hbx_reng2.hitpoints = 0
+            self._hbx_rwng.out = True
+            self._failure_full = True
+        if self._hbx_lwng.hitpoints <= 0 and not self._hbx_lwng.out:
+            self.explode_minor(offset=self._hbx_lwng.center)
+            self._hbx_leng1.hitpoints = 0
+            self._hbx_leng2.hitpoints = 0
+            self._hbx_lwng.out = True
+            self._failure_full = True
+        if self._hbx_reng1.hitpoints <= 0 and not self._hbx_reng1.out:
+            self.explode_minor(offset=self._hbx_reng1.center)
+            fire_n_smoke_1(
+                parent=self, store=self.damage_trails,
+                sclfact=0.7,
+                emradfact=fx_uniform(0.4, 0.6),
+                fcolor=rgba(255, 255, 255, 1.0),
+                fcolorend=rgba(238, 92, 16, 1.0),
+                ftcol=0.6,
+                fpos=Vec3(+6.9, 4.1, 1.9),
+                fpoolsize=10,
+                flength=16.0,
+                fspeed=20,
+                fdelay=fx_uniform(1.0, 2.0),
+                spos=Vec3(+6.9, 4.1, 1.9),
+                slifespan=1.8,
+                stcol=0.1)
+            self._props["right-1"].targrpm = 0
+            self._hbx_reng1.out = True
+        if self._hbx_leng1.hitpoints <= 0 and not self._hbx_leng1.out:
+            self.explode_minor(offset=self._hbx_leng1.center)
+            fire_n_smoke_1(
+                parent=self, store=self.damage_trails,
+                sclfact=0.7,
+                emradfact=fx_uniform(0.4, 0.6),
+                fcolor=rgba(255, 255, 255, 1.0),
+                fcolorend=rgba(238, 92, 16, 1.0),
+                ftcol=0.6,
+                fpos=Vec3(-6.9, 4.1, 1.9),
+                fpoolsize=10,
+                flength=16.0,
+                fspeed=20,
+                fdelay=fx_uniform(1.0, 2.0),
+                spos=Vec3(-6.9, 4.1, 1.9),
+                slifespan=1.8,
+                stcol=0.1)
+            self._props["left-1"].targrpm = 0
+            self._hbx_leng1.out = True
+        if self._hbx_reng2.hitpoints <= 0 and not self._hbx_reng2.out:
+            self.explode_minor(offset=self._hbx_reng2.center)
+            fire_n_smoke_1(
+                parent=self, store=self.damage_trails,
+                sclfact=0.7,
+                emradfact=fx_uniform(0.4, 0.6),
+                fcolor=rgba(255, 255, 255, 1.0),
+                fcolorend=rgba(238, 92, 16, 1.0),
+                ftcol=0.6,
+                fpos=Vec3(+13.4, 3.3, 1.9),
+                fpoolsize=10,
+                flength=16.0,
+                fspeed=20,
+                fdelay=fx_uniform(1.0, 2.0),
+                spos=Vec3(+13.4, 3.3, 1.9),
+                slifespan=1.8,
+                stcol=0.1)
+            self._props["right-2"].targrpm = 0
+            self._hbx_reng2.out = True
+        if self._hbx_leng2.hitpoints <= 0 and not self._hbx_leng2.out:
+            self.explode_minor(offset=self._hbx_leng2.center)
+            fire_n_smoke_1(
+                parent=self, store=self.damage_trails,
+                sclfact=0.7,
+                emradfact=fx_uniform(0.4, 0.6),
+                fcolor=rgba(255, 255, 255, 1.0),
+                fcolorend=rgba(238, 92, 16, 1.0),
+                ftcol=0.6,
+                fpos=Vec3(-13.4, 3.3, 1.9),
+                fpoolsize=10,
+                flength=16.0,
+                fspeed=20,
+                fdelay=fx_uniform(1.0, 2.0),
+                spos=Vec3(-13.4, 3.3, 1.9),
                 slifespan=1.8,
                 stcol=0.1)
             self._props["left-2"].targrpm = 0
