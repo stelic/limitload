@@ -956,6 +956,13 @@ class Vehicle (Body):
 
     def jump_to (self, pos=None, hpr=None, speed=None):
 
+        if pos is None:
+            pos = self.pos()
+        if hpr is None:
+            hpr = self.hpr()
+        if speed is None:
+            speed = self.speed()
+
         gfix = self._fix_to_ground(self.world, self._gyro,
                                    self._modgndcnts, self.sink,
                                    ptod(pos), vtod(hpr))

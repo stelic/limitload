@@ -3258,6 +3258,13 @@ class Plane (Body):
 
     def jump_to (self, pos=None, hpr=None, speed=None, onground=False):
 
+        if pos is None:
+            pos = self.pos()
+        if hpr is None:
+            hpr = self.hpr()
+        if speed is None:
+            speed = self.speed()
+
         Body.jump_to(self, pos, hpr, speed)
 
         self.dynstate = AutoProps()
