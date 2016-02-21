@@ -190,6 +190,7 @@ class Helmet (object):
         self._actnav_seldelay = 0.5
         self._actnav_clrdelay = 5.0
         self._actnav_selnp = AutoProps()
+        self.jump_navpoint = None
 
         # Families which prevent player from jumping through a navpoint
         # when they target him or his allies.
@@ -524,6 +525,7 @@ class Helmet (object):
                         textnd = self._actnav_textnds[self._actnav_selnp.index]
                         update_text(textnd, color=self._actnav_text_sel_color)
                     elif self._actnav_selnp.time0 + self._actnav_seldelay <= self.world.wall_time:
+                        self.jump_navpoint = actnps[ci]
                         self._jump_to_zone(actnps[ci].tozone, actnps[ci].exitf)
                 self.player.set_choice("nav", len(actnps), actf, priority=10)
                 if self._actnav_text is not None:
