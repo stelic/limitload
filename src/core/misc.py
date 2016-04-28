@@ -2647,10 +2647,17 @@ class AutoProps (object):
 
     def __init__ (self, **kwargs):
 
-        self.__dict__["__frozen"] = {}
-        self.__dict__["__silent"] = True
+        self.reinit(**kwargs)
+
+
+    def reinit (self, **kwargs):
+
+        self.__dict__.clear()
 
         self.__dict__.update(kwargs)
+
+        self.__dict__["__frozen"] = {}
+        self.__dict__["__silent"] = True
 
 
     def set_silent (self, silent):
