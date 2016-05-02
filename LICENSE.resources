@@ -144,6 +144,10 @@ file: models/aircraft/f16/*
 copyright: Erik Hofman <erik@ehofman.com>, Stefan Ilić <stef@sezampro.rs>
 license: GPL 2
 
+file: models/aircraft/f18/*
+copyright: Fabrice Kauffmann <fabrice.kauffmann@gmail.com>, Stefan Ilić <stef@sezampro.rs>
+license: GPL 2
+
 file: models/aircraft/pilots/*
 copyright: Erik Hofman <erik@ehofman.com>, Stefan Ilić <stef@sezampro.rs>
 license: GPL 2
