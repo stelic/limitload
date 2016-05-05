@@ -3590,6 +3590,22 @@ def texture_frame (texsplit, frind):
     return frame
 
 
+def absmin (*args):
+    m = None
+    for a in args:
+        if m is None or abs(m) > abs(a):
+            m = a
+    return m
+
+
+def absmax (*args):
+    m = None
+    for a in args:
+        if m is None or abs(m) < abs(a):
+            m = a
+    return m
+
+
 # As WichmannHill in Python standard library,
 # flattened and without bells and whistles.
 # Here any negative number is used to request internal seed,
