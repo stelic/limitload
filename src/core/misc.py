@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 
+from collections import deque
 import cPickle as pickle
 from hashlib import md5
 import locale
@@ -3532,7 +3533,7 @@ class TimeAveraged (object):
         # the step, the average value is equal to the current value.
         self._value_track.append((value, step))
         while self._integral_step >= self._period and self._value_track:
-            old_value, old_step = self._value_track.pop(0)
+            old_value, old_step = self._value_track.popleft()
             self._integral_sum -= old_value * old_step
             self._integral_step -= old_step
         return self._average_value
@@ -3545,11 +3546,10 @@ class TimeAveraged (object):
 
     def reset (self):
 
-        self._value_track = []
+        self._value_track = deque()
         self._integral_sum = self._zero * 2.0 # to make a copy
         self._integral_step = 0.0
         self._average_value = self._zero * 2.0
-
 
 
 _exp_drop_fac = 0.35
