@@ -92,6 +92,8 @@ class Dialog (DirectObject):
                 self._autoplace_played_char_node = char.node
                 break
 
+        self._line_prev_cmods = {}
+
         self._showborders_color = rgba(255, 0, 0, 0.3)
 
 
@@ -696,6 +698,9 @@ class Dialog (DirectObject):
 
         char = self._res_character(charid, cmod)
         deco = self._decos[charid]
+        if self._line_prev_cmods.get(charid) is not cmod:
+            self._line_prev_cmods[charid] = cmod
+            self._compose_deco_elements(char, deco)
 
         autoplace = self._res_autoplace(char.node, char.autoplace)
         anchor = char.anchor if not autoplace else "tl"
