@@ -173,7 +173,7 @@ class Dialog (DirectObject):
         cwidth = self._res_width(char.width) if not autoplace else self.aplwidth
         reftextw = cwidth
         reftexth = cfscale * self._ref_line_voff * self._ref_num_lines
-        gapw = cfscale * 0.5
+        gapw = cfscale * 1.0
         gaph = cfscale * 0.2
 
         autoportrait = self.aplportrait if autoplace else None
