@@ -3552,6 +3552,48 @@ class TimeAveraged (object):
         self._average_value = self._zero * 2.0
 
 
+class TimeMaxed (object):
+
+    def __init__ (self, period):
+
+        self._period = period
+        self.reset()
+
+
+    def update (self, value, step):
+
+        self._integral_step += step
+        self._value_track.append((value, step))
+        while self._max_value_track and self._max_value_track[-1] <= value:
+            self._max_value_track.pop()
+        self._max_value_track.append(value)
+        self._max_value = self._max_value_track[0]
+        while self._value_track and self._integral_step >= self._period:
+            old_value, old_step = self._value_track.popleft()
+            if old_value == self._max_value:
+                self._max_value_track.popleft()
+                if self._max_value_track:
+                    # ...self._max_value_track will be completely emptied
+                    # when the period is smaller than the step.
+                    # Max value will then become the last value seen.
+                    self._max_value = self._max_value_track[0]
+            self._integral_step -= old_step
+        return self._max_value
+
+
+    def current (self):
+
+        return self._max_value
+
+
+    def reset (self):
+
+        self._value_track = deque()
+        self._max_value_track = deque()
+        self._integral_step = 0.0
+        self._max_value = None
+
+
 _exp_drop_fac = 0.35
 
 def explosion_dropoff (force, dist):
