@@ -1134,6 +1134,9 @@ class Dialog (DirectObject):
 
     def _start_pause (self, pause):
 
+        if not self._is_pause_active(pause):
+            return None
+
         uc = AutoProps()
         uc.stage = "start"
         uc.wait_time = pause.time
@@ -1262,6 +1265,14 @@ class Dialog (DirectObject):
             return self._is_line_active(speech.line)
         else:
             return bool(filter(self._is_line_active, speech.line))
+
+
+    def _is_pause_active (self, pause):
+
+        if callable(pause.cond):
+            return bool(pause.cond())
+        else:
+            return bool(pause.cond)
 
 
     def _res_character (self, charid, cmod=None):
@@ -1548,13 +1559,15 @@ class Line (object):
 
 class Pause (object):
 
-    def __init__ (self, time, isendf=None, startf=None, endf=None, branch=None):
+    def __init__ (self, time, isendf=None, startf=None, endf=None, branch=None,
+                  cond=True):
 
         self.time = time
         self.isendf = isendf
         self.startf = startf
         self.endf = endf
         self.branch = branch
+        self.cond = cond
 
 
 def _store (store, name):
