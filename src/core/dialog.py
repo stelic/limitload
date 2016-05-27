@@ -523,7 +523,9 @@ class Dialog (DirectObject):
                 item = self._current_branch[self._next_item_index]
 
                 if isinstance(item, Speech):
-                    if item.speaker in self._speakers_on_stage:
+                    if not self._is_speech_active(item):
+                        self._next_item_index += 1
+                    elif item.speaker in self._speakers_on_stage:
                         item_context = self._start_speech(item)
                         self._next_item_index += 1
                     else:
@@ -1252,6 +1254,14 @@ class Dialog (DirectObject):
             return bool(line.cond())
         else:
             return bool(line.cond)
+
+
+    def _is_speech_active (self, speech):
+
+        if isinstance(speech.line, Line):
+            return self._is_line_active(speech.line)
+        else:
+            return bool(filter(self._is_line_active, speech.line))
 
 
     def _res_character (self, charid, cmod=None):
