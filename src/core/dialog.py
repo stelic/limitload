@@ -81,7 +81,7 @@ class Dialog (DirectObject):
         self._ref_line_voff = 1.2
         self._ref_num_lines = 5
 
-        self._autoplace_margin = Point3(0.1, 0.0, 0.06)
+        self._autoplace_margin = Point3(0.1, 0.0, 0.1)
         self._autoplace_skip = Point3(0.03, 0.0, 0.03)
         self._autoplace_slide_duration = 0.25
         self._autoplace_played_prio = 100
