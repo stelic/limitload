@@ -117,7 +117,9 @@ def create_player_1 (mc, world, acsel, name, side, pos, hpr, speed,
 
     if acsel == "mig29fd":
         actype = Mig29fd
-        headpos = Point3(0, 4.900, 1.185) # down angle 11 [deg]
+        headpos = Point3(0, 4.900, 1.185) # down angle 11.0 [deg]
+        # headpos = Point3(0, 4.968, 1.185) # down angle 13.0 [deg]
+        # headpos = Point3(0, 4.982, 1.185) # down ange 13.5 [deg]
         dimpos = Point3(0, -37, 5)
         rvpos = Point3(0, -40, 10)
         cpitpos = Point3(-0.0078, 0.0, 0.0004)
