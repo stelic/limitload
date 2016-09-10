@@ -6,6 +6,36 @@ from src.core import *
 from src.blocks import *
 
 
+def setup_dialog (gc):
+
+    Dialog.set_defaults(
+        wpmspeed=200,
+        showborders=False,
+        cutportraits=False,
+        unfoldfac=0.7,
+        autoplace=True,
+        aplportrait="empty-cp.png",
+        aplprtsize=0.2,
+        aplwidth=0.8,
+        charmods = {
+            "player-c": CharMod(
+                shortdes = None,
+                portrait = None,
+                width=0.6, pos=(0.0, 0.5), size=10,
+                align="c", anchor="tc", node=False,
+                unfoldfac=0.0,
+            ),
+            "radio1-c": CharMod(
+                shortdes = None,
+                portrait = None,
+                width=0.6, pos=(0.65, -0.10), size=10,
+                align="c", anchor="tc", node=False,
+                unfoldfac=0.0,
+            ),
+        },
+    )
+
+
 def setup_world (zc, mc, gc,
                  terraintype, skytype,
                  playercntl,
