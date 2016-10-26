@@ -354,7 +354,7 @@ def create_terrain_1 (world, terraintype, visradius,
             [("russia-europe-01-1.png", None, Vec4(0,0,0,0.1)), (None, "russia-europe-01-1-nm.png", Vec4(0,0,0,0.1))],
             None,
             None,
-            ["russia-moscow.png", "asphalt-01.png"],
+            [("russia-moscow.png", None, "russia-moscow-gw.png"), ("asphalt-01.png", None, "russia-moscow-gw.png")],
         )
         watermap = "04-russia1-water.png"
         watermask = "04-russia1-watermask.png"
@@ -418,7 +418,7 @@ def create_terrain_1 (world, terraintype, visradius,
             [("russia-siberia-02-1.png", None, Vec4(0,0,0,0.1)), (None, "russia-siberia-02-1-nm.png", Vec4(0,0,0,0.1))],
             None,
             None,
-            ["russia-norilsk.png", "asphalt-01.png"],
+            [("russia-norilsk.png", None, "russia-norilsk-gw.png"), ("asphalt-01.png", None, "russia-norilsk-gw.png")],
         )
         watermap = "05-siberia2-water.png"
         watermask = "05-siberia2-watermask.png"
@@ -734,7 +734,7 @@ def create_terrain_1 (world, terraintype, visradius,
             [("korea-01-1.png", None, Vec4(0,0,0,0.1)), (None, "korea-01-1-nm.png", Vec4(0,0,0,0.1))],
             None,
             None,
-            [("russia-moscow.png", "russia-moscow-nm.png"), ("asphalt-01.png", "_normal.png")],
+            [("russia-moscow.png", "russia-moscow-nm.png", "russia-moscow-gw.png"), ("asphalt-01.png", "_normal.png", "russia-moscow-gw.png")],
         )
         watermap = "13-korea1-water.png"
         watermask = "13-korea1-watermask.png"
