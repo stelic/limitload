@@ -83,9 +83,5 @@ processor, is::
         --use-pandafx --use-pandaparticlesystem --use-contrib \
         --use-sse2 --no-neon --no-touchinput
 
-On Windows, after the Panda3D package is installed, the file ``core.lib``
-from the ``built_x64\panda3d\`` build directory should be copied to
-``panda3d\`` directory of the installation. This is needed to enable
-bulding the game's C++ modules.
 
 
