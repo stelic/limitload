@@ -61,7 +61,7 @@
 те се могу изоставити при градњи. Ево једне могуће командне линије
 за градњу, на 4-језгарном процесору::
 
-    python makepanda/makepanda.py --installer --optimize 3 --threads 4 \
+    python makepanda/makepanda.py --installer --optimize 4 --threads 4 \
         --lzma --use-python --use-direct --use-gl --no-gles --no-gles2 \
         --no-dx9 --no-tinydisplay --no-nvidiacg --no-egl --no-eigen \
         --use-openal --use-fmodex --use-vorbis --no-ffmpeg \
@@ -82,4 +82,5 @@
         --use-pandafx --use-pandaparticlesystem --use-contrib \
         --use-sse2 --no-neon --no-touchinput
 
+Имајте у виду да ће степен оптимизације 4 такође уклонити већину порука неопходних за дијагностику падова, што је прилично лоша идеја чак и за пакете издања. Да бисте ово избегли, уклоните компилаторске заставице без-исправљања из ``makepanda/makepanda.py`` (потражите ниску ``-DNDEBUG`` на линуксу и ``/DNDEBUG`` на виндоузу).
 

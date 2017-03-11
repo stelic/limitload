@@ -62,7 +62,7 @@ Many of Panda3D's dependencies are not needed to run the game, and can
 be disabled when building it. A possible build command line, on a 4-core
 processor, is::
 
-    python makepanda/makepanda.py --installer --optimize 3 --threads 4 \
+    python makepanda/makepanda.py --installer --optimize 4 --threads 4 \
         --lzma --use-python --use-direct --use-gl --no-gles --no-gles2 \
         --no-dx9 --no-tinydisplay --no-nvidiacg --no-egl --no-eigen \
         --use-openal --use-fmodex --use-vorbis --no-ffmpeg \
@@ -83,4 +83,5 @@ processor, is::
         --use-pandafx --use-pandaparticlesystem --use-contrib \
         --use-sse2 --no-neon --no-touchinput
 
+Note that optimization level 4 will also remove most messages needed to diagnose crashes, which is a pretty bad idea even for release packages. To avoid this, remove compiler no-debug flags from ``makepanda/makepanda.py`` (look for strings ``-DNDEBUG`` on Linux and ``/DNDEBUG`` on Windows).
 
