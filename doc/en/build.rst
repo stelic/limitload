@@ -64,7 +64,7 @@ processor, is::
 
     python makepanda/makepanda.py --installer --optimize 3 --threads 4 \
         --lzma --use-python --use-direct --use-gl --no-gles --no-gles2 \
-        --no-dx9 --no-tinydisplay --no-nvidiacg --no-egl --use-eigen \
+        --no-dx9 --no-tinydisplay --no-nvidiacg --no-egl --no-eigen \
         --use-openal --use-fmodex --use-vorbis --no-ffmpeg \
         --no-ode --no-physx --no-bullet \
         --use-pandaphysics --use-speedtree --use-zlib \
@@ -82,6 +82,5 @@ processor, is::
         --use-pandatool --use-pview --use-deploytools --use-skel \
         --use-pandafx --use-pandaparticlesystem --use-contrib \
         --use-sse2 --no-neon --no-touchinput
-
 
 

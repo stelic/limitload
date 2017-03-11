@@ -50,7 +50,7 @@ if test $build_env = lingcc; then
     #libpipe=$(test $panda_pipelining == false && echo -lpthread || echo)
     libpipe=-lpthread
     g++ -O3 -shared -fPIC -fno-exceptions $optrtti -Wl,-z,defs \
-        -I $python_inc_dir -I $eigen_inc_dir -I $panda_inc_dir -I . \
+        -I $python_inc_dir -I $panda_inc_dir -I . \
         -L $python_lib_dir -L $panda_lib_dir \
         -D LINGCC \
         $mod_name-igate.cpp $mod_name-module.cpp $mod_srcs \
@@ -70,7 +70,7 @@ elif test $build_env = winmsvc; then
     mod_srcs=$(echo "$mod_srcs" | sed 's/\.pyd\b/.lib/g')
     panda_core_lib_real=$(echo $panda_core_lib | sed 's/\(.*\)panda3d\(.*\)\.pyd\b/\1lib\2.lib/')
     cl -O2 -EHsc -wd4275 -LD -MD \
-        -I "$python_inc_dir" -I "$eigen_inc_dir" -I "$panda_inc_dir" -I . \
+        -I "$python_inc_dir" -I "$panda_inc_dir" -I . \
         -D WINMSVC \
         $mod_name-module.cpp $mod_name-igate.cpp $mod_srcs \
         "$python_lib_dir"/python27.lib \

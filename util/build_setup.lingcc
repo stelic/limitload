@@ -7,7 +7,6 @@ envsep=":"
 python_cmd=python
 python_inc_dir="/usr/include/python2.7"
 python_lib_dir="/usr/lib"
-eigen_inc_dir="/usr/include/eigen3"
 panda_inc_dir="/usr/include/panda3d"
 panda_lib_dir="/usr/lib/x86_64-linux-gnu/panda3d"
 panda_rtti=true
