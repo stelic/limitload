@@ -409,6 +409,8 @@ def main ():
     elif test_spec:
         gc.test, gc.mission, gc.zone, gc.loop = test_spec
         gc.save_disabled = True
+    gc.game_config_file = game_config_file
+    gc.input_config_file = input_config_file
 
     # Make sure user directories exists.
     if not path_exists("config", "."):
