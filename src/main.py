@@ -694,7 +694,7 @@ def set_panda_config (options, gameconf):
     pc = {}
 
     if gc.cpu.use_cores == "auto":
-        use_cores = min(cpu_count(), 3)
+        use_cores = min(cpu_count(), 2)
     else:
         use_cores = gc.cpu.use_cores
     pc["threading-model"] = {
