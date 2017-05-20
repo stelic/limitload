@@ -13,6 +13,7 @@ from src.core.interface import PreCampaignMenu, MissionMenu, DialogMenu
 from src.core.interface import DebriefingMenu, MISSION_DEBRIEFING
 from src.core.interface import set_last_saved_game
 from src.core.interface import LoadingScreen
+from src.core.interface import MISSION_ESCBUTTON
 from src.core.misc import AutoProps, node_fade_to
 from src.core.misc import make_text, ui_font_path, rgba
 from src.core.misc import report
@@ -133,6 +134,7 @@ class Game (object):
 
         if self._game_stage == "mmenu-start":
             self._mmenu = MainMenu(
+                gc=self._game_context,
                 first=self._mmenu_first,
                 jumpsub=self._mmenu_jumpsub,
                 parent=base.uiface_root)
@@ -213,7 +215,14 @@ class Game (object):
                     if hasattr(mmod, "mission_" + suffix) else
                     getattr(mmod, mname + "_" + suffix, defval))
                 startf = getvo("start", None) or getattr(mmod, "%s" % mname)
+                shortdes = getvo("shortdes", None)
+                subshortdes = getvo("subshortdes", None)
+                longdes = getvo("longdes", None)
                 setbgf = getvo("setbg", None)
+                bgmain = getvo("bgmain", None)
+                bgdrink = getvo("bgdrink", None)
+                bgarchive = getvo("bgarchive", None)
+                bgmission = getvo("bgmission", None)
                 menuconvf = getvo("menuconv", None)
                 drinkconvf = getvo("drinkconv", None)
                 inconvf = getvo("inconv", None)
@@ -226,8 +235,20 @@ class Game (object):
                 skiploading = getvo("skiploading", None)
                 postcheck = getvo("postcheck", None)
                 debriefing = getvo("debriefing", MISSION_DEBRIEFING.EARLY)
+                escbutton = getvo("escbutton", MISSION_ESCBUTTON.MENU)
+                anntable = getvo("anntable", None)
+                announce = getvo("announce", "")
+                statstable = getvo("statstable", None)
+                hasarchive = getvo("hasarchive", True)
                 self._current_mission_name = mname
+                self._current_mission_shortdes = shortdes
+                self._current_mission_subshortdes = subshortdes
+                self._current_mission_longdes = longdes
                 self._current_mission_setbgf = setbgf
+                self._current_mission_bgmain = bgmain
+                self._current_mission_bgdrink = bgdrink
+                self._current_mission_bgarchive = bgarchive
+                self._current_mission_bgmission = bgmission
                 self._current_mission_startf = startf
                 self._current_mission_menuconvf = menuconvf
                 self._current_mission_drinkconvf = drinkconvf
@@ -241,6 +262,11 @@ class Game (object):
                 self._current_mission_skiploading = skiploading
                 self._current_mission_postcheck = postcheck
                 self._current_mission_debriefing = debriefing
+                self._current_mission_escbutton = escbutton
+                self._current_mission_announce = announce
+                self._current_mission_anntable = anntable
+                self._current_mission_statstable = statstable
+                self._current_mission_hasarchive = hasarchive
                 self._current_mission_insequence = True
                 self._current_mission_ident = "campaign-%s-%s" % (cname, mname)
                 if not self._game_context.save_disabled:
@@ -282,6 +308,7 @@ class Game (object):
             getvo = lambda suffix, defval: (
                 getattr(mmod, "mission_" + suffix, defval))
             startf = getvm("start")
+            bgmission = getvo("bgmission", None)
             inconvf = getvo("inconv", None)
             outconvf = getvo("outconv", None)
             skipconfirm = getvo("skipconfirm", None)
@@ -289,8 +316,15 @@ class Game (object):
             postcheck = getvo("postcheck", None)
             debriefing = getvo("debriefing", MISSION_DEBRIEFING.EARLY)
             self._current_mission_name = mname
-            self._current_mission_setbgf = None
             self._current_mission_startf = startf
+            self._current_mission_shortdes = None
+            self._current_mission_subshortdes = None
+            self._current_mission_longdes = None
+            self._current_mission_setbgf = None
+            self._current_mission_bgmain = None
+            self._current_mission_bgdrink = None
+            self._current_mission_bgarchive = None
+            self._current_mission_bgmission = bgmission
             self._current_mission_menuconvf = None
             self._current_mission_drinkconvf = None
             self._current_mission_inconvf = inconvf
@@ -303,6 +337,11 @@ class Game (object):
             self._current_mission_skiploading = skiploading
             self._current_mission_postcheck = postcheck
             self._current_mission_debriefing = debriefing
+            self._current_mission_escbutton = MISSION_ESCBUTTON.MENU
+            self._current_mission_announce = None
+            self._current_mission_anntable = None
+            self._current_mission_statstable = None
+            self._current_mission_hasarchive = False
             self._current_mission_insequence = False
             self._current_mission_ident = "skirmish-%s-%s" % (pname, mname)
             if can_proceed:
@@ -350,8 +389,15 @@ class Game (object):
             postcheck = getvo("postcheck", None)
             debriefing = getvo("debriefing", MISSION_DEBRIEFING.SKIP)
             self._current_mission_name = mname
-            self._current_mission_setbgf = None
             self._current_mission_startf = startf
+            self._current_mission_shortdes = None
+            self._current_mission_subshortdes = None
+            self._current_mission_longdes = None
+            self._current_mission_setbgf = None
+            self._current_mission_bgmain = None
+            self._current_mission_bgdrink = None
+            self._current_mission_bgarchive = None
+            self._current_mission_bgmission = None
             self._current_mission_inconvf = inconvf
             self._current_mission_menuconvf = None
             self._current_mission_outconvf = outconvf
@@ -363,6 +409,11 @@ class Game (object):
             self._current_mission_skiploading = skiploading
             self._current_mission_postcheck = postcheck
             self._current_mission_debriefing = debriefing
+            self._current_mission_escbutton = MISSION_ESCBUTTON.MENU
+            self._current_mission_announce = None
+            self._current_mission_anntable = None
+            self._current_mission_statstable = None
+            self._current_mission_hasarchive = False
             self._current_mission_insequence = False
             self._current_mission_ident = "test-%s-%s" % (pname, mname)
             self._after_mission_proceed_stage = "quit"
@@ -373,6 +424,13 @@ class Game (object):
             self._imenu = MissionMenu(
                 gc=self._game_context,
                 setbgf=self._current_mission_setbgf,
+                shortdes=self._current_mission_shortdes,
+                subshortdes=self._current_mission_subshortdes,
+                longdes=self._current_mission_longdes,
+                bgmain=self._current_mission_bgmain,
+                bgdrink=self._current_mission_bgdrink,
+                bgarchive=self._current_mission_bgarchive,
+                bgmission=self._current_mission_bgmission,
                 music=self._current_mission_menumusic,
                 preconvf=self._current_mission_menuconvf,
                 inconvf=self._current_mission_inconvf,
@@ -381,6 +439,10 @@ class Game (object):
                 drinktostart=self._current_mission_ondrink,
                 jumpinconv=self._current_mission_skipmenu,
                 skipconfirm=self._current_mission_skipconfirm,
+                announce=self._current_mission_announce,
+                anntable=self._current_mission_anntable,
+                statstable=self._current_mission_statstable,
+                hasarchive=self._current_mission_hasarchive,
                 parent=base.uiface_root)
             self._game_stage = "imenu-loop"
 
@@ -402,6 +464,7 @@ class Game (object):
                 mission = self._current_mission_startf(self._game_context)
                 mission.in_sequence = self._current_mission_insequence
                 mission.ident = self._current_mission_ident
+                mission.escbutton = self._current_mission_escbutton
                 if self._game_context.zone: # empty zone ignored
                     mission.switch_zone(self._game_context.zone)
                     self._game_context.zone = None

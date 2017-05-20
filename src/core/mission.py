@@ -9,6 +9,7 @@ from src.core import join_path, path_exists, real_path
 from src.core.misc import AutoProps, as_sequence
 from src.core.misc import report
 from src.core.transl import *
+from src.core.interface import MISSION_ESCBUTTON
 
 
 class Mission (object):
@@ -58,6 +59,8 @@ class Mission (object):
         self.in_sequence = False
 
         self.ident = None
+
+        self.escbutton = MISSION_ESCBUTTON.MENU
 
         self.alive = True
         base.taskMgr.add(self._post_loop, "mission-post-loop", sort=15)

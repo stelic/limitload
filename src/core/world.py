@@ -16,6 +16,7 @@ from src.core.body import Body
 from src.core.dialog import Dialog
 from src.core.interface import PauseMenu, ControlsMenu
 from src.core.interface import ShotdownInseqMenu, ShotdownNoseqMenu
+from src.core.interface import MISSION_ESCBUTTON
 from src.core.misc import rgba, SimpleProps, as_sequence
 from src.core.misc import make_text, update_text, make_image
 from src.core.misc import node_fade_to, node_slide_to
@@ -315,7 +316,13 @@ class World (object):
         self._tagging_update_current = 0
 
         # Pause handling.
-        self.pause = ActionPause(self, self.uiface_root)
+        if mission is not None:
+            if mission.escbutton == MISSION_ESCBUTTON.MENU:
+                self.pause = ActionPause(self, self.uiface_root)
+            else:
+                self.pause = ActionEnd(self)
+        else:
+            self.pause = None
 
         base.set_particle_dt_function(lambda: self.dt)
         Dialog.set_dt_function(lambda: self.dt)
@@ -352,7 +359,8 @@ class World (object):
             self.action_music.destroy()
         self._cutscene.destroy()
         self._fadescreen.destroy()
-        self.pause.destroy()
+        if self.pause:
+            self.pause.destroy()
         if self._altbin:
             self._altbin.destroy()
         self.root.removeNode()
@@ -404,7 +412,7 @@ class World (object):
         # Update times.
         # This must be done after bodies have been moved with old time step,
         # so it must be here instead of in post loop.
-        if not self.pause.active:
+        if self.pause is None or not self.pause.active:
             if not self.fixdt:
                 cdt = base.global_clock.getDt()
                 self._hist_dts.append(cdt)
@@ -1944,5 +1952,54 @@ class ActionPause (DirectObject):
                              wquit=wquit, wquitgame=wquitgame,
                              parent=self.node)
         return menu
+
+
+class ActionEnd (DirectObject):
+
+    def __init__ (self, world):
+
+        DirectObject.__init__(self)
+
+        self.world = world
+
+        self._keyseq_activate = "escape"
+        self.accept(self._keyseq_activate, self._activate)
+
+        self.active = None
+
+        self.set_active(False)
+
+        self.alive = True
+
+
+    def destroy (self):
+
+        if not self.alive:
+            return
+        self.ignoreAll()
+        base.remove_priority("pause")
+        self.alive = False
+
+
+    def _activate (self):
+
+        if not base.challenge_priority("pause", self._keyseq_activate):
+            return
+        self.set_active(True)
+
+
+    def set_active (self, active, canresume=True, desat=0.6):
+
+        if active == self.active:
+            return
+
+        if active == True:
+            self.active = True
+            base.set_priority("pause", self._keyseq_activate, 0)
+            self.world.destroy()
+            self.world.mission.end(exitf=False, state="proceed")
+        else:
+            self.active = False
+            base.set_priority("pause", self._keyseq_activate, 30)
 
 

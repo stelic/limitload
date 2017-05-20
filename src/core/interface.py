@@ -41,6 +41,11 @@ MISSION_DEBRIEFING = SimpleProps(
     LATE="late",
 )
 
+MISSION_ESCBUTTON = SimpleProps(
+    MENU="menu",
+    SKIP="skip",
+)
+
 
 class SimpleText (object):
 
@@ -252,6 +257,84 @@ class BubbleText (object):
         self._nexttexts.append((text, duration))
 
 
+class AnnounceText (object):
+
+    def __init__ (self, text="",
+                  width=1.0, height=None, pos=Point2(),
+                  font=None, size=10, color=rgba(255, 255, 255, 1.0),
+                  framebase=None, framesize=0.05,
+                  parent=None):
+
+        if parent is not None:
+            self.node = parent.attachNewNode("text-float")
+        else:
+            self.node = NodePath("text-float")
+        if isinstance(pos, VBase2):
+            pos = Point3(pos[0], 0.0, pos[1])
+        self.node.setPos(pos)
+
+        self._textnd = make_text(text=text, width=width,
+                                 font=font, size=size, color=color,
+                                 align="l", anchor="tc",
+                                 parent=self.node)
+        if height is None:
+            bmin, bmax = self._textnd.getTightBounds()
+            height = bmax[2] - bmin[2]
+
+        if framebase:
+            self._framend = make_frame(framebase, framesize, width, height,
+                                       filtr=False,
+                                       name="text-frame", parent=self.node)
+            self._framend.setPos(0.0, 0.0, -0.5 * height)
+            self._textnd.reparentTo(self.node) # to come in front
+        else:
+            self._framend = None
+
+        self._ctext = text
+        self._nexttexts = []
+        if text:
+            self._nexttexts.append(text)
+
+        self.alive = True
+        base.taskMgr.add(self._loop, "textfloat-loop")
+
+
+    def destroy (self):
+
+        if not self.alive:
+            return
+        self.alive = False
+        self.node.removeNode()
+
+
+    def _loop (self, task):
+
+        if not self.alive:
+            return task.done
+
+        dt = base.global_clock.getDt()
+
+        return task.cont
+
+
+    def add (self, text):
+
+        if self._ctext:
+            self._ctext += "\n"
+        self._ctext += text
+        update_text(self._textnd, text=self._ctext)
+
+
+class StatsText (AnnounceText):
+
+    pass
+
+
+class SummaryText (AnnounceText):
+
+    pass
+
+
 class Button (object):
 
     def __init__ (self,
@@ -396,6 +479,56 @@ class MissionButton (Button):
             textcolor=rgba(255, 0, 0, 1.0),
             textsize=14,
             textpos=Point2(0.0, -0.013),
+            clicksound="audio/sounds/button-click.ogg",
+            oversound=None,
+            clickf=clickf,
+            parent=parent,
+            pos=pos)
+
+
+class MissionMenuButton (Button):
+
+    def __init__ (self, basetext, clicktext=None, overtext=None, disbtext=None,
+                  clickf=None, parent=None, pos=Point2()):
+
+        fs = 0.03; fw = 0.6; fh = 0.06
+        Button.__init__(self,
+            basetext=basetext, clicktext=clicktext,
+            overtext=overtext, disbtext=disbtext,
+            baseframe=("images/ui/textfloat02", fs, fw, fh),
+            clickframe=None,
+            overframe=("images/ui/textfloat02",
+                       fs * 1.4, fw - 0.4 * fs, fh - 0.4 * fs),
+            disbframe=None,
+            textfont=ui_font_path,
+            textcolor=rgba(255, 0, 0, 1.0),
+            textsize=18,
+            textpos=Point2(0.0, -0.013),
+            clicksound="audio/sounds/button-click.ogg",
+            oversound=None,
+            clickf=clickf,
+            parent=parent,
+            pos=pos)
+
+
+class MissionMenuSmallButton (Button):
+
+    def __init__ (self, basetext, clicktext=None, overtext=None, disbtext=None,
+                  clickf=None, parent=None, pos=Point2()):
+
+        fs = 0.02; fw = 0.25; fh = 0.025
+        Button.__init__(self,
+            basetext=basetext, clicktext=clicktext,
+            overtext=overtext, disbtext=disbtext,
+            baseframe=("images/ui/textfloat02", fs, fw, fh),
+            clickframe=None,
+            overframe=("images/ui/textfloat02",
+                       fs * 1.4, fw - 0.4 * fs, fh - 0.4 * fs),
+            disbframe=None,
+            textfont=ui_font_path,
+            textcolor=rgba(255, 0, 0, 1.0),
+            textsize=11,
+            textpos=Point2(0.0, -0.010),
             clicksound="audio/sounds/button-click.ogg",
             oversound=None,
             clickf=clickf,
@@ -1043,7 +1176,8 @@ class PageItem (object):
 class Menu (DirectObject):
 
     def __init__ (self, name, pointer=None, music=None, fadetime=0.0,
-                  delaytime=0.0, quickexit=None, parent=None):
+                  delaytime=0.0, delayendf=None, quickexit=None,
+                  parent=None):
 
         DirectObject.__init__(self)
 
@@ -1083,6 +1217,7 @@ class Menu (DirectObject):
         self._selection = None
         self._stage = "delay"
         self._delaytime = delaytime
+        self._delayendf = delayendf
         self._fadetasks = []
         if isinstance(fadetime, tuple):
             self._fadetime = fadetime
@@ -1129,14 +1264,20 @@ class Menu (DirectObject):
             return task.done
 
         if self._stage == "delay":
-            if callable(self._delaytime):
+            if self._delaytime is None:
+                done = True
+            elif callable(self._delaytime):
                 done = self._delaytime()
             else:
                 self._delaytime -= base.global_clock.getDt()
                 done = (self._delaytime <= 0.0)
             if done:
                 # ._delaytime() might call .end(), and then do not start.
-                if self._stage != "end":
+                if self._delayendf:
+                    self._delayendf()
+                self._delaytime = None
+                self._delayendf = None
+                if self._stage == "delay": # delayendf might change stage
                     self._stage = "start"
 
         if self._stage == "start":
@@ -1284,7 +1425,9 @@ class Menu (DirectObject):
 
 class MainMenu (Menu):
 
-    def __init__ (self, first=False, jumpsub=None, parent=None):
+    def __init__ (self, gc, first=False, jumpsub=None, parent=None):
+
+        self._game_context = gc
 
         fade_time = 0.5
         anim_type = 2
@@ -1430,13 +1573,13 @@ class MainMenu (Menu):
             clickf=self._click_skirmish,
             parent=self.node)
 
-        # bt_options = MainSmallButton(
-            # basetext=p_("main menu: show game options",
-                        # "Options"),
-            # pos=Point2(-0.26, -0.32),
-            # clickf=self._click_options,
-            # parent=self.node)
-        # bt_options.disable()
+        bt_options = MainSmallButton(
+            basetext=p_("main menu: show game options",
+                        "Options"),
+            #pos=Point2(-0.26, -0.32),
+            pos=Point2(0.0, -0.32),
+            clickf=self._click_options,
+            parent=self.node)
 
         # bt_manual = MainSmallButton(
             # basetext=p_("main menu: show player manual",
@@ -1547,8 +1690,7 @@ class MainMenu (Menu):
 
     def _click_options (self):
 
-        raise NotImplementedError
-        options_menu = OptionsMenu(parent=self)
+        options_menu = OptionsMenu(gc=self._game_context, parent=self)
         self.wait_submenu(options_menu)
 
 
@@ -2131,12 +2273,85 @@ class SkirmishMenu (Menu):
         return mission_spec
 
 
+class OptionsMenu (Menu):
+
+    def __init__ (self, gc, parent=None):
+
+        Menu.__init__(self,
+            name="options-menu",
+            music=None,
+            pointer="images/ui/mouse_pointer.png",
+            quickexit=self._click_exit,
+            parent=parent)
+
+        hw = base.aspect_ratio
+
+        bg = make_image("images/ui/black.png",
+                        size=(2 * hw), pos=Point2(0.0, 0.0),
+                        parent=self.node)
+        bg.setSa(1.0)
+
+        make_text(_("OPTIONS"),
+                  width=2.0, pos=Point2(0.0, 0.42),
+                  font=ui_font_path, size=32, ppunit=100,
+                  color=rgba(255, 0, 0, 1.0),
+                  align="c", anchor="mc",
+                  parent=self.node)
+
+        bt_exit = MainSmallButton(
+            basetext=p_("options menu: go to the previous menu",
+                        "Go Back"),
+            pos=Point2(0.0, -0.90),
+            clickf=self._click_exit,
+            parent=self.node)
+
+        text = _("""
+Comfy clickety settings not implemented yet.
+
+Edit this file to configure general options:
+
+    %s
+
+Edit this file to configure player controls:
+
+    %s
+
+""").strip() % (
+            real_path("config", gc.game_config_file),
+            real_path("config", gc.input_config_file),
+        )
+
+        AnnounceText(
+            text=text,
+            width=1.6, height=0.5, pos=Point2(0.0, 0.30),
+            font=ui_font_path, size=14, color=rgba(255, 0, 0, 1.0),
+            framebase="images/ui/textfloat01", framesize=0.04,
+            parent=self.node)
+
+
+    def destroy (self):
+
+        Menu.destroy(self)
+
+
+    def _click_exit (self):
+
+        self.end()
+
+
 class MissionMenu (Menu):
 
-    def __init__ (self, gc=None, setbgf=None, music=None,
+    def __init__ (self, gc=None,
+                  shortdes=None, subshortdes=None, longdes=None,
+                  setbgf=None,
+                  bgmain=None, bgdrink=None, bgarchive=None, bgmission=None,
+                  music=None,
                   preconvf=None, inconvf=None, drinkconvf=None,
                   mustdrink=False, drinktostart=False, jumpinconv=False,
                   skipconfirm=False,
+                  announce="", anntable=dict(),
+                  statstable=dict(),
+                  hasarchive=True,
                   parent=None):
 
         self._game_context = gc
@@ -2145,6 +2360,9 @@ class MissionMenu (Menu):
         self._menu_context = mc
 
         init_fade_duration = 0.25
+
+        focus_zoom = 1.25
+        focus_duration = 2.00
 
         Menu.__init__(self,
             name="mission-menu",
@@ -2156,13 +2374,48 @@ class MissionMenu (Menu):
         mc.bgnode = self.bgnode
         mc.fgnode = self.fgnode
 
-        if setbgf:
-            setbgf(mc, gc)
+        def make_bgimg (path, force=False):
+            if not path and force:
+                path = "images/ui/black.png"
+            hw = base.aspect_ratio
+            img = None
+            focus = None
+            if path:
+                if isinstance(path, tuple):
+                    if len(path) == 1:
+                        path, = path
+                    elif len(path) == 2:
+                        path, f_center = path
+                        focus = (f_center, focus_zoom, focus_duration)
+                    elif len(path) == 3:
+                        path, f_center, f_zoom = path
+                        focus = (f_center, f_zoom, focus_duration)
+                    elif len(path) == 4:
+                        path, f_center, f_zoom, f_duration = path
+                        focus = (f_center, f_zoom, f_duration)
+                    else:
+                        raise StandardError(
+                            "Unknown kind of background image "
+                            "specification '%s'." % path)
+                img = make_image(path, size=(2 * hw), parent=self.bgnode)
+                img.hide()
+            return img, focus
+        self._bgnode_main, dummy = make_bgimg(bgmain, True)
+        self._bgnode_drink, self._bgfocus_drink = make_bgimg(bgdrink)
+        self._bgnode_archive, dummy = make_bgimg(bgarchive)
+        self._bgnode_mission, self._bgfocus_mission = make_bgimg(bgmission)
+
+        has_bgmain = False
+        if self._bgnode_main or setbgf:
+            has_bgmain = True
+            self._bgnode_main.show()
+            if setbgf:
+                setbgf(mc, gc)
             self.bgnode.setSa(0.0)
             def fadebg ():
                 node_fade_to(self.bgnode,
-                            startalpha=0.0, endalpha=1.0,
-                            duration=init_fade_duration)
+                             startalpha=0.0, endalpha=1.0,
+                             duration=init_fade_duration)
         if preconvf:
             self.bgnode.hide()
             dc = self.create_dialog_context()
@@ -2173,12 +2426,12 @@ class MissionMenu (Menu):
                 self.cleanup_dialog_context(dc)
                 self.bgnode.show()
                 if not jumpinconv:
-                    if setbgf:
+                    if has_bgmain:
                         fadebg()
                 else:
                     self._click_mission()
             self.wait_dialog(preconv, endf=endf, mutemusic=True)
-        elif setbgf:
+        elif has_bgmain:
             fadebg()
 
         self._inconvf = inconvf
@@ -2186,55 +2439,98 @@ class MissionMenu (Menu):
         self._mustdrink = mustdrink
         self._drinktostart = drinktostart
         self._skipconfirm = skipconfirm
+        self._longdes = longdes
 
         self._background_alpha_conv = 0.5
         self._background_fade_duration = 0.25
+        self._delay_dialog_duration = 0.40
 
         if not jumpinconv:
             wmission = not mustdrink and not drinktostart
             wdrink = drinkconvf is not None
+            warchive = hasarchive
             wsave = False # not implemented
-            self._add_buttons(wmission, wdrink, wsave)
+            self._add_title(shortdes, subshortdes)
+            self._add_buttons(wmission, wdrink, warchive, wsave, mustdrink)
+            self._add_announce_table(announce, anntable)
+            self._add_stats_table(gc, statstable)
         elif not preconvf:
             self._click_mission()
 
 
-    def _add_buttons (self, wmission, wdrink, wsave):
+    def _add_title (self, shortdes, subshortdes):
 
         hw = base.aspect_ratio
 
-        bt_mission = MissionButton(
+        if not shortdes:
+            return
+
+        make_text(p_("mission name in mission menu title",
+                     "\"%s\"" % shortdes),
+                  width=2.0, pos=Point2(-hw + 0.20, 0.88),
+                  font=ui_font_path, size=20,
+                  color=rgba(255, 0, 0, 1.0),
+                  align="l", anchor="tl",
+                  parent=self.node)
+
+        if subshortdes:
+            make_text(subshortdes,
+                      width=2.0, pos=Point2(-hw + 0.30, 0.80),
+                      font=ui_font_path, size=16,
+                      color=rgba(255, 0, 0, 1.0),
+                      align="l", anchor="tl",
+                      parent=self.node)
+
+
+    def _add_buttons (self, wmission, wdrink, warchive, wsave, mustdrink):
+
+        hw = base.aspect_ratio
+
+        bt_mission = MissionMenuButton(
             basetext=p_("mission menu: start playing the mission",
                         "Mission"),
-            pos=Point2(-hw + 0.40, -0.40),
+            pos=Point2(-hw + 0.55, -0.39),
             clickf=self._click_mission,
             parent=self.node)
         if not wmission:
             bt_mission.disable()
         self._bt_mission = bt_mission
 
-        bt_drink = MissionButton(
-            basetext=p_("mission menu: go have some relaxation",
-                        "Vodka!"),
-            pos=Point2(-hw + 0.44, -0.55),
+        bt_drink = MissionMenuButton(
+            basetext=(
+                p_("mission menu: go to observe an event",
+                   "Event")
+                if mustdrink else
+                p_("mission menu: go have some relaxation",
+                   "Vodka!")),
+            pos=Point2(-hw + 0.55, -0.57),
             clickf=self._click_drink,
             parent=self.node)
         if not wdrink:
             bt_drink.disable()
 
-        bt_save = MissionButton(
-            basetext=p_("mission menu: manage saved games",
+        bt_archive = MissionMenuButton(
+            basetext=p_("mission menu: show game world archive",
                         "Archive"),
-            pos=Point2(-hw + 0.48, -0.70),
+            pos=Point2(-hw + 0.55, -0.75),
+            clickf=self._click_archive,
+            parent=self.node)
+        if not warchive:
+            bt_archive.disable()
+
+        bt_save = MissionMenuSmallButton(
+            basetext=p_("mission menu: manage saved games",
+                        "Save Game"),
+            pos=Point2(hw - 0.68, -0.87),
             clickf=self._click_save,
             parent=self.node)
         if not wsave:
             bt_save.disable()
 
-        bt_main = MissionButton(
+        bt_main = MissionMenuSmallButton(
             basetext=p_("mission menu: go to the main menu",
-                        "Main Menu"),
-            pos=Point2(-hw + 0.52, -0.85),
+                        "Exit"),
+            pos=Point2(hw - 0.34, -0.87),
             clickf=self._click_main,
             parent=self.node)
 
@@ -2242,13 +2538,23 @@ class MissionMenu (Menu):
     def _click_mission (self):
 
         if self._inconvf is not None:
+            if self._bgnode_mission and self._bgfocus_mission:
+                delaytime = self._bgfocus_mission[2]
+            else:
+                delaytime = self._background_fade_duration
+            delaytime += self._delay_dialog_duration
             dmenu = DialogMenu(gc=self._game_context, mc=self._menu_context,
                                convf=self._inconvf,
                                skipconfirm=self._skipconfirm,
                                exitstate="mission",
+                               delaytime=delaytime,
+                               summarytitle=_("MISSION SUMMARY"),
+                               summarytext=self._longdes,
                                parent=self)
             self.wait_submenu(menu=dmenu,
-                              startf=self._on_dialog_start(),
+                              startf=self._on_dialog_start(
+                                  bgimg=self._bgnode_mission,
+                                  bgfocus=self._bgfocus_mission),
                               mutemusic=True)
         else:
             self.end("mission")
@@ -2259,22 +2565,46 @@ class MissionMenu (Menu):
         if not self._drinktostart:
             skipconfirm = True
             exitstate = None
-            endf = self._on_dialog_end()
-        else:
-            skipconfirm = False
-            exitstate = "mission"
             def endf1 ():
                 if self._mustdrink:
                     self._bt_mission.enable()
-            endf = self._on_dialog_end(execf=endf1)
+            endf = self._on_dialog_end(execf=endf1,
+                                       bgimg=self._bgnode_drink,
+                                       bgfocus=self._bgfocus_drink)
+        else:
+            skipconfirm = False
+            exitstate = "mission"
+            endf = self._on_dialog_end(bgimg=self._bgnode_drink,
+                                       bgfocus=self._bgfocus_drink)
+        if self._bgnode_drink and self._bgfocus_drink:
+            delaytime = self._bgfocus_drink[2]
+        else:
+            delaytime = self._background_fade_duration
+        delaytime += self._delay_dialog_duration
         dmenu = DialogMenu(gc=self._game_context, mc=self._menu_context,
                            convf=self._drinkconvf,
                            skipconfirm=skipconfirm,
                            exitstate=exitstate,
+                           delaytime=delaytime,
                            parent=self)
         self.wait_submenu(menu=dmenu,
-                          startf=self._on_dialog_start(),
+                          startf=self._on_dialog_start(
+                              bgimg=self._bgnode_drink,
+                              bgfocus=self._bgfocus_drink),
                           endf=endf,
+                          mutemusic=True)
+
+
+    def _click_archive (self):
+
+        archive_menu = ArchiveMenu(gc=self._game_context,
+                                   delaytime=self._background_fade_duration,
+                                   parent=self)
+        self.wait_submenu(menu=archive_menu,
+                          startf=self._on_dialog_start(
+                              bgimg=self._bgnode_archive),
+                          endf=self._on_dialog_end(
+                              bgimg=self._bgnode_archive),
                           mutemusic=True)
 
 
@@ -2290,34 +2620,196 @@ class MissionMenu (Menu):
         self.end("main")
 
 
-    def _on_dialog_start (self):
+    def _on_dialog_start (self, bgimg=None, bgfocus=None):
 
         def startf ():
-            node_fade_to(self.bgnode,
-                         endalpha=self._background_alpha_conv,
-                         duration=self._background_fade_duration)
+            if bgimg is not None:
+                def switch_bgimg ():
+                    self._bgnode_main.hide()
+                    bgimg.show()
+                    self.bgnode.setSa(self._background_alpha_conv)
+                if bgfocus:
+                    point, zoom, duration = bgfocus
+                    endpos = -Point3(point[0], 0.0, point[1])
+                    node_scale_to(self._bgnode_main,
+                                  endscale=zoom, duration=duration,
+                                  endf=switch_bgimg)
+                    node_slide_to(self._bgnode_main,
+                                  endpos=endpos, duration=duration)
+                    node_fade_to(self._bgnode_main,
+                                 endalpha=0.0,
+                                 duration=self._background_fade_duration,
+                                 delay=(duration - self._background_fade_duration))
+                else:
+                    node_fade_to(self._bgnode_main,
+                                 endalpha=0.0,
+                                 duration=self._background_fade_duration,
+                                 endf=switch_bgimg)
+            else:
+                node_fade_to(self.bgnode,
+                             endalpha=self._background_alpha_conv,
+                             duration=self._background_fade_duration)
         return startf
 
 
-    def _on_dialog_end (self, execf=None):
+    def _on_dialog_end (self, execf=None, bgimg=None, bgfocus=None):
 
         def endf ():
-            node_fade_to(self.bgnode,
-                         endalpha=1.0,
-                         duration=self._background_fade_duration,
-                         endf=execf)
+            if bgimg is not None:
+                bgimg.hide()
+                self._bgnode_main.show()
+                self._bgnode_main.setSa(1.0)
+                self.bgnode.setSa(1.0)
+                if bgfocus:
+                    self._bgnode_main.setPos(0.0, 0.0, 0.0)
+                    self._bgnode_main.setScale(1.0)
+            else:
+                node_fade_to(self.bgnode,
+                             endalpha=1.0,
+                             duration=self._background_fade_duration,
+                             endf=execf)
         return endf
+
+
+    def _add_announce_table (self, text, modtable):
+
+        if text is None:
+            return
+
+        ts = SimpleProps(
+            width=MissionMenu._anntable_width,
+            height=MissionMenu._anntable_height,
+            pos=MissionMenu._anntable_pos,
+            font=MissionMenu._anntable_font,
+            fontsize=MissionMenu._anntable_fontsize,
+            fontcolor=MissionMenu._anntable_fontcolor,
+            framebase=MissionMenu._anntable_framebase,
+            framesize=MissionMenu._anntable_framesize,
+        )
+        if modtable:
+            for key, val in modtable.items():
+                if val is not None:
+                    ts[key] = val
+        table = AnnounceText(text=text,
+            width=ts.width, height=ts.height, pos=ts.pos,
+            font=ts.font, size=ts.fontsize, color=ts.fontcolor,
+            framebase=ts.framebase, framesize=ts.framesize,
+            parent=self.node)
+
+
+    _anntable_width = 0.90
+    _anntable_height = 0.60
+    _anntable_pos = None
+    _anntable_font = ui_font_path
+    _anntable_fontsize = 12
+    _anntable_fontcolor = rgba(255, 255, 255, 1.0)
+    _anntable_framebase = "images/ui/textfloat01"
+    _anntable_framesize = 0.04
+
+    @staticmethod
+    def set_announce_table (width=None, height=None, pos=None,
+                            font=None, fontsize=None, fontcolor=None,
+                            framebase=None, framesize=None):
+
+        if MissionMenu._anntable_pos is None:
+            hw = base.aspect_ratio
+            MissionMenu._anntable_pos = Point2(hw - 0.65, 0.80)
+
+        if width is not None:
+            MissionMenu._anntable_width = width
+        if height is not None:
+            MissionMenu._anntable_height = height
+        if pos is not None:
+            MissionMenu._anntable_pos = pos
+        if font is not None:
+            MissionMenu._anntable_font = font
+        if fontsize is not None:
+            MissionMenu._anntable_fontsize = fontsize
+        if fontcolor is not None:
+            MissionMenu._anntable_fontcolor = fontcolor
+        if framebase is not None:
+            MissionMenu._anntable_framebase = framebase
+        if framesize is not None:
+            MissionMenu._anntable_framesize = framesize
+
+
+    def _add_stats_table (self, gc, modtable):
+
+        ts = SimpleProps(
+            width=MissionMenu._statstable_width,
+            height=MissionMenu._statstable_height,
+            pos=MissionMenu._statstable_pos,
+            font=MissionMenu._statstable_font,
+            fontsize=MissionMenu._statstable_fontsize,
+            fontcolor=MissionMenu._statstable_fontcolor,
+            framebase=MissionMenu._statstable_framebase,
+            framesize=MissionMenu._statstable_framesize,
+        )
+        if modtable:
+            for key, val in modtable.items():
+                if val is not None:
+                    ts[key] = val
+
+        ls = []
+        # gc...
+        ls.append("Score:")
+        text = "\n".join(ls)
+
+        table = StatsText(text=text,
+            width=ts.width, height=ts.height, pos=ts.pos,
+            font=ts.font, size=ts.fontsize, color=ts.fontcolor,
+            framebase=ts.framebase, framesize=ts.framesize,
+            parent=self.node)
+
+
+    _statstable_width = 0.44
+    _statstable_height = 0.10
+    _statstable_pos = None
+    _statstable_font = ui_font_path
+    _statstable_fontsize = 12
+    _statstable_fontcolor = rgba(255, 255, 255, 1.0)
+    _statstable_framebase = "images/ui/textfloat01"
+    _statstable_framesize = 0.02
+
+    @staticmethod
+    def set_stats_table (width=None, height=None, pos=None,
+                         font=None, fontsize=None, fontcolor=None,
+                         framebase=None, framesize=None):
+
+        if MissionMenu._statstable_pos is None:
+            hw = base.aspect_ratio
+            MissionMenu._statstable_pos = Point2(hw - 0.51, -0.65)
+
+        if width is not None:
+            MissionMenu._statstable_width = width
+        if height is not None:
+            MissionMenu._statstable_height = height
+        if pos is not None:
+            MissionMenu._statstable_pos = pos
+        if font is not None:
+            MissionMenu._statstable_font = font
+        if fontsize is not None:
+            MissionMenu._statstable_fontsize = fontsize
+        if fontcolor is not None:
+            MissionMenu._statstable_fontcolor = fontcolor
+        if framebase is not None:
+            MissionMenu._statstable_framebase = framebase
+        if framesize is not None:
+            MissionMenu._statstable_framesize = framesize
 
 
 class DialogMenu (Menu):
 
     def __init__ (self, convf, gc=None, mc=None,
-                  skipconfirm=False, exitstate=None, parent=None):
+                  skipconfirm=False, exitstate=None, delaytime=0.0,
+                  summarytitle=None, summarytext=None, parent=None):
 
         Menu.__init__(self,
             name="dialog-menu",
             pointer="images/ui/mouse_pointer.png",
             fadetime=0.0,
+            delaytime=delaytime,
+            delayendf=self._click_repeat,
             parent=parent)
 
         self._game_context = gc
@@ -2332,10 +2824,10 @@ class DialogMenu (Menu):
         self._convf = convf
         self._skipconfirm = skipconfirm
         self._exitstate = exitstate
+        self._summarytitle = summarytitle
+        self._summarytext = summarytext
 
         self._dialog_context = None
-
-        self._click_repeat()
 
         if not skipconfirm:
             self._add_buttons()
@@ -2348,14 +2840,14 @@ class DialogMenu (Menu):
         bt_proceed = SequenceButton(
             basetext=p_("dialog menu: go to action after the dialog",
                         "Proceed"),
-            pos=Point2(hw - 0.70, -0.80),
+            pos=Point2(0.26, -0.80),
             clickf=self._click_proceed,
             parent=self.node)
 
         bt_repeat = SequenceButton(
             basetext=p_("dialog menu: repeat the dialog",
                         "Repeat"),
-            pos=Point2(hw - 1.20, -0.80),
+            pos=Point2(-0.26, -0.80),
             clickf=self._click_repeat,
             parent=self.node)
 
@@ -2381,7 +2873,111 @@ class DialogMenu (Menu):
         def endf ():
             if self._skipconfirm:
                 self._click_proceed()
+            elif self._summarytext:
+                if self._summarytitle:
+                    make_text(self._summarytitle,
+                              width=2.0, pos=Point2(0.0, 0.60),
+                              font=ui_font_path, size=28, ppunit=100,
+                              color=rgba(255, 0, 0, 1.0),
+                              align="c", anchor="mc",
+                              parent=dc.fgnode)
+                SummaryText(text=self._summarytext,
+                    width=1.4, height=1.0, pos=Point2(0.0, 0.50),
+                    font=ui_font_path, size=14, color=rgba(255, 0, 0, 1.0),
+                    framebase="images/ui/textfloat01", framesize=0.04,
+                    parent=dc.fgnode)
         self.wait_dialog(dialog, endf=endf)
+
+
+class ArchiveMenu (Menu):
+
+    _entries = {}
+
+    def __init__ (self, gc, delaytime=0.0, parent=None):
+
+        Menu.__init__(self,
+            name="archive-menu",
+            music=None,
+            pointer="images/ui/mouse_pointer.png",
+            delaytime=delaytime,
+            quickexit=self._click_exit,
+            parent=parent)
+
+        self._game_context = gc
+
+        hw = base.aspect_ratio
+
+        #make_image("images/ui/archive_menu.png",
+                   #size=(2 * hw), pos=Point2(0.0, 0.0),
+                   #parent=self.node)
+
+        make_text(_("ARCHIVE"),
+                  width=2.0, pos=Point2(0.0, 0.85),
+                  font=ui_font_path, size=48, ppunit=100,
+                  color=rgba(255, 0, 0, 1.0),
+                  align="c", anchor="mc",
+                  parent=self.node)
+
+        bt_exit = MainSmallButton(
+            basetext=p_("archive menu: go to the previous menu",
+                        "Exit"),
+            pos=Point2(0.65, -0.80),
+            clickf=self._click_exit,
+            parent=self.node)
+
+        archive_spec = []
+        for ae in ArchiveMenu._entries.values():
+            if isinstance(ae.isactive, basestring):
+                takeit = gc[ae.isactive]
+            else:
+                takeit = bool(ae.isactive)
+            if takeit:
+                archive_spec.append((ae.title, ae.summary))
+        archive_spec.sort()
+        table_archive_spec = []
+        for title, summary in archive_spec:
+            table_archive_spec.append((title, summary))
+
+        fr_summ = ScrollText(
+            caption=_("Summary:"),
+            textfont=ui_font_path,
+            textcolor=rgba(255, 0, 0, 1.0),
+            textsize=12,
+            size=(1.00, 1.20),
+            pos=Point2(0.65, 0.00),
+            parent=self.node)
+        fr_summ.cache_texts([s[1] for s in archive_spec])
+
+        def table_entry_switchf (i):
+            title, summary = archive_spec[i]
+            fr_summ.set_text(summary)
+
+        fr_entries = ScrollTable(
+            caption=_("Entries:"),
+            colspec=[
+                (p_("column name", "Title"), 0.55),
+            ],
+            rowdata=table_archive_spec,
+            sortcol=0,
+            switchf=table_entry_switchf,
+            textfont=ui_font_path,
+            textcolor=rgba(255, 0, 0, 1.0),
+            textsize=12,
+            size=(1.15, 1.50),
+            pos=Point2(-0.58, -0.15),
+            parent=self.node)
+
+
+    def _click_exit (self):
+
+        self.end()
+
+
+    @staticmethod
+    def update_entries (entries):
+
+        for ae in entries:
+            ArchiveMenu._entries[ae.title] = ae
 
 
 class PauseMenu (Menu):
