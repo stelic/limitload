@@ -1578,7 +1578,8 @@ def as_sequence (value):
 
 
 def node_fade_to (node, endalpha, duration, startalpha=None, startf=None,
-                  endf=None, taskname=None, frozen=False, timer=None):
+                  endf=None, taskname=None, frozen=False, timer=None,
+                  delay=0.0):
     """
     Task dispatcher for fading in/out a node using alpha scale.
 
@@ -1592,6 +1593,7 @@ def node_fade_to (node, endalpha, duration, startalpha=None, startf=None,
     - taskname (string): name for the task
     - frozen (bool): return the thunk which adds the task when called
     - timer (has .time attribute): object to use as timer instead of task
+    - delay (float): time in seconds before fading starts
     """
 
     nodes = as_sequence(node)
@@ -1615,35 +1617,40 @@ def node_fade_to (node, endalpha, duration, startalpha=None, startf=None,
 
         ctimer = timer if timer is not None else task
         if task.first:
-            for func in as_sequence(startf):
-                func()
             task.time0 = ctimer.time
             task.first = False
-        dtime = clamp(ctimer.time - task.time0, 0.0, duration)
+        dtime = clamp(ctimer.time - task.time0, 0.0, delay + duration) - delay
         #print "--nft10", task, node, endalpha, duration, dtime
-
-        anyremaining = False
-        for nd, alpha0 in zip(nodes, alpha0s):
-            if duration > 0:
-                alpha = alpha0 + (endalpha - alpha0) * dtime / duration
-            else:
-                alpha = endalpha
-            alpha = clamp(alpha, alpha0, endalpha)
-            if isinstance(nd, (AudioSound, AudioManager)):
-                nd.setVolume(alpha)
-                anyremaining = True
-            else:
-                if not nd.isEmpty():
-                    nd.setSa(alpha)
-                    anyremaining = True
-
-        if dtime >= duration or not anyremaining:
-            for func in as_sequence(endf):
+        if task.in_delay and dtime >= 0.0:
+            task.in_delay = False
+            for func in as_sequence(startf):
                 func()
-            #print "--nft20", task, node, endalpha, "done"
-            return task.done
+
+        if not task.in_delay:
+            anyremaining = False
+            for nd, alpha0 in zip(nodes, alpha0s):
+                if duration > 0.0:
+                    alpha = alpha0 + (endalpha - alpha0) * dtime / duration
+                else:
+                    alpha = endalpha
+                alpha = clamp(alpha, alpha0, endalpha)
+                if isinstance(nd, (AudioSound, AudioManager)):
+                    nd.setVolume(alpha)
+                    anyremaining = True
+                else:
+                    if not nd.isEmpty():
+                        nd.setSa(alpha)
+                        anyremaining = True
+
+            if dtime >= duration or not anyremaining:
+                for func in as_sequence(endf):
+                    func()
+                #print "--nft20", task, node, endalpha, "done"
+                return task.done
+            else:
+                #print "--nft30", task, node, endalpha, "cont"
+                return task.cont
         else:
-            #print "--nft30", task, node, endalpha, "cont"
             return task.cont
 
     if not taskname:
@@ -1651,12 +1658,14 @@ def node_fade_to (node, endalpha, duration, startalpha=None, startf=None,
     def thunk ():
         task = base.taskMgr.add(taskf, taskname)
         task.first = True
+        task.in_delay = True
         return task
     return thunk() if not frozen else thunk
 
 
 def node_slide_to (node, endpos, duration, taskname=None,
-                   lookat=None, endup=None, frozen=False, timer=None):
+                   lookat=None, endup=None, frozen=False, timer=None,
+                   delay=0.0):
     """
     Task dispatcher for sliding a node to new position.
 
@@ -1671,6 +1680,7 @@ def node_slide_to (node, endpos, duration, taskname=None,
         that at the end it lies in the plane of this vector and forward
     - frozen (bool): return the thunk which adds the task when called
     - timer (has .time attribute): object to use as timer instead of task
+    - delay (float): time in seconds before fading starts
     """
 
     nodes = as_sequence(node)
@@ -1682,24 +1692,33 @@ def node_slide_to (node, endpos, duration, taskname=None,
         if task.first:
             task.time0 = ctimer.time
             task.first = False
-        dtime = ctimer.time - task.time0
-        if duration > 0.0:
-            tfac = clamp(dtime / duration, 0.0, 1.0)
+        dtime = clamp(ctimer.time - task.time0, 0.0, delay + duration) - delay
+        if task.in_delay and dtime >= 0.0:
+            task.in_delay = False
+
+        if not task.in_delay:
+            if duration > 0.0:
+                tfac = dtime / duration
+            else:
+                tfac = 1.0
+            anyremaining = False
+            for nd, pos0, up0 in zip(nodes, pos0s, up0s):
+                if not nd.isEmpty():
+                    cpos = pos0 + (endpos - pos0) * tfac
+                    nd.setPos(cpos)
+                    if lookat is not None: # before endup
+                        nd.lookAt(lookat)
+                    if endup is not None:
+                        fw = nd.getQuat().getForward()
+                        up = up0 + (endup - up0) * tfac
+                        set_hpr_vfu(nd, fw, up)
+                    anyremaining = True
+            if dtime >= duration or not anyremaining:
+                return task.done
+            else:
+                return task.cont
         else:
-            tfac = 1.0
-        anyremaining = False
-        for nd, pos0, up0 in zip(nodes, pos0s, up0s):
-            if not nd.isEmpty():
-                cpos = pos0 + (endpos - pos0) * tfac
-                nd.setPos(cpos)
-                if lookat is not None: # before endup
-                    nd.lookAt(lookat)
-                if endup is not None:
-                    fw = nd.getQuat().getForward()
-                    up = up0 + (endup - up0) * tfac
-                    set_hpr_vfu(nd, fw, up)
-                anyremaining = True
-        return task.cont if (dtime < duration and anyremaining) else task.done
+            return task.cont
 
     if not taskname:
         ndstr = "|".join([x.getName() for x in nodes])
@@ -1707,13 +1726,14 @@ def node_slide_to (node, endpos, duration, taskname=None,
     def thunk ():
         task = base.taskMgr.add(taskf, taskname)
         task.first = True
+        task.in_delay = True
         return task
     return thunk() if not frozen else thunk
 
 
 def node_scale_to (node, endscale, duration, startscale=None,
                    startf=None, endf=None, taskname=None, frozen=False,
-                   timer=None):
+                   timer=None, delay=0.0):
     """
     Task dispatcher for scaling a node to a new scale.
 
@@ -1727,6 +1747,7 @@ def node_scale_to (node, endscale, duration, startscale=None,
     - taskname (string): name for the task
     - frozen (bool): return the thunk which adds the task when called
     - timer (has .time attribute): object to use as timer instead of task
+    - delay (float): time in seconds before fading starts
     """
 
     if isinstance(startscale, (int, float)):
@@ -1744,27 +1765,33 @@ def node_scale_to (node, endscale, duration, startscale=None,
 
         ctimer = timer if timer is not None else task
         if task.first:
-            for func in as_sequence(startf):
-                func()
             task.time0 = ctimer.time
             task.first = False
-        dtime = clamp(ctimer.time - task.time0, 0.0, duration)
-
-        anyremaining = False
-        for nd, scale0 in zip(nodes, scale0s):
-            if duration > 0:
-                scale = scale0 + (endscale - scale0) * (dtime / duration)
-            else:
-                scale = endscale
-            scale = clampn(scale, scale0, endscale)
-            if not nd.isEmpty():
-                nd.setScale(scale)
-                anyremaining = True
-
-        if dtime >= duration or not anyremaining:
-            for func in as_sequence(endf):
+        dtime = clamp(ctimer.time - task.time0, 0.0, delay + duration) - delay
+        #print "--nft10", task, node, endalpha, duration, dtime
+        if task.in_delay and dtime >= 0.0:
+            task.in_delay = False
+            for func in as_sequence(startf):
                 func()
-            return task.done
+
+        if not task.in_delay:
+            anyremaining = False
+            for nd, scale0 in zip(nodes, scale0s):
+                if duration > 0:
+                    scale = scale0 + (endscale - scale0) * (dtime / duration)
+                else:
+                    scale = endscale
+                scale = clampn(scale, scale0, endscale)
+                if not nd.isEmpty():
+                    nd.setScale(scale)
+                    anyremaining = True
+
+            if dtime >= duration or not anyremaining:
+                for func in as_sequence(endf):
+                    func()
+                return task.done
+            else:
+                return task.cont
         else:
             return task.cont
 
@@ -1773,6 +1800,7 @@ def node_scale_to (node, endscale, duration, startscale=None,
     def thunk ():
         task = base.taskMgr.add(taskf, taskname)
         task.first = True
+        task.in_delay = True
         return task
     return thunk() if not frozen else thunk
 
