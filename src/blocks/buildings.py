@@ -18,6 +18,229 @@ BUILDING_SMALL_LOD_DIST_3 = 3000
 BUILDING_MEDIUM_LOD_DIST_3 = 6000
 
 
+class Hangar1 (Building):
+
+    species = "hangar-1"
+    basesink = 0.0
+    strength = 0
+    minhitdmg = None
+    maxhitdmg = None
+    rcs = 1.0
+    hitboxdata = [
+        HitboxData(name="hnrg",
+                   colldata=[(Point3(  0.0,  0.0,  9.2), 16.0, 19.0,  4.0),
+                             (Point3(  0.0, 17.9,  2.6), 16.0,  1.1,  2.6),
+                             (Point3(-14.6,  0.0,  2.6),  1.3, 16.8,  2.6),
+                             (Point3( 14.6,  0.0,  2.6),  1.3, 16.8,  2.6),
+                             (Point3(-12.5,-17.9,  2.6),  3.5,  1.1,  2.6),
+                             (Point3( 12.5,-17.9,  2.6),  3.5,  1.1,  2.6)],
+                   longdes=_("hangar building"), shortdes=_("HNRG"),
+                   selectable=True),
+        HitboxData(name="mdoor",
+                   colldata=[(Point3(  0.00, -17.30, 2.57), 9.00, 0.60, 2.57)],
+                   longdes=_("hangar main door"), shortdes=_("MDOOR"),
+                   selectable=False),
+    ]
+    modelpath = [("models/buildings/hangar/hangar_1.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
+                 ("models/buildings/hangar/hangar_1-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
+    #glowmap = "models/buildings/hangar/hangar_1_gw.png"
+    glossmap = "models/buildings/hangar/hangar_1_gls.png"
+    #destoffparts = []
+
+    def __init__ (self, world, name, side, texture=None, normalmap=None,
+                  pos=None, hpr=None, sink=None,
+                  damage=None):
+
+        Building.__init__(self, world=world, name=name, side=side,
+                          texture=texture, normalmap=normalmap, clamp=True,
+                          pos=pos, hpr=hpr, sink=sink,
+                          damage=damage)
+
+        self._hbx_hnrg.hitpoints = 300
+        self._hbx_mdoor.hitpoints = 40
+
+        self._hbx_hnrg.minhitdmg = 3
+        self._hbx_mdoor.minhitdmg = 0
+
+        self._hbx_hnrg.maxhitdmg = 140
+        self._hbx_mdoor.maxhitdmg = 30
+
+        self._hbx_hnrg.out = False
+        self._hbx_mdoor.out = False
+
+        self.mdoor_down = False
+
+        self._failure_full = False
+
+
+    def collide (self, obody, chbx, cpos):
+
+        inert = Body.collide(self, obody, chbx, cpos)
+        if inert:
+            return True
+
+        if obody.hitforce > chbx.minhitdmg:
+            chbx.hitpoints -= obody.hitforce
+        if obody.hitforce > chbx.maxhitdmg and chbx.hitpoints > 0:
+            chbx.hitpoints = 0
+
+        if self._hbx_hnrg.hitpoints <= 0 and not self._hbx_hnrg.out:
+            self.explode(offset=self._hbx_hnrg.center)
+            fire_n_smoke_3(parent=self, store=self.damage_trails,
+                           fpos1=Point3(0.0, 0.0, 2.0),
+                           spos1=Point3(0.0, 0.0, 0.0),
+                           sclfact=0.8,
+                           emradfact=1.4,
+                           flsfact=0.8,
+                           slsfact=0.8,
+                           fdelay1=fx_uniform(0.0, 1.0),
+                           fdelay2=fx_uniform(1.0, 3.0),
+                           fdelay3=fx_uniform(1.0, 3.0),
+                           fdelay4=fx_uniform(1.0, 3.0))
+            texture_subnodes(self.node, ["hng1_body", "hng1_roof", "hng1_misc",
+                                         "hng1_door_main", "hng1_door_side",],
+                             texture="models/buildings/hangar/hangar_1_burn.png",
+                             glossmap="images/_glossmap_none.png")
+            remove_subnodes(self.node, ["hng1_roof", "hng1_misc", "hng1_door_main",
+                                        "hng1_door_side"])
+            self._hbx_hnrg.out = True
+            self._failure_full = True
+        if self._hbx_mdoor.hitpoints <= 0 and not self._hbx_mdoor.out:
+            self.explode_minor(offset=self._hbx_mdoor.center)
+            texture_subnodes(self.node, ["hng1_door_main",],
+                             texture="models/buildings/hangar/hangar_1_burn.png",
+                             glossmap="images/_glossmap_none.png")
+            remove_subnodes(self.node, ["hng1_door_main",])
+            self.mdoor_down = True
+            self._hbx_mdoor.out = True
+
+        if self._failure_full:
+            self.set_shotdown(3.0)
+
+        return False
+
+
+class HangarNato (Building):
+
+    species = "hangar-nato"
+    basesink = 0.0
+    strength = 0
+    minhitdmg = None
+    maxhitdmg = None
+    rcs = 1.0
+    hitboxdata = [
+        HitboxData(name="hnrg",
+                   colldata=[(Point3(  0.0,  0.3, 11.0), 18.2, 22.7,  3.7),
+                             (Point3(  0.0,-20.1,  3.6), 13.1,  2.2,  3.6),
+                             (Point3(-16.6,  0.3,  3.6),  3.5, 22.7,  3.6),
+                             (Point3( 16.6,  0.3,  3.6),  3.5, 22.7,  3.6),
+                             (Point3(-11.8, 20.9,  3.6),  1.3,  1.4,  3.6),
+                             (Point3( 11.8, 20.9,  3.6),  1.3,  1.4,  3.6)],
+                   longdes=_("hangar building"), shortdes=_("HNRG"),
+                   selectable=True),
+        HitboxData(name="mdoorl",
+                   colldata=[(Point3( -5.22, 20.50, 3.60), 5.22, 0.50, 3.60)],
+                   longdes=_("hangar main door left"), shortdes=_("MDOORL"),
+                   selectable=False),
+        HitboxData(name="mdoorr",
+                   colldata=[(Point3(  5.22, 20.50, 3.60), 5.22, 0.50, 3.60)],
+                   longdes=_("hangar main door right"), shortdes=_("MDOORR"),
+                   selectable=False),
+    ]
+    modelpath = [("models/buildings/hangar/hangar_2.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
+                 ("models/buildings/hangar/hangar_2-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
+    #glowmap = "models/buildings/hangar/hangar_2_gw.png"
+    glossmap = "models/buildings/hangar/hangar_2_gls.png"
+    #destoffparts = []
+
+    def __init__ (self, world, name, side, texture=None, normalmap=None,
+                  pos=None, hpr=None, sink=None,
+                  damage=None):
+
+        Building.__init__(self, world=world, name=name, side=side,
+                          texture=texture, normalmap=normalmap, clamp=True,
+                          pos=pos, hpr=hpr, sink=sink,
+                          damage=damage)
+
+        self._hbx_hnrg.hitpoints = 500
+        self._hbx_mdoorl.hitpoints = 30
+        self._hbx_mdoorr.hitpoints = 30
+
+        self._hbx_hnrg.minhitdmg = 10
+        self._hbx_mdoorl.minhitdmg = 0
+        self._hbx_mdoorr.minhitdmg = 0
+
+        self._hbx_hnrg.maxhitdmg = 300
+        self._hbx_mdoorl.maxhitdmg = 20
+        self._hbx_mdoorr.maxhitdmg = 20
+
+        self._hbx_hnrg.out = False
+        self._hbx_mdoorl.out = False
+        self._hbx_mdoorr.out = False
+
+        self.mdoorl_down = False
+        self.mdoorr_down = False
+
+        self._failure_full = False
+
+
+    def collide (self, obody, chbx, cpos):
+
+        inert = Body.collide(self, obody, chbx, cpos)
+        if inert:
+            return True
+
+        if obody.hitforce > chbx.minhitdmg:
+            chbx.hitpoints -= obody.hitforce
+        if obody.hitforce > chbx.maxhitdmg and chbx.hitpoints > 0:
+            chbx.hitpoints = 0
+
+        if self._hbx_hnrg.hitpoints <= 0 and not self._hbx_hnrg.out:
+            self.explode(offset=self._hbx_hnrg.center)
+            fire_n_smoke_3(parent=self, store=self.damage_trails,
+                           fpos1=Point3(0.0, 0.0, 1.0),
+                           spos1=Point3(0.0, 0.0, 0.0),
+                           sclfact=0.9,
+                           emradfact=1.4,
+                           flsfact=0.9,
+                           slsfact=0.9,
+                           fdelay1=fx_uniform(0.0, 1.0),
+                           fdelay2=fx_uniform(1.0, 3.0),
+                           fdelay3=fx_uniform(1.0, 3.0),
+                           fdelay4=fx_uniform(1.0, 3.0))
+            texture_subnodes(self.node, ["hng2_body", "hng2_body_int", "hng2_misc_1",
+                                         "hng2_misc_2", "hng2_door_main_r",
+                                         "hng2_door_main_l", "hng2_door_side",],
+                             texture="models/buildings/hangar/hangar_2_burn.png",
+                             glossmap="images/_glossmap_none.png")
+            remove_subnodes(self.node, ["hng2_body", "hng2_misc_1", "hng2_misc_2",
+                                        "hng2_door_main_r", "hng2_door_main_l",
+                                        "hng2_door_side"])
+            self._hbx_hnrg.out = True
+            self._failure_full = True
+        if self._hbx_mdoorl.hitpoints <= 0 and not self._hbx_mdoorl.out:
+            self.explode_minor(offset=self._hbx_mdoorl.center)
+            texture_subnodes(self.node, ["hng2_door_main_l",],
+                             texture="models/buildings/hangar/hangar_2_burn.png",
+                             glossmap="images/_glossmap_none.png")
+            remove_subnodes(self.node, ["hng2_door_main_l",])
+            self.mdoorl_down = True
+            self._hbx_mdoorl.out = True
+        if self._hbx_mdoorr.hitpoints <= 0 and not self._hbx_mdoorr.out:
+            self.explode_minor(offset=self._hbx_mdoorr.center)
+            texture_subnodes(self.node, ["hng2_door_main_r",],
+                             texture="models/buildings/hangar/hangar_2_burn.png",
+                             glossmap="images/_glossmap_none.png")
+            remove_subnodes(self.node, ["hng2_door_main_r",])
+            self.mdoorr_down = True
+            self._hbx_mdoorr.out = True
+
+        if self._failure_full:
+            self.set_shotdown(3.0)
+
+        return False
+
+
 class RadarRussian1 (Building):
 
     species = "radar-russian-1"
@@ -31,7 +254,7 @@ class RadarRussian1 (Building):
     modelpath = [("models/buildings/radarstation/sov_radarstation.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
                  ("models/buildings/radarstation/sov_radarstation-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
     #glowmap = "models/buildings/radarstation/sov_radarstation_gw.png"
-    #glossmap = "models/buildings/radarstation/sov_radarstation_gs.png"
+    #glossmap = "models/buildings/radarstation/sov_radarstation_gls.png"
     destfirepos = Vec3(0.0, 0.0, 6.0)
     destoffparts = ["radar_sphere_part", "radar_roof", "radar_misc",
                     "glass", "door"]
@@ -59,7 +282,7 @@ class WarehouseRussian1 (Building):
     modelpath = [("models/buildings/warehouse/sov_warehouse3x.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
                  ("models/buildings/warehouse/sov_warehouse3x-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
     #glowmap = "models/buildings/warehouse/sov_warehouse_gw.png"
-    #glossmap = "models/buildings/warehouse/sov_warehouse_gs.png"
+    #glossmap = "models/buildings/warehouse/sov_warehouse_gls.png"
     destfirepos = Vec3(-4.0, 4.0, 0.0)
     destoffparts = ["wh_roof", "wh_door_rmain", "wh_door_lmain", "wh_door_side", "wh_misc",
                     "wh_glass"]
@@ -87,7 +310,7 @@ class Warehouse1 (Building):
     modelpath = [("models/buildings/warehouse/warehouse_1.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
                  ("models/buildings/warehouse/warehouse_1-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
     #glowmap = "models/buildings/warehouse/warehouse_1_gw.png"
-    #glossmap = "models/buildings/warehouse/warehouse_1_gs.png"
+    #glossmap = "models/buildings/warehouse/warehouse_1_gls.png"
     destfirepos = Vec3(0.0, 0.0, 0.0)
     destoffparts = ["wh_roof", "wh_doors", "wh_door_main", "wh_misc"]
     desttexture = "models/buildings/warehouse/warehouse_1_burn.png"
@@ -115,7 +338,7 @@ class CampShed1 (Building):
     modelpath = [("models/buildings/misc/camp_shed2x_1.egg", BUILDING_SMALL_LOD_DIST_FULL),
                  ("models/buildings/misc/camp_shed2x_1-3.egg", BUILDING_SMALL_LOD_DIST_3)]
     #glowmap = "models/buildings/misc/camp_shed_1_gw.png"
-    #glossmap = "models/buildings/misc/camp_shed_1_gs.png"
+    #glossmap = "models/buildings/misc/camp_shed_1_gls.png"
     destfirepos = None
     destoffparts = ["cs1_body", "cs1_front"]
     desttexture = "models/buildings/misc/camp_shed_1_burn.png"
@@ -142,7 +365,7 @@ class Bunker1 (Building):
     modelpath = [("models/buildings/misc/bunker_1.egg", BUILDING_SMALL_LOD_DIST_FULL),
                  ("models/buildings/misc/bunker_1-3.egg", BUILDING_SMALL_LOD_DIST_3)]
     #glowmap = "models/buildings/misc/bunker_1_gw.png"
-    #glossmap = "models/buildings/misc/bunker_1_gs.png"
+    #glossmap = "models/buildings/misc/bunker_1_gls.png"
     destfirepos = None
     destoffparts = ["bu1_body_part"]
     desttexture = "models/buildings/misc/bunker_1_burn.png"
@@ -170,7 +393,7 @@ class Bunker2 (Building):
     modelpath = [("models/buildings/misc/bunker_2.egg", BUILDING_SMALL_LOD_DIST_FULL),
                  ("models/buildings/misc/bunker_2-3.egg", BUILDING_SMALL_LOD_DIST_3)]
     #glowmap = "models/buildings/misc/bunker_2_gw.png"
-    #glossmap = "models/buildings/misc/bunker_2_gs.png"
+    #glossmap = "models/buildings/misc/bunker_2_gls.png"
     destfirepos = Vec3(13.0, -14.3, 0.3)
     destoffparts = ["bu2_misc_1", "bu2_misc_2", "bu2_doors", "bu2_roof", "glass"]
     desttexture = "models/buildings/misc/bunker_2_burn.png"
@@ -197,7 +420,7 @@ class BarrackRussian1 (Building):
     modelpath = [("models/buildings/barrack/sov_barrack_1.egg", BUILDING_SMALL_LOD_DIST_FULL),
                  ("models/buildings/barrack/sov_barrack_1-3.egg", BUILDING_SMALL_LOD_DIST_3)]
     #glowmap = "models/buildings/barrack/sov_bunker_1_gw.png"
-    #glossmap = "models/buildings/barrack/sov_bunker_1_gs.png"
+    #glossmap = "models/buildings/barrack/sov_bunker_1_gls.png"
     destfirepos = None
     destoffparts = ["brk_roof", "brk_misc", "brk_door", "brk_glass"]
     desttexture = "models/buildings/barrack/sov_barrack_1_burn.png"
@@ -225,7 +448,7 @@ class BarrackRussian2 (Building):
     modelpath = [("models/buildings/barrack/sov_barrack_2.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
                  ("models/buildings/barrack/sov_barrack_2-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
     #glowmap = "models/buildings/barrack/sov_bunker_2_gw.png"
-    #glossmap = "models/buildings/barrack/sov_bunker_2_gs.png"
+    #glossmap = "models/buildings/barrack/sov_bunker_2_gls.png"
     destfirepos = None
     destoffparts = ["brk_roof", "brk_misc", "brk_door", "brk_glass"]
     desttexture = "models/buildings/barrack/sov_barrack_2_burn.png"
@@ -252,7 +475,7 @@ class ComtowerRussian1 (Building):
     modelpath = [("models/buildings/comtower/sov_comtower_1.egg", BUILDING_SMALL_LOD_DIST_FULL),
                  ("models/buildings/comtower/sov_comtower_1-3.egg", BUILDING_SMALL_LOD_DIST_3)]
     #glowmap = "models/buildings/comtower/sov_comtower_1_gw.png"
-    #glossmap = "models/buildings/comtower/sov_comtower_1_gs.png"
+    #glossmap = "models/buildings/comtower/sov_comtower_1_gls.png"
     destfirepos = None
     destoffparts = ["ct_tower", "ct_roof", "ct_misc", "ct_door", "ct_glass"]
     desttexture = "models/buildings/comtower/sov_comtower_1_burn.png"
@@ -280,7 +503,7 @@ class OutpostUs1 (Building):
     modelpath = [("models/buildings/outpost/us_01.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
                  ("models/buildings/outpost/us_01-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
     #glowmap = "models/buildings/outpost/us_01_gw.png"
-    #glossmap = "models/buildings/outpost/us_01_gs.png"
+    #glossmap = "models/buildings/outpost/us_01_gls.png"
     destfirepos = None
     destoffparts = ["op_sandbags", "op_canvas", "op_canvas2", "op_crates",
                     "op_machineguns", "op_flag", "op_misc"]
@@ -324,7 +547,7 @@ class OutpostUs2 (Building):
     modelpath = [("models/buildings/outpost/us_02.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
                  ("models/buildings/outpost/us_02.egg", BUILDING_MEDIUM_LOD_DIST_3)]
     #glowmap = "models/buildings/outpost/us_02_gw.png"
-    #glossmap = "models/buildings/outpost/us_02_gs.png"
+    #glossmap = "models/buildings/outpost/us_02_gls.png"
     destfirepos=Vec3(-23.0, -18.0, 0.0),
     destoffparts=["command_tower_roof",
                   "command_tower_misc",
@@ -394,7 +617,7 @@ class OutpostUs3 (Building):
     modelpath = [("models/buildings/outpost/us_03.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
                  ("models/buildings/outpost/us_03-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
     #glowmap = "models/buildings/outpost/us_03_gw.png"
-    #glossmap = "models/buildings/outpost/us_03_gs.png"
+    #glossmap = "models/buildings/outpost/us_03_gls.png"
     #destoffparts=[]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
@@ -600,7 +823,7 @@ class PowgeneratorRussian1 (Building):
     rcs = 0.0
 
     #glowmap = "models/buildings/powerplant/sov_powergenerator_1_gw.png"
-    #glossmap = "models/buildings/powerplant/sov_powergenerator_1_gs.png"
+    #glossmap = "models/buildings/powerplant/sov_powergenerator_1_gls.png"
     destfirepos = None
     destoffparts = ["pwg_misc"]
     desttexture = "models/buildings/powerplant/sov_powergenerator_1_burn.png"
@@ -624,6 +847,42 @@ class PowgeneratorRussian1 (Building):
                           damage=damage)
 
 
+class OilGasStorage1 (Building):
+
+    species = "oil-gas-storage-1"
+    basesink = 0.0
+    strength = 640
+    minhitdmg = 1
+    maxhitdmg = 220
+    rcs = 1.0
+    hitboxdata = [(Point3(-12.3, -1.0, 11.1), 21.5, 21.5, 11.1),
+                  (Point3( -1.4, 41.8,  5.4), 47.5, 14.6,  5.4),
+                  (Point3(  9.7,-48.9,  5.4), 30.8, 14.6,  5.4),
+                  (Point3( 36.0, -4.4,  8.5),  8.6, 17.5,  8.5),
+                  (Point3(-30.9,-34.4,  5.3),  6.0, 11.3,  5.3),
+                  (Point3( 44.8,-53.6,  6.5),  4.2, 10.8,  6.5),
+                  (Point3( 17.5, 60.3,  5.3),  5.4,  2.7,  5.3),
+                  (Point3( -3.8, 60.4,  3.9), 10.8,  4.0,  3.9),
+                  (Point3( -3.7, 60.2, 37.4),  1.8,  1.8, 29.5),
+                  (Point3(  3.2, 60.2, 37.4),  1.8,  1.8, 29.5)]
+    modelpath = [("models/buildings/oil-gas/oil_gas_storage_1.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
+                 ("models/buildings/oil-gas/oil_gas_storage_1-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
+    #glowmap = "models/buildings/oil-gas/oil_gas_storage_1_gw.png"
+    #glossmap = "models/buildings/oil-gas/oil_gas_storage_1_gls.png"
+    destfirepos = Vec3(-12.3, -1.0, 2.0)
+    destoffparts = ["ogs1_roofs", "ogs1_misc"]
+    desttexture = "models/buildings/oil-gas/oil_gas_storage_1_burn.png"
+
+    def __init__ (self, world, name, side, texture=None, normalmap=None,
+                  pos=None, hpr=None, sink=None,
+                  damage=None):
+
+        Building.__init__(self, world=world, name=name, side=side,
+                          texture=texture, normalmap=normalmap, clamp=True,
+                          pos=pos, hpr=hpr, sink=sink,
+                          damage=damage)
+
+
 class FuelTank1 (Building):
 
     species = "fueltank-1"
@@ -636,7 +895,7 @@ class FuelTank1 (Building):
     modelpath = [("models/buildings/oil-gas/fuel_tank_1.egg", BUILDING_SMALL_LOD_DIST_FULL),
                  ("models/buildings/oil-gas/fuel_tank_1-3.egg", BUILDING_SMALL_LOD_DIST_3)]
     #glowmap = "models/buildings/oil-gas/fuel_tank_1_gw.png"
-    #glossmap = "models/buildings/oil-gas/fuel_tank_1_gs.png"
+    #glossmap = "models/buildings/oil-gas/fuel_tank_1_gls.png"
     destfirepos = Vec3(0.0, 0.0, 4.2)
     destoffparts = ["flt_misc", "flt_body_part"]
     desttexture = "models/buildings/oil-gas/fuel_tank_1_burn.png"
@@ -663,7 +922,7 @@ class Banner1 (Building):
     modelpath = [("models/buildings/flag/banner_1.egg", BUILDING_SMALL_LOD_DIST_FULL),
                  ("models/buildings/flag/banner_1-3.egg", BUILDING_SMALL_LOD_DIST_3)]
     #glowmap = "models/buildings/flag/banner_1_gw.png"
-    #glossmap = "models/buildings/flag/banner_1_gs.png"
+    #glossmap = "models/buildings/flag/banner_1_gls.png"
     destoffparts = ["banner"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
@@ -688,7 +947,7 @@ class Fence1 (Building):
     modelpath = [("models/buildings/misc/fence_1.egg", BUILDING_SMALL_LOD_DIST_FULL),
                  ("models/buildings/misc/fence_1.egg", BUILDING_SMALL_LOD_DIST_3)]
     #glowmap = "models/buildings/misc/fence_1_gw.png"
-    #glossmap = "models/buildings/misc/fence_1_gs.png"
+    #glossmap = "models/buildings/misc/fence_1_gls.png"
     destoffparts = None
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
@@ -725,7 +984,7 @@ class Mansion1 (Building):
     modelpath = [("models/buildings/house/mansion_1.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
                  ("models/buildings/house/mansion_1-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
     #glowmap = "models/buildings/mansion/mansion_1_gw.png"
-    #glossmap = "models/buildings/mansion/mansion_1_gs.png"
+    #glossmap = "models/buildings/mansion/mansion_1_gls.png"
     destfirepos = Vec3(1.0, 9.0, 7.5)
     destoffparts = ["h_roof", "h_misc_1", "h_misc_2", "glass"]
     desttexture = "models/buildings/house/mansion_1_burn.png"
@@ -807,7 +1066,7 @@ class PrisonEastern1 (Building):
     modelpath = [("models/buildings/misc/prison_1.egg", BUILDING_MEDIUM_LOD_DIST_FULL),
                  ("models/buildings/misc/prison_1-3.egg", BUILDING_MEDIUM_LOD_DIST_3)]
     #glowmap = "models/buildings/misc/prison_1_gw.png"
-    #glossmap = "models/buildings/misc/prison_1_gs.png"
+    #glossmap = "models/buildings/misc/prison_1_gls.png"
     #destoffparts = []
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
