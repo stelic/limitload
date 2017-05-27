@@ -6315,6 +6315,14 @@ _targid_database = {
         span=None,
         mass=None,
     ),
+    "f14": AutoProps(
+        shortdes=u"Ф-14",
+        klass=u"истребитель-перехватчик",
+        vecimagepath="models/aircraft/f14/f14_vec.png",
+        origin=u"США",
+        span=None,
+        mass=None,
+    ),
     "f15": AutoProps(
         shortdes=u"Ф-15",
         klass=u"истребитель",
