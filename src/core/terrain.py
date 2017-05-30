@@ -134,6 +134,8 @@ class SpanSpec (object):
         if isinstance(glowmap, Vec4):
             glowmap = tuple(glowmap)
         self.glowmap = glowmap
+        if isinstance(glossmap, Vec4):
+            glossmap = tuple(glossmap)
         self.glossmap = glossmap
 
         SpanSpec._counter += 1
@@ -465,10 +467,12 @@ class Terrain (object):
                     any_glow_layer = any(s.glowmap for s in layerspec.spans)
                     any_gloss_layer = any(s.glossmap for s in layerspec.spans)
                     glowmap_none = "images/terrain/_clear_black.png"
+                    glossmap_none = "images/terrain/_clear_black.png"
                     for ip, spanspec in enumerate(layerspec.spans):
                         if isinstance(spanspec.glowmap, tuple):
                             glowmap_none = (0, 0, 0, 0)
-                            break
+                        if isinstance(spanspec.glossmap, tuple):
+                            glossmap_none = (0, 0, 0, 0)
                     for ip, spanspec in enumerate(layerspec.spans):
                         tilespec = Terrain._select_tiles(
                             self._sizex, self._sizey,
@@ -482,7 +486,7 @@ class Terrain (object):
                                 texstack_color[it][jt].append(
                                     (texstage_color[ib][il], texture))
                             if any_normal_layer:
-                                normalmap = spanspec.normalmap or "images/terrain/_blue.png"
+                                normalmap = spanspec.normalmap or "images/terrain/_normal.png"
                                 texstack_normal[it][jt].append(
                                     (texstage_normal[ib][il], normalmap))
                             if any_glow_layer:
@@ -491,9 +495,10 @@ class Terrain (object):
                                     texstack_glow[it][jt].append(
                                         (texstage_glow[ib][il], glowmap))
                             if any_gloss_layer:
-                                glossmap = spanspec.glossmap or "images/terrain/_black.png"
-                                texstack_gloss[it][jt].append(
-                                    (texstage_gloss[ib][il], glossmap))
+                                glossmap = spanspec.glossmap or glossmap_none
+                                if not isinstance(glossmap, tuple):
+                                    texstack_gloss[it][jt].append(
+                                        (texstage_gloss[ib][il], glossmap))
                 for it in xrange(numtilesx):
                     for jt in xrange(numtilesy):
                         texstack[ic][it][jt].extend(texstack_color[it][jt])
@@ -628,6 +633,8 @@ class Terrain (object):
                     blendkey.append(spanspec.glossmap is not None)
                     if isinstance(spanspec.glowmap, tuple):
                         blendkey.append(spanspec.glowmap)
+                    if isinstance(spanspec.glossmap, tuple):
+                        blendkey.append(spanspec.glossmap)
 
         shdkey = (shdinp.camn, shdinp.ambln, (shdinp.sunln, shdinp.moonln),
                   tuple(sorted(pntlns)), shdinp.fogn, tuple(sunblend),
@@ -853,10 +860,11 @@ uniform sampler2D p3d_Texture%(tsn)d; // glow-b%(ib)s-l%(il)s
                         tsn += 1
             for il, layerspec in enumerate(blendspec.layers):
                 if any(s.glossmap for s in layerspec.spans):
-                    fshstr += """
+                    if any(not isinstance(s.glossmap, tuple) for s in layerspec.spans):
+                        fshstr += """
 uniform sampler2D p3d_Texture%(tsn)d; // gloss-b%(ib)s-l%(il)s
 """ % locals()
-                    tsn += 1
+                        tsn += 1
         for ib, blendspec in enumerate(cutspec.blends):
             if blendspec is None:
                 continue
@@ -1181,22 +1189,34 @@ void main ()
 """
                 for il, layerspec in enumerate(blendspec.layers):
                     if any(s.glossmap for s in layerspec.spans):
-                        if layerspec.glossflow:
-                            uvhdg, uvspd = layerspec.glossflow
-                            uvel = cos(radians(uvhdg)) * uvspd
-                            vvel = sin(radians(uvhdg)) * uvspd
-                            gtmn = "%(gtimen)s.ambient" % shdinp
-                            fshstr += """
+                        if any(not isinstance(s.glossmap, tuple) for s in layerspec.spans):
+                            if layerspec.glossflow:
+                                uvhdg, uvspd = layerspec.glossflow
+                                uvel = cos(radians(uvhdg)) * uvspd
+                                vvel = sin(radians(uvhdg)) * uvspd
+                                gtmn = "%(gtimen)s.ambient" % shdinp
+                                fshstr += """
         uv = l_texcoord + vec2(%(uvel)f * %(gtmn)s.x, %(vvel)f * %(gtmn)s.x);
         uv -= floor(uv);
 """ % locals()
-                        else:
-                            fshstr += """
+                            else:
+                                fshstr += """
         uv = l_texcoord;
 """
-                        gsuvsc = layerspec.uvscale
-                        fshstr += """
+                            gsuvsc = layerspec.uvscale
+                            fshstr += """
         tgs1 = texture(p3d_Texture%(tsn)d, uv * %(gsuvsc)f);
+""" % locals()
+                            tsn += 1
+                        else:
+                            for spanspec in layerspec.spans:
+                                if spanspec.glossmap:
+                                    gr, gg, gb, ga = spanspec.glossmap
+                                    break
+                            fshstr += """
+        tgs1 = vec4(%(gr)f, %(gg)f, %(gb)f, %(ga)f);
+""" % locals()
+                        fshstr += """
         tgs1 = mix(vec4(1.0), tgs1, ifac_%(il)d);
 """ % locals()
                         if blendspec.glossblendmode == "cover":
@@ -1215,7 +1235,6 @@ void main ()
                             raise StandardError(
                                 "Unknown gloss blend mode for "
                                 "blend %(ib)s layer %(il)s." % locals())
-                        tsn += 1
             fshstr += """
         // Apply lighting.
         lit = vec4(l_lit);

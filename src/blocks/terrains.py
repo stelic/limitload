@@ -119,10 +119,9 @@ def create_terrain_1 (world, terraintype, visradius,
     maxheight = None
     pntlit = 4
     waterseatex = ("water-1.png", "water-1l.png", "water-1ll.png", 32)
-    waterseamaps = ("_gray42.png", "water-nm2.png", "water-nm1.png", "water-nm2.png", Vec4(0,0,0,0.1), 32, 128)#32, 80)
+    waterseamaps = (rgba(40,40,40,0.45), None, rgba(180,180,180,1.0), "water-nm1.png", "water-nm2.png", rgba(0,0,0,0.1), 1, 96)
     waterlaketex = ("water-2l.png", "water-2l.png", "water-2ll.png", 64)
-    #waterlakemaps = ("_gray126.png", None, "water-nm1.png", "water-nm2.png", Vec4(0,0,0,0.1), 1, 112)
-    waterlakemaps = ("_gray126.png", None, "water-lake-nm1.png", "water-lake-nm2.png", Vec4(0,0,0,0.1), 1, 128)
+    waterlakemaps = (rgba(40,40,40,0.55), None, rgba(180,180,180,1.0), "water-lake-nm1.png", "water-lake-nm2.png", rgba(0,0,0,0.1), 1, 128)
     stratusmap = None
     cumulusmap = None
     cirrusmap = None
@@ -134,6 +133,7 @@ def create_terrain_1 (world, terraintype, visradius,
     if terraintype == "00-flat0":
         heightmap = "00-flat0.png"
         tilediv = None
+        celldensity = 1.0/2
         groundmask = None
         groundblend = (
             None,
@@ -145,31 +145,17 @@ def create_terrain_1 (world, terraintype, visradius,
         watermask = "00-flat0.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
-        waterseaparams = (0.0004)
+        waterseaparams = (0.0004,)
         waterlaketex = None
         waterlakemaps = None
         waterlakeparams = None
-        celldensity = 1.0/16
         stratusmap = "00-flat0-clouds-strs.png"
         cumulusmap = "00-flat0-clouds-cmls.png"
         cirrusmap = "00-flat0-clouds-crrs.png"
 
-    # elif terraintype == "00-maze":
-         # hmapfile = "00-maze-land.png"
-         # wmaskfile = None
-         # cmaskfile = None
-         # groundtex = groundtex or "russia-siberia-01-1.png"
-         # lowgroundtex = lowgroundtex or "russia-siberia-01-1.png"
-         # watertex = watertex or None
-         # citytex = citytex or None
-         # celldensity = 1.0
-         # minheight = 0
-         # maxheight = 2000
-
     elif terraintype == "00-zangbo":
         sizex = 180000
         sizey = 180000
-        celldensity = 1.0/4
         heightmap = "00-zangbo-land.png"
         tilediv = (3, 3)
         groundmask = None
@@ -195,8 +181,8 @@ def create_terrain_1 (world, terraintype, visradius,
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
-        waterlaketex = ("water-1.png", "water-1l.png", "water-2ll.png", 64)
-        waterlakemaps = ("_gray126.png", None, "water-lake-nm1.png", "water-lake-nm2.png", Vec4(0,0,0,0.1), 1, 128)
+        waterlaketex = waterlaketex
+        waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
         cirrusmap = "00-flat0-clouds-crrs.png"
 
@@ -255,11 +241,11 @@ def create_terrain_1 (world, terraintype, visradius,
         )
         watermap = "14-angola-water.png"
         watermask = "14-angola-watermask.png"
-        waterseatex = ("water-1.png", "water-1l.png", "water-1ll.png", 32)
-        waterseamaps = ("_gray42.png", "water-nm2.png", "water-nm1.png", "water-nm2.png", rgba(0, 0, 0, 0.1), 32, 64)
+        waterseatex = waterseatex
+        waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
-        waterlaketex = ("water-2l.png", "water-2l.png", "water-2ll.png", 64)
-        waterlakemaps = ("_gray126.png", None, "water-lake-nm1.png", "water-lake-nm2.png", Vec4(0,0,0,0.1), 1, 128)
+        waterlaketex = waterlaketex
+        waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
         stratusmap = "14-angola-clouds-strs.png"
         #cumulusmap = "14-angola-clouds-cmls.png"
@@ -282,7 +268,7 @@ def create_terrain_1 (world, terraintype, visradius,
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
-        waterlakeparams = (0.0004,)
+        waterlakeparams = (0.0003,)
         cumulusmap = "01-taymyr-clouds-cmls.png"
         cirrusmap = "01-taymyr-clouds-crrs.png"
     #02
@@ -702,7 +688,7 @@ def create_terrain_1 (world, terraintype, visradius,
         watermask = "12-europe1-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
-        waterseaparams = (0.0005,)
+        waterseaparams = (0.0004,)
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
@@ -740,7 +726,7 @@ def create_terrain_1 (world, terraintype, visradius,
         watermask = "13-korea1-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
-        waterseaparams = (0.0005,)
+        waterseaparams = (0.0004,)
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
@@ -761,7 +747,7 @@ def create_terrain_1 (world, terraintype, visradius,
         watermask = "13-korea2-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
-        waterseaparams = (0.0005,)
+        waterseaparams = (0.0004,)
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
@@ -778,11 +764,11 @@ def create_terrain_1 (world, terraintype, visradius,
         )
         watermap = "14-angola-water.png"
         watermask = "14-angola-watermask.png"
-        waterseatex = ("water-1.png", "water-1l.png", "water-1ll.png", 32)
-        waterseamaps = ("_gray42.png", "water-nm2.png", "water-nm1.png", "water-nm2.png", rgba(0, 0, 0, 0.1), 32, 64)
+        waterseatex = waterseatex
+        waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
-        waterlaketex = ("water-1l.png", "water-1l.png", "water-2ll.png", 64)
-        waterlakemaps = ("_gray126.png", None, "water-lake-nm1.png", "water-lake-nm2.png", Vec4(0,0,0,0.1), 1, 128)
+        waterlaketex = waterlaketex
+        waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
         stratusmap = "14-angola-clouds-strs.png"
         #cumulusmap = "14-angola-clouds-cmls.png"
@@ -813,7 +799,7 @@ def create_terrain_1 (world, terraintype, visradius,
         watermask = "99-vietnam-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
-        waterseaparams = (0.0005,)
+        waterseaparams = (0.0004,)
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
@@ -1303,13 +1289,13 @@ def assemble_terrain_cuts_1 (groundblend,
     blend_night_glow_ground = [None, None, None, "cityglowfac"]
     normal_blend_mode_ground = "cover"
     gloss_blend_mode_ground = "cover"
-    altitude_high_water = 12000.0
+    altitude_high_water = 6000.0
     altitude_low_water = 0.0
-    radius_high_water = 40000.0
+    radius_high_water = 50000.0
     radius_low_water = 25000.0
     flow_dir_water = (0, 90)
     normal_blend_mode_water = "add"
-    gloss_blend_mode_water = "multiply"
+    gloss_blend_mode_water = "cover"
     if not tilediv:
         tilediv = (None, None)
     tiledivx, tiledivy = tilediv
@@ -1435,12 +1421,12 @@ def assemble_terrain_cuts_1 (groundblend,
                 ]
         gsfile = at_ij(watermaps, 0, 0)
         nmfile = at_ij(watermaps, 1, 0)
-        gwfile = at_ij(watermaps, 4, 0)
+        gwfile = at_ij(watermaps, 5, 0)
         if nmfile or gsfile or gwfile:
             layers += [
                 LayerSpec(
                     name="map-high",
-                    uvscale=at_ij(watermaps, 5, 0, 1.0),
+                    uvscale=at_ij(watermaps, 6, 0, 1.0),
                     spans=[
                         SpanSpec(
                             name="main",
@@ -1452,12 +1438,16 @@ def assemble_terrain_cuts_1 (groundblend,
                                            if isinstance(gwfile, Vec4)
                                            else None)),
                             glossmap=("images/terrain/%s" % gsfile
-                                      if gsfile else None),
+                                      if isinstance(gsfile, basestring)
+                                      else (gsfile
+                                            if isinstance(gsfile, Vec4)
+                                            else None)),
                         ),
                     ],
                 ),
             ]
-        for nsf, it, ifl in (("low1", 2, 0), ("low2", 3, 1)):
+        gsfile = at_ij(watermaps, 2, 0)
+        for nsf, it, ifl in (("low1", 3, 0), ("low2", 4, 1)):
             nmfile = at_ij(watermaps, it, 0)
             if nmfile:
                 layers += [
@@ -1467,7 +1457,7 @@ def assemble_terrain_cuts_1 (groundblend,
                                 at_ij(waterparams, 3, 0, altitude_low_water)),
                         radius=(at_ij(waterparams, 4, 0, radius_high_water),
                                 at_ij(waterparams, 5, 0, radius_low_water)),
-                        uvscale=at_ij(watermaps, 6, 0, 1.0),
+                        uvscale=at_ij(watermaps, 7, 0, 1.0),
                         normalflow=(at_ij(waterparams, 1, 0, flow_dir_water[ifl])
                                     if ifl > 0 else flow_dir_water[ifl],
                                     at_ij(waterparams, 0, 0, 0.0)),
@@ -1477,7 +1467,13 @@ def assemble_terrain_cuts_1 (groundblend,
                         spans=[
                             SpanSpec(
                                 name="main",
-                                normalmap=("images/terrain/%s" % nmfile),
+                                normalmap=("images/terrain/%s" % nmfile
+                                           if nmfile else None),
+                                glossmap=("images/terrain/%s" % gsfile
+                                          if isinstance(gsfile, basestring)
+                                          else (gsfile
+                                                if isinstance(gsfile, Vec4)
+                                                else None)),
                             ),
                         ],
                     ),
