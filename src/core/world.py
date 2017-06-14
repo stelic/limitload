@@ -1258,6 +1258,7 @@ class World (object):
             ebody = Body(world=self, family="effect", species="explosion",
                          hitforce=force, name="", side="", pos=pos,
                          hitinto=False)
+            ebody.hist_critical = False
             if isinstance(ref, Body):
                 ebody.initiator = ref.initiator
 

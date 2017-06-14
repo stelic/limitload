@@ -121,8 +121,6 @@ class Shell (Body):
         if initdt != 0.0:
             self.move(initdt)
 
-        self.hits_critical = True
-
         base.taskMgr.add(self._loop, "shell-loop")
 
 

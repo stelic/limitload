@@ -172,7 +172,7 @@ class Body (object):
         #for hbx in self.hitboxes:
             #hbx.cnode.show()
         self.inert_collide = False
-        self.hits_critical = False
+        self.hits_critical = True
 
         if center is not None:
             self.center = center
