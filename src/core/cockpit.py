@@ -1152,9 +1152,6 @@ class Cockpit (object):
             else:
                 self._deactivate()
 
-        if not self.active:
-            return task.cont
-
         dt = self.world.dt
 
         if self.active:
