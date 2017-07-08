@@ -221,7 +221,7 @@ def create_terrain_1 (world, terraintype, visradius,
     elif terraintype == "00-angola":        
         heightmap = "14-angola-land.png"
         tilediv = (3, 3)
-        groundmask = "14-angola-landmask1.png",
+        groundmask = "14-angola-landmask.png",
         groundblend = (
             ["global",
              ("14-angola/_texture-d1.png", None, "14-angola/__texture-nm.png", "14-angola/__texture-gw.png", "14-angola/__texture-gw.png"),
