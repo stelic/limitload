@@ -36,6 +36,10 @@ def make_shader (ambln=None, dirlns=[], pntlns=[],
         glowaddn = None
         glowzerodist = None
 
+    gloss_orig = gloss
+    if isinstance(gloss, Vec4):
+        gloss = tuple(gloss)
+
     if not dirlns or not shadowrefn:
         shadowrefn = None
         shadowdirlin = None
@@ -69,7 +73,8 @@ def make_shader (ambln=None, dirlns=[], pntlns=[],
     vshstr = GLSL_PROLOGUE
 
     need_texcoord = (color or normal or
-                     (glow and not isinstance(glow, tuple)) or gloss)
+                     (glow and not isinstance(glow, tuple)) or
+                     (gloss and not isinstance(gloss, tuple)))
 
     if ambln:
         vshstr += make_shdfunc_amblit()
@@ -374,7 +379,7 @@ uniform sampler2D p3d_Texture%(tind_nrm)d;
 uniform sampler2D p3d_Texture%(tind_glw)d;
 """ % locals()
         tind += 1
-    if gloss:
+    if gloss and not isinstance(gloss, tuple):
         tind_gls = tind
         fshstr += """
 uniform sampler2D p3d_Texture%(tind_gls)d;
@@ -456,9 +461,9 @@ void main ()
     vec4 lit = l_lit;
 """
     if isinstance(glow, tuple):
-        gr, gg, gb, ga = glow
+        gwr, gwg, gwb, gwa = glow
         fshstr += """
-    vec4 glwm = vec4(%(gr)f, %(gg)f, %(gb)f, %(ga)f);
+    vec4 glwm = vec4(%(gwr)f, %(gwg)f, %(gwb)f, %(gwa)f);
 """ % locals()
     elif glow:
         fshstr += """
@@ -467,7 +472,8 @@ void main ()
     if glow:
         if glowfacn:
             fshstr += """
-    glwm *= l_%(glowfacn)s;
+    glwm.rgb *= l_%(glowfacn)s;
+    glwm.a = max(glwm.a * l_%(glowfacn)s, min(glwm.a, 0.1));
 """ % locals()
         if glowaddn:
             fshstr += """
@@ -479,8 +485,16 @@ void main ()
     if gloss:
         fshstr += """
     vec4 gls = vec4(0.0, 0.0, 0.0, 0.0);
-    vec4 glsm = texture(p3d_Texture%(tind_gls)d, texcoord0b);
     vec3 cdir = normalize(vspos_%(camn)s.xyz - l_vertpos.xyz);
+""" % locals()
+    if isinstance(gloss, tuple):
+        gsr, gsg, gsb, gsa = gloss
+        fshstr += """
+    vec4 glsm = vec4(%(gsr)f, %(gsg)f, %(gsb)f, %(gsa)f);
+""" % locals()
+    elif gloss:
+        fshstr += """
+    vec4 glsm = texture(p3d_Texture%(tind_gls)d, texcoord0b);
 """ % locals()
     fshstr += """
     float kshd = 1.0;
@@ -576,7 +590,7 @@ void main ()
     kwargs = dict( # only the arguments influencing creation
         ambln=ambln, dirlns=dirlns, pntlns=pntlns, fogn=fogn, camn=camn,
         uvscrn=uvscrn, uvoffscn=uvoffscn, pntobrn=pntobrn, obrthr=obrthr,
-        normal=normal, gloss=gloss, glow=glow_orig,
+        normal=normal, gloss=gloss_orig, glow=glow_orig,
         modcol=modcol, selfalpha=selfalpha)
 
     _shader_cache[shdkey] = (shader, kwargs)
@@ -1536,9 +1550,9 @@ void main ()
     color *= p3d_ColorScale;
 """
     if isinstance(glow, tuple):
-        gr, gg, gb, ga = glow
+        gwr, gwg, gwb, gwa = glow
         fshstr += """
-    vec4 glwm = vec4(%(gr)f, %(gg)f, %(gb)f, %(ga)f);
+    vec4 glwm = vec4(%(gwr)f, %(gwg)f, %(gwb)f, %(gwa)f);
 """ % locals()
     elif glow:
         fshstr += """
