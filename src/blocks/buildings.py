@@ -22,7 +22,7 @@ class Hangar1 (Building):
 
     species = "hangar-1"
     basesink = 0.0
-    strength = 0
+    strength = 40000
     minhitdmg = None
     maxhitdmg = None
     rcs = 1.0
@@ -124,7 +124,7 @@ class HangarNato (Building):
 
     species = "hangar-nato"
     basesink = 0.0
-    strength = 0
+    strength = 40000
     minhitdmg = None
     maxhitdmg = None
     rcs = 1.0
@@ -285,7 +285,7 @@ class WarehouseRussian1 (Building):
     #glossmap = "models/buildings/warehouse/sov_warehouse_gls.png"
     destfirepos = Vec3(-4.0, 4.0, 0.0)
     destoffparts = ["wh_roof", "wh_door_rmain", "wh_door_lmain", "wh_door_side", "wh_misc",
-                    "wh_glass"]
+                    "glass"]
     desttexture = "models/buildings/warehouse/sov_warehouse_burn.png"
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
@@ -422,7 +422,7 @@ class BarrackRussian1 (Building):
     #glowmap = "models/buildings/barrack/sov_bunker_1_gw.png"
     #glossmap = "models/buildings/barrack/sov_bunker_1_gls.png"
     destfirepos = None
-    destoffparts = ["brk_roof", "brk_misc", "brk_door", "brk_glass"]
+    destoffparts = ["brk_roof", "brk_misc", "brk_door", "glass"]
     desttexture = "models/buildings/barrack/sov_barrack_1_burn.png"
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
@@ -450,7 +450,7 @@ class BarrackRussian2 (Building):
     #glowmap = "models/buildings/barrack/sov_bunker_2_gw.png"
     #glossmap = "models/buildings/barrack/sov_bunker_2_gls.png"
     destfirepos = None
-    destoffparts = ["brk_roof", "brk_misc", "brk_door", "brk_glass"]
+    destoffparts = ["brk_roof", "brk_misc", "brk_door", "glass"]
     desttexture = "models/buildings/barrack/sov_barrack_2_burn.png"
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
@@ -477,7 +477,7 @@ class ComtowerRussian1 (Building):
     #glowmap = "models/buildings/comtower/sov_comtower_1_gw.png"
     #glossmap = "models/buildings/comtower/sov_comtower_1_gls.png"
     destfirepos = None
-    destoffparts = ["ct_tower", "ct_roof", "ct_misc", "ct_door", "ct_glass"]
+    destoffparts = ["ct_tower", "ct_roof", "ct_misc", "ct_door", "glass"]
     desttexture = "models/buildings/comtower/sov_comtower_1_burn.png"
 
 
