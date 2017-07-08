@@ -9,6 +9,9 @@ from src.core.effect import fire_n_smoke_3
 from src.core.fire import PolyExplosion
 from src.core.misc import rgba, AutoProps, remove_subnodes, set_texture
 from src.core.misc import fx_uniform, fx_choice
+from src.core.misc import uniform
+from src.core.misc import hrmin_to_sec
+from src.core.shader import make_shader
 from src.core.sound import Sound3D
 from src.core.table import Table1
 
@@ -53,7 +56,7 @@ class Building (Body):
     def __init__ (self, world, name, side,
                   texture=None, normalmap=None, clamp=True,
                   pos=None, hpr=None, sink=None, damage=None,
-                  burns=True):
+                  burns=True, lightsact="cycle"):
 
         # ====================
 
@@ -123,6 +126,34 @@ class Building (Body):
             self._distraise_updwait = 0.0
             self._distraise_basepos = pos1
 
+        # Detect lighted glass.
+        # Set up turning light on/off through glow factor.
+        self._lights_activity = lightsact
+        self._lights = []
+        for model in self.models:
+            for lnd in model.findAllMatches("**/glass"):
+                kwargs = dict(self.shader_kwargs)
+                kwargs["glow"] = rgba(255, 255, 255, 1.0)
+                kwargs["glowfacn"] = self.world.shdinp.glowfacn
+                kwargs["gloss"] = rgba(255, 255, 255, 0.9)
+                shader = make_shader(**kwargs)
+                lnd.setShader(shader)
+                self._lights.append(lnd)
+        if self._lights:
+            if self._lights_activity in ("always",):
+                self._lights_on = True
+                for lnd in self._lights:
+                    lnd.setShaderInput(self.world.shdinp.glowfacn, 1.0)
+            elif self._lights_activity in ("never", "cycle"):
+                self._lights_on = False
+                for lnd in self._lights:
+                    lnd.setShaderInput(self.world.shdinp.glowfacn, 0.0)
+            else:
+                raise StandardError("Unknown type of lights activity '%s'." %
+                                    lightsact)
+            self._lights_updperiod = uniform(120.0, 240.0)
+            self._lights_updwait = 0.0
+
         base.taskMgr.add(self._loop, "building-loop-%s" % self.name)
 
 
@@ -131,8 +162,9 @@ class Building (Body):
         if not self.alive:
             return task.done
 
+        dt = self.world.dt
+
         if self.distraise:
-            dt = self.world.dt
             self._distraise_updwait -= dt
             if self._distraise_updwait <= 0.0:
                 self._distraise_updwait += self._distraise_updperiod
@@ -140,6 +172,21 @@ class Building (Body):
                 dz = self._distraise_table(cvdist)
                 pos = self._distraise_basepos + Point3(0.0, 0.0, dz)
                 self.node.setPos(pos)
+
+        if self._lights and self._lights_activity == "cycle":
+            self._lights_updwait -= dt
+            if self._lights_updwait <= 0.0:
+                self._lights_updwait += self._lights_updperiod
+                is_night_time = (   self.world.day_time > hrmin_to_sec(17, 30)
+                                 or self.world.day_time < hrmin_to_sec(6, 30))
+                if is_night_time and not self._lights_on:
+                    for lnd in self._lights:
+                        lnd.setShaderInput(self.world.shdinp.glowfacn, 1.0)
+                    self._lights_on = True
+                elif not is_night_time and self._lights_on:
+                    for lnd in self._lights:
+                        lnd.setShaderInput(self.world.shdinp.glowfacn, 0.0)
+                    self._lights_on = False
 
         return task.cont
 
@@ -234,7 +281,7 @@ class CustomBuilding (Building):
                   texture=None, normalmap=None, glowmap=rgba(0,0,0, 0.1),
                   glossmap=None, transp=None, clamp=True,
                   pos=None, hpr=None, sink=None,
-                  damage=None, burns=True,
+                  damage=None, burns=True, lightsact="cycle",
                   destfirepos=None, destoffparts=[], desttexture=None,
                   distraise=[], castshadow=True, shdmodelpath=None,
                   longdes=None, shortdes=None):
@@ -260,7 +307,7 @@ class CustomBuilding (Building):
             world=world, name=name, side=side,
             texture=texture, normalmap=normalmap, clamp=clamp,
             pos=pos, hpr=hpr, sink=sink,
-            damage=damage, burns=burns)
+            damage=damage, burns=burns, lightsact=lightsact)
         if transp is not None:
             self.node.setTransparency(transp)
 
