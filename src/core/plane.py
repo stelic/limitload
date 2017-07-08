@@ -1519,15 +1519,25 @@ class Plane (Body):
             self._breakup_track_hits_gun_fixed += self._breakup_track_hits_gun_level
             self._breakup_track_hits_gun_level = 0.0
 
+        low_speed_ground_coll = (
+            self.world.player.ac is self and
+            self.onground and
+            self.speed(refbody=obody) < 15.0 and
+            obody.family in ("building", "ship", "vehicle", "plane", "heli"))
+
         if chbx.critical:
             self._damage_critical += obody.hitforce
             if self._damage_critical > self.strength * 0.5:
-                self.explode_minor()
+                if not low_speed_ground_coll:
+                    self.explode_minor()
                 self.failure_level = self.max_failure_level
 
         self._wait_damage_recovery = self.dmgtime
 
-        if self.failure_level >= self.max_failure_level:
+        if self.failure_level >= self.max_failure_level and low_speed_ground_coll:
+            self._crumple_on_ground(vistype=randrange(1))
+
+        elif self.failure_level >= self.max_failure_level:
             self.set_shotdown(3.0)
             self.target = None
 
@@ -1705,6 +1715,37 @@ class Plane (Body):
         snd = Sound3D(path="audio/sounds/%s.ogg" % "explosion01",
                       parent=exp, volume=1.0, fadetime=0.1)
         snd.play()
+
+
+    def _crumple_on_ground (self, vistype=0):
+
+        if not self.alive:
+            return
+
+        self.jump_to(speed=0.01, onground=True)
+
+        if vistype == 0:
+            # Rotate nose down around main landing gear ground contact.
+            dhpr = Vec3(0.0, -15.0, 0.0)
+            rotnp = self.node.attachNewNode("rotnp")
+            rotnp.setPos(Vec3(0.0, self.dyn.lgmy, self.dyn.lgmz))
+            self.modelnode.wrtReparentTo(rotnp)
+            rotnp.setHpr(dhpr)
+            self.modelnode.wrtReparentTo(self.node)
+            rotnp.removeNode()
+            # Remove exhaust in order not to have it hang in air,
+            # as they are linked to self.node, not self.modelnode.
+            for trail in self.exhaust_trails:
+                trail.destroy()
+
+        else:
+            raise StandardError(
+                "Unknown visual crumpling type %d." %
+                vistype)
+
+        self._shake_last_hitforce = 0.0
+        self.set_hitboxes(hitboxdata=None)
+        self.set_crashed()
 
 
     def _add_damage_trails (self, level):
