@@ -4,8 +4,6 @@
 use-cores = 2
 
 [video]
-; Graphics API: gl, dx8, dx9.
-api = gl
 ; Resolution: desktop, <width> <height>.
 resolution = desktop
 ; Full screen: true, false.

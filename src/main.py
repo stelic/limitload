@@ -461,7 +461,6 @@ class GameConf (SimpleProps):
             use_cores=2, _use_cores_p=pset([1, 2, 3], keyw=["auto"]),
         )
         self.video = SimpleProps(
-            api="gl", _api_p=pset(["gl", "dx8", "dx9"]),
             resolution="desktop", _resolution_p=GameConf._parse_resolution,
             full_screen=True, _full_screen_p=pset([True, False]),
             multi_sampling_antialiasing=4, _multi_sampling_antialiasing_p=pset([0, 2, 4]),
@@ -703,11 +702,7 @@ def set_panda_config (options, gameconf):
         3: "thread2/thread3",
         }[use_cores]
 
-    pc["load-display"] = {
-        "gl": "pandagl",
-        "dx8": "pandadx8",
-        "dx9": "pandadx9",
-        }[gc.video.api]
+    pc["load-display"] = "pandagl"
 
     pc["fullscreen"] = bfmt(gc.video.full_screen)
 
