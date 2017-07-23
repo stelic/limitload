@@ -242,6 +242,9 @@ class Terrain (object):
         numtilesx = fix_num_tiles(sizex, 20000.0, tiledivx)
         numtilesy = fix_num_tiles(sizey, 20000.0, tiledivy)
 
+        celldensity_factor = {"high": 1.0, "low": 0.5}[base.gameconf.video.terrain_mesh]
+        celldensity *= celldensity_factor
+
         self.world = world
 
         self._visradius = visradius

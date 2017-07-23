@@ -466,6 +466,7 @@ class GameConf (SimpleProps):
             multi_sampling_antialiasing=4, _multi_sampling_antialiasing_p=pset([0, 2, 4]),
             anisotropic_filtering=16, _anisotropic_filtering_p=pset([0, 4, 8, 16]),
             preload_textures=2, _preload_textures_p=pset([0, 1, 2]),
+            terrain_mesh="high", _terrain_mesh_p=pset(["high", "low"]),
             vertical_sync=False, _vertical_sync_p=pset([True, False]),
         )
         self.audio = SimpleProps(
