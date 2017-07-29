@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-from math import pi, radians, degrees, asin
+from math import pi, radians, degrees, asin, tan
 import os
 import sys
 
@@ -23,6 +23,7 @@ from src.core.misc import texture_frame, SimpleProps
 from src.core.misc import HaltonDistrib, hprtovec, unitv
 from src.core.misc import fx_uniform, fx_randrange, fx_choice, fx_randvec
 from src.core.misc import NumRandom
+from src.core.misc import intl01vr
 from src.core.shader import make_shader
 from src.core.debris import AirBreakupPart
 
@@ -1292,6 +1293,149 @@ class Splash (object):
                 self._index_v += 1
 
         return task.cont
+
+
+class Corona (object):
+
+    def __init__ (self, world, pos, size, parent=None,
+                  shape="circle", scaling="base",
+                  color=rgba(255, 255, 255, 1.0), density=None,
+                  blinking=None, flickering=None, lifespan=None):
+
+        self.world = world
+        self.parent = parent if parent is not None else world
+
+        self.node = self.parent.node.attachNewNode("corona")
+        self.node.setPos(pos)
+
+        if shape == "circle":
+            texture = "images/particles/corona-circle.png"
+        elif shape == "ellipse":
+            texture = "images/particles/corona-ellipse.png"
+        else:
+            texture = shape
+
+        rsize = size if scaling == "base" else 1.0
+        bnd = make_quad(parent=self.node, size=rsize, texture=texture,
+                        filtr=False)
+        bnd.setBillboardPointEye(0.0)
+        bnd.setTransparency(TransparencyAttrib.MAlpha)
+        bnd.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
+        bnd.setDepthWrite(False)
+        self.world.add_altbin_node(bnd)
+        bnd.setColorScale(color)
+        glow = rgba(255, 255, 255, 0.1)
+        shader = make_shader(glow=glow, modcol=True, selfalpha=True)
+        bnd.setShader(shader)
+        self._fx_node = bnd
+
+        self._size_fac = 1.0
+        if scaling == "base":
+            def updatef (dt):
+                rsize = 1.0
+                self._fx_node.setScale(rsize * self._size_fac)
+        elif scaling == "screen":
+            def updatef (dt):
+                cdist = self.node.getDistance(self.world.camera)
+                rsize = Corona._real_size(size, self.world.vfov, cdist)
+                self._fx_node.setScale(rsize * self._size_fac)
+        elif scaling == "farscreen1":
+            cdist_1, ssize_1, cdist_2, ssize_2 = size
+            rsize_2 = Corona._real_size(ssize_2, self.world.vfov, cdist_2)
+            def updatef (dt):
+                cdist = self.node.getDistance(self.world.camera)
+                if cdist < cdist_1:
+                    cdist = cdist_1
+                    ssize = ssize_1
+                elif cdist_1 <= cdist < cdist_2:
+                    ssize = intl01vr(cdist, cdist_1, cdist_2, ssize_1, ssize_2)
+                else:
+                    ssize = ssize_2
+                rsize = Corona._real_size(ssize, self.world.vfov, cdist)
+                self._fx_node.setScale(rsize * self._size_fac)
+        elif scaling == "nearscreen1":
+            cdist_1, ssize_1 = size
+            def updatef (dt):
+                cdist = self.node.getDistance(self.world.camera)
+                if cdist >= cdist_1:
+                    cdist = cdist_1
+                rsize = Corona._real_size(ssize_1, self.world.vfov, cdist)
+                self._fx_node.setScale(rsize * self._size_fac)
+        else:
+            raise StandardError("Unknown corona scaling type '%s'." % scaling)
+        self._updatef = updatef
+
+        self._blinking = blinking
+        if self._blinking:
+            self._blinking_active = False
+            self._blinking_wait = 0.0
+
+        self._flickering = flickering
+        if self._flickering:
+            self._flickering_wait = 0.0
+
+        self._density = density
+
+        self.alive = True
+
+        base.taskMgr.add(self._loop, "corona-loop")
+
+
+    def destroy (self):
+
+        if not self.alive:
+            return
+        self.alive = False
+        self.node.removeNode()
+
+
+    def _loop (self, task):
+
+        if not self.alive:
+            return task.done
+        if not self.parent.alive:
+            self.destroy()
+            return task.done
+
+        dt = self.world.dt
+
+        if self._blinking:
+            self._blinking_wait -= dt
+            if self._blinking_wait <= 0.0:
+                off_time, on_time = self._blinking
+                if self._blinking_active:
+                    self.node.hide()
+                    self._blinking_active = False
+                    self._blinking_wait += fx_uniform(0.1 * off_time, off_time)
+                else:
+                    self.node.show()
+                    self._blinking_active = True
+                    self._blinking_wait += fx_uniform(0.1 * on_time, on_time)
+
+        if self._flickering:
+            min_sfac, max_sfac, min_wtime, max_wtime = self._flickering
+            self._flickering_wait -= dt
+            if self._flickering_wait <= 0.0:
+                self._flickering_wait += fx_uniform(min_wtime, max_wtime)
+                self._size_fac = fx_uniform(min_sfac, max_sfac)
+
+        if self._density:
+            cdist_1, cdist_2 = self._density
+            cdist = self.node.getDistance(self.world.camera)
+            alpha = intl01vr(cdist, cdist_1, cdist_2, 1.0, 0.0)
+            self._fx_node.setSa(alpha)
+
+        self._updatef(dt)
+
+        return task.cont
+
+
+    @staticmethod
+    def _real_size (asize, vfov, dist):
+
+        rsize = dist * tan(vfov * 0.5) * asize
+        return rsize
+
 
 
 if USE_COMPILED:
