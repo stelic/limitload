@@ -5,7 +5,7 @@ from math import radians
 from pandac.PandaModules import Vec3, Point3
 
 from src import pycv
-from src.core.fire import MuzzleFlash
+from src.core.fire import Corona, MuzzleFlash
 from src.core.bomb import Bomb
 from src.core.droptank import DropTank
 from src.core.jammer import JammingPod
@@ -20,9 +20,15 @@ from src.core.turret import Turret
 
 rocketexhaustcolor = rgba(255, 154, 92, 1.0) #rgba(240, 145, 49, 0.8)
 rockettrailcolor = rgba(250, 247, 245, 1.0) #rgba(250, 247, 245, 0.8) 
-rocketexhaustglowmap = rgba(255, 255, 255, 1.0)
+rocketexhaustglowmap = rgba(255, 255, 255, 0.1)
 rockettrailglowmap = rgba(0, 0, 0, 0.1)
+rockettrailadditive = True
 rockettraildirlit = pycv(py=False, c=True)
+rocketcoronaflickering = (0.8, 1.1, 0.03, 0.07)
+rocketcoronadensitytiny = (2500, 3000)
+rocketcoronadensitylow = (5000, 10000)
+rocketcoronadensitymed = (30000, 60000)
+rocketcoronadensityhigh = (100000, 200000)
 
 class Bullet7p62mm (Shell):
 
@@ -499,6 +505,19 @@ class R13 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.41, 0.0), size=(500, 0.03, 2500, 0.03),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.41, 0.0), size=(250, 0.0001, 300, 0.03),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.41, 0.0), size=(250, 0.02, 500, 0.03),
+               color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.41, 0.0),
                                radius0=0.15, radius1=0.30, length=4.0,
                                speed=20.0, poolsize=24,
@@ -506,6 +525,7 @@ class R13 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -562,6 +582,19 @@ class R60 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.04, 0.0), size=(500, 0.02, 2500, 0.02),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.04, 0.0), size=(250, 0.0001, 300, 0.02),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.04, 0.0), size=(250, 0.015, 500, 0.02),
+               color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.04, 0.0),
                                radius0=0.15, radius1=0.30, length=4.0,
                                speed=20.0, poolsize=24,
@@ -569,6 +602,7 @@ class R60 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -625,6 +659,19 @@ class R73 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.46, 0.0), size=(500, 0.03, 2500, 0.03),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.46, 0.0), size=(250, 0.0001, 300, 0.03),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.46, 0.0), size=(250, 0.02, 500, 0.03),
+               color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.46, 0.0),
                                radius0=0.15, radius1=0.30, length=4.0,
                                speed=20.0, poolsize=24,
@@ -632,6 +679,7 @@ class R73 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -688,6 +736,19 @@ class R27 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -2.04, 0.0), size=(500, 0.04, 2500, 0.04),
+               # color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -2.04, 0.0), size=(250, 0.0001, 300, 0.04),
+               # color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -2.04, 0.0), size=(250, 0.026, 500, 0.04),
+               color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -2.04, 0.0),
                                radius0=0.15, radius1=0.40, length=5.0,
                                speed=20.0, poolsize=24,
@@ -695,6 +756,7 @@ class R27 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -751,6 +813,19 @@ class R77 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.75, 0.0), size=(500, 0.04, 2500, 0.04),
+               # color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.75, 0.0), size=(250, 0.0001, 300, 0.04),
+               # color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.75, 0.0), size=(250, 0.026, 500, 0.04),
+               color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.75, 0.0),
                                radius0=0.15, radius1=0.40, length=5.0,
                                speed=20.0, poolsize=24,
@@ -758,6 +833,7 @@ class R77 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -815,6 +891,19 @@ class Kh25 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.85, 0.0), size=(500, 0.04, 2500, 0.04),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.85, 0.0), size=(250, 0.0001, 300, 0.04),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.85, 0.0), size=(250, 0.026, 500, 0.04),
+               color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.85, 0.0),
                                radius0=0.20, radius1=0.50, length=6.0,
                                speed=20.0, poolsize=24,
@@ -822,6 +911,7 @@ class Kh25 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -878,6 +968,19 @@ class Kh59 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -2.80, 0.0), size=(500, 0.06, 2500, 0.06),
+               # color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -2.80, 0.0), size=(250, 0.0001, 300, 0.06),
+               # color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -2.80, 0.0), size=(250, 0.04, 500, 0.06),
+               color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -2.80, 0.0),
                                radius0=0.20, radius1=0.55, length=6.0,
                                speed=20.0, poolsize=24,
@@ -885,6 +988,7 @@ class Kh59 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -940,6 +1044,19 @@ class S200 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -5.10, 0.0), size=(500, 0.10, 2500, 0.10),
+               # color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -5.10, 0.0), size=(300, 0.0001, 400, 0.10),
+               # color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -5.10, 0.0), size=(300, 0.07, 600, 0.10),
+               color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -5.10, 0.0),
                                radius0=0.50, radius1=1.30, length=14.0,
                                speed=20.0, poolsize=18,
@@ -947,6 +1064,7 @@ class S200 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=6)
@@ -1002,6 +1120,19 @@ class Osa (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.50, 0.0), size=(500, 0.03, 2500, 0.03),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.50, 0.0), size=(250, 0.0001, 300, 0.03),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.50, 0.0), size=(250, 0.02, 500, 0.03),
+               color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.50, 0.0),
                                radius0=0.40, radius1=1.10, length=12.0,
                                speed=20.0, poolsize=18,
@@ -1009,6 +1140,7 @@ class Osa (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=6)
@@ -1064,6 +1196,19 @@ class Igla (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -0.80, 0.0), size=(500, 0.016, 2500, 0.016),
+               # color=rocketexhaustcolor, density=rocketcoronadensitytiny,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -0.80, 0.0), size=(250, 0.0001, 300, 0.016),
+               # color=rocketexhaustcolor, density=rocketcoronadensitytiny,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -0.80, 0.0), size=(250, 0.011, 500, 0.016),
+               color=rocketexhaustcolor, density=rocketcoronadensitytiny,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -0.8, 0.0),
                                radius0=0.05, radius1=0.10, length=2.0,
                                speed=20.0, poolsize=18,
@@ -1071,6 +1216,7 @@ class Igla (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=3)
@@ -1126,6 +1272,19 @@ class Stinger (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -0.75, 0.0), size=(500, 0.016, 2500, 0.016),
+               # color=rocketexhaustcolor, density=rocketcoronadensitytiny,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -0.75, 0.0), size=(250, 0.0001, 300, 0.016),
+               # color=rocketexhaustcolor, density=rocketcoronadensitytiny,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -0.75, 0.0), size=(250, 0.011, 500, 0.016),
+               color=rocketexhaustcolor, density=rocketcoronadensitytiny,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -0.75, 0.0),
                                radius0=0.05, radius1=0.10, length=2.0,
                                speed=20.0, poolsize=18,
@@ -1133,6 +1292,7 @@ class Stinger (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=3)
@@ -1188,6 +1348,19 @@ class Aim7 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.83, 0.0), size=(500, 0.037, 2500, 0.037),
+               # color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.83, 0.0), size=(250, 0.0001, 300, 0.037),
+               # color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.83, 0.0), size=(250, 0.025, 500, 0.037),
+               color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.83, 0.0),
                                radius0=0.15, radius1=0.40, length=5.0,
                                speed=20.0, poolsize=24,
@@ -1195,6 +1368,7 @@ class Aim7 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -1250,6 +1424,19 @@ class Aim9 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.48, 0.0), size=(500, 0.03, 2500, 0.03),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.48, 0.0), size=(250, 0.0001, 300, 0.03),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.48, 0.0), size=(250, 0.02, 500, 0.03),
+               color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.48, 0.0),
                                radius0=0.10, radius1=0.30, length=4.0,
                                speed=20.0, poolsize=24,
@@ -1257,6 +1444,7 @@ class Aim9 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -1312,6 +1500,19 @@ class Aim120 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.91, 0.0), size=(500, 0.04, 2500, 0.04),
+               # color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.91, 0.0), size=(250, 0.0001, 300, 0.04),
+               # color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.91, 0.0), size=(250, 0.026, 500, 0.04),
+               color=rocketexhaustcolor, density=rocketcoronadensitymed,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.91, 0.0),
                                radius0=0.15, radius1=0.40, length=5.0,
                                speed=20.0, poolsize=24,
@@ -1319,6 +1520,7 @@ class Aim120 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -1374,6 +1576,19 @@ class Rim156 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -3.30, 0.0), size=(500, 0.07, 2500, 0.07),
+               # color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -3.30, 0.0), size=(300, 0.0001, 400, 0.07),
+               # color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -3.30, 0.0), size=(300, 0.05, 600, 0.07),
+               color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -3.3, 0.0),
                                radius0=0.40, radius1=1.10, length=12.0,
                                speed=20.0, poolsize=18,
@@ -1381,6 +1596,7 @@ class Rim156 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=6)
@@ -1436,6 +1652,19 @@ class Rapier (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.06, 0.0), size=(500, 0.02, 2500, 0.02),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.06, 0.0), size=(250, 0.0001, 300, 0.02),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.06, 0.0), size=(250, 0.015, 500, 0.02),
+               color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.06, 0.0),
                                radius0=0.40, radius1=1.10, length=12.0,
                                speed=20.0, poolsize=18,
@@ -1443,6 +1672,7 @@ class Rapier (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=6)
@@ -1498,6 +1728,19 @@ class Roland (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.13, 0.0), size=(500, 0.025, 2500, 0.025),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.13, 0.0), size=(250, 0.0001, 300, 0.025),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.13, 0.0), size=(250, 0.018, 500, 0.025),
+               color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.13, 0.0),
                                radius0=0.40, radius1=1.10, length=12.0,
                                speed=20.0, poolsize=18,
@@ -1505,6 +1748,7 @@ class Roland (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=6)
@@ -1560,6 +1804,19 @@ class Agm65 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.20, 0.0), size=(500, 0.025, 2500, 0.025),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -1.20, 0.0), size=(250, 0.0001, 300, 0.025),
+               # color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -1.20, 0.0), size=(250, 0.018, 500, 0.025),
+               color=rocketexhaustcolor, density=rocketcoronadensitylow,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -1.20, 0.0),
                                radius0=0.20, radius1=0.50, length=6.0,
                                speed=20.0, poolsize=24,
@@ -1567,6 +1824,7 @@ class Agm65 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -1622,6 +1880,19 @@ class Bgm109 (Rocket):
                         pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
                         target=target, offset=offset)
 
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -2.80, 0.0), size=(500, 0.06, 2500, 0.06),
+               # color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -2.80, 0.0), size=(300, 0.0001, 400, 0.06),
+               # color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -2.80, 0.0), size=(300, 0.04, 600, 0.06),
+               color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               flickering=rocketcoronaflickering)
+
         exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -2.80, 0.0),
                                radius0=0.20, radius1=0.55, length=7.0,
                                speed=20.0, poolsize=24,
@@ -1629,6 +1900,7 @@ class Bgm109 (Rocket):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
                                dbin=0,
                                freezedist=200.0, hidedist=1000.0,
                                loddirang=20, loddirskip=4)
@@ -1728,9 +2000,9 @@ class Rpg7 (PodRocket):
         # Rocket.__init__(self, world=world, name=name, side=side,
                         # pos=pos, hpr=hpr, speed=speed,
                         # target=target, offset=offset)
-
+                        
         exhaust2 = PolyTrail(parent=self, pos=Point3(0.0, -0.46, 0.0),
-                             radius0=0.15, radius1=1.40, lifespan=2.0,
+                             radius0=0.05, radius1=0.80, lifespan=2.0,
                              color=rgba(250, 250, 250, 0.8),
                              texture="images/particles/exhaust06.png", dbin=-2)
         self.exhaust_trails.append(exhaust2)

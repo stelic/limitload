@@ -19,10 +19,11 @@ from src.core.transl import *
 from src.core.turret import CustomTurret
 
 
-exhaustcolor = rgba(240, 188, 102, 0.5) #rgba(255, 160, 51, 0.5)
-exhaustcolorend = rgba(222, 198, 240, 0.6) #rgba(113, 101, 122, 0.6) #rgba(113, 51, 12, 0.6) #rgba(113, 101, 154, 0.6) #rgba(159, 108, 127, 1.0)
+exhaustcolor = rgba(255, 200, 109, 0.5) #rgba(240, 188, 102, 0.5) #rgba(255, 160, 51, 0.5)
+exhaustcolorend = rgba(236, 210, 255, 0.6) #rgba(222, 198, 240, 0.6) #rgba(113, 101, 122, 0.6) #rgba(113, 51, 12, 0.6) #rgba(113, 101, 154, 0.6) #rgba(159, 108, 127, 1.0)
 exhaustcolorlight = rgba(255, 200, 109, 0.5)
-exhaustglowmap = rgba(255, 255, 255, 1.0)
+exhaustglowmap = rgba(255, 255, 255, 0.1)
+exhaustadditive = True
 exhaustltradius = 3.0
 exhaustlthalfat = 0.33
 
@@ -294,6 +295,7 @@ class Mig29 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -5.8, -0.18),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -309,6 +311,7 @@ class Mig29 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -368,6 +371,7 @@ class Mig29fd (Mig29):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -5.8, -0.18),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -383,6 +387,7 @@ class Mig29fd (Mig29):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -508,6 +513,7 @@ class Mig25 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -8.38, 0.77),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -523,6 +529,7 @@ class Mig25 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -656,6 +663,7 @@ class Mig31 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -8.90, 0.33),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -671,6 +679,7 @@ class Mig31 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -800,6 +809,7 @@ class Mig21 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.00, -6.25, 0.19),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -942,6 +952,7 @@ class Su27 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -8.00, -0.05),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -957,6 +968,7 @@ class Su27 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -1108,6 +1120,7 @@ class F16 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -6.0, 0.0),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -1250,6 +1263,7 @@ class F15 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -7.70, 0.09),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -1265,6 +1279,7 @@ class F15 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -1398,6 +1413,7 @@ class F18 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -7.27, -0.085),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -1413,6 +1429,7 @@ class F18 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -1542,6 +1559,7 @@ class F22 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust04.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -6.1, -0.132),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -1557,6 +1575,7 @@ class F22 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust04.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -1684,6 +1703,7 @@ class F35b (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -5.20, -0.02),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -1819,6 +1839,7 @@ class F14 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -6.00, -0.25),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -1834,6 +1855,7 @@ class F14 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -1960,6 +1982,7 @@ class F4 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -4.85, 0.11),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -1975,6 +1998,7 @@ class F4 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -2113,6 +2137,7 @@ class F5 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -6.75, 0.11),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -2128,6 +2153,7 @@ class F5 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -2268,6 +2294,7 @@ class A10 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -5.25, 1.13),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -2283,6 +2310,7 @@ class A10 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -2423,6 +2451,7 @@ class Mirage2000 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.00, -5.50, 0.17),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -2529,6 +2558,7 @@ class F117 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust04.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -7.27, -0.085),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -2544,6 +2574,7 @@ class F117 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust04.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -2662,6 +2693,7 @@ class Ea6b (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -7.10, -0.075),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -2677,6 +2709,7 @@ class Ea6b (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -2815,6 +2848,7 @@ class B1b (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -9.0, -1.79),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
@@ -2831,6 +2865,7 @@ class B1b (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=300.0, hidedist=3000.0,
                                loddirang=20, loddirskip=4)
@@ -2845,6 +2880,7 @@ class B1b (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=300.0, hidedist=3000.0,
                                loddirang=20, loddirskip=4)
@@ -2859,6 +2895,7 @@ class B1b (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=300.0, hidedist=3000.0,
                                loddirang=20, loddirskip=4)
@@ -5870,6 +5907,7 @@ class Yak40 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -5884,6 +5922,7 @@ class Yak40 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=None,
                                freezedist=200.0, hidedist=2000.0,
                                loddirang=20, loddirskip=3)
@@ -5897,6 +5936,7 @@ class Yak40 (Plane):
                                ltoff=True,
                                texture="images/particles/exhaust03.png",
                                glowmap=exhaustglowmap,
+                               additive=exhaustadditive,
                                ltpos=Point3(0.0, -8.5, 1.1),
                                ltcolor=exhaustcolorlight,
                                ltradius=exhaustltradius, lthalfat=exhaustlthalfat,
