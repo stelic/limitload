@@ -859,12 +859,11 @@ class PolyExhaust (object):
             else:
                 glow = (glowmap1 is not None)
             ambln = self.world.shdinp.ambsmln if not ltoff else None
-            if additive:
-                shader = make_shader(ambln=ambln, glow=glow, modcol=True, selfalpha=True)
-                self.node.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
-            else:
-                shader = make_shader(ambln=ambln, glow=glow, modcol=True)
+            shader = make_shader(ambln=ambln, glow=glow, modcol=True,
+                                 selfalpha=additive)
             self.node.setShader(shader)
+            if additive:
+                self.node.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
             set_texture(self.node, texture=texture, glowmap=glowmap1)
 
             self.node.reparentTo(self._pnode)
@@ -1720,7 +1719,7 @@ class PolyBurn (object):
                   endthickness=None, spacing=0.5, offtang=0.0,
                   color=Vec4(1, 1, 1, 1), endcolor=None,
                   tcol=1.0, alphaexp=2.0,
-                  glowmap=None, dirlit=False,
+                  glowmap=None, additive=False, dirlit=False,
                   ltpos=None,
                   ltcolor=Vec4(1, 1, 1, 1), ltcolor2=None,
                   ltradius=10.0, ltradius2=None, lthalfat=0.5,
@@ -1763,8 +1762,10 @@ class PolyBurn (object):
             ambln = self.world.shdinp.ambsmln
             dirlns = []
         shader = make_shader(ambln=ambln, dirlns=dirlns,
-                             glow=glow, modcol=True) #, selfalpha=True)
+                             glow=glow, modcol=True, selfalpha=additive)
         self.node.setShader(shader)
+        if additive:
+            self.node.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
 
         self._pos = pos
         self._lifespan = lifespan
