@@ -773,6 +773,7 @@ class PolyExhaust (object):
                   subnode=None, colorend=None, tcol=1.0,
                   pdir=Vec3(0.0, -1.0, 0.0),
                   emradius=None, texture=None, glowmap=None,
+                  additive=False,
                   ltpos=None,
                   ltcolor=Vec4(1, 1, 1, 1), ltcolor2=None,
                   ltradius=10.0, ltradius2=None, lthalfat=0.5,
@@ -858,7 +859,11 @@ class PolyExhaust (object):
             else:
                 glow = (glowmap1 is not None)
             ambln = self.world.shdinp.ambsmln if not ltoff else None
-            shader = make_shader(ambln=ambln, glow=glow, modcol=True) #, selfalpha=True)
+            if additive:
+                shader = make_shader(ambln=ambln, glow=glow, modcol=True, selfalpha=True)
+                self.node.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
+            else:
+                shader = make_shader(ambln=ambln, glow=glow, modcol=True)
             self.node.setShader(shader)
             set_texture(self.node, texture=texture, glowmap=glowmap1)
 
