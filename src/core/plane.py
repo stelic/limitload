@@ -1520,6 +1520,7 @@ class Plane (Body):
             self._breakup_track_hits_gun_level = 0.0
 
         low_speed_ground_coll = (
+            self.world.player is not None and
             self.world.player.ac is self and
             self.onground and
             self.speed(refbody=obody) < 15.0 and
