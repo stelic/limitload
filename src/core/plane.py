@@ -17,7 +17,7 @@ from src.core.curve import Segment, Arc, HelixZ, ArcedHelixZ
 from src.core.decoy import FlareChaff
 from src.core.debris import AirBreakup
 from src.core.droptank import DropTank, Tanker
-from src.core.effect import fire_n_smoke_1, fire_n_smoke_4
+from src.core.effect import fire_n_smoke_1
 from src.core.fire import Splash, PolyExplosion
 from src.core.jammer import Jammer, JammingPod, JammingCarpet
 from src.core.misc import AutoProps, SimpleProps, rgba
@@ -1569,8 +1569,8 @@ class Plane (Body):
                 parent=self, store=self.damage_trails,
                 sclfact=0.1 * self._size_xy * fx_uniform(0.9, 1.2),
                 emradfact=0.1 * self._size_xy * fx_uniform(0.9, 1.1),
-                fcolor=rgba(255, 255, 255, 1.0),
-                fcolorend=rgba(247, 203, 101, 1.0),
+                fcolor=rgba(255, 173, 96, 1.0),
+                fcolorend=rgba(255, 79, 25, 1.0),
                 ftcol=0.6,
                 fpos=Vec3(0.0, 0.0, 0.0),
                 fpoolsize=24,
@@ -3948,12 +3948,13 @@ class Ejection (object):
                 pdir=Vec3(0.0, 0.0, -1.0),
                 radius0=0.15, radius1=0.40, length=3.0,
                 speed=20.0, poolsize=16,
-                color=rgba(240, 188, 102, 0.5),
-                colorend=rgba(113, 101, 154, 0.6),
+                color=rgba(255, 200, 108, 0.5),
+                colorend=rgba(187, 167, 255, 0.6),
                 tcol=0.6,
                 ltoff=True,
                 texture="images/particles/exhaust03.png",
-                glowmap=rgba(255, 255, 255, 1.0),
+                glowmap=rgba(255, 255, 255, 0.1),
+                additive=True,
                 freezedist=100.0, hidedist=1000.0,
                 frameskip=pycv(py=2, c=1),
                 loddirang=15, loddirskip=2)
@@ -3966,13 +3967,14 @@ class Ejection (object):
                 radius0=0.8, radius1=1.6,
                 length=(ps.firetime * 1.0),
                 speed=(ps.firetime * 3.0), poolsize=8,
-                color=rgba(255, 255, 255, 1.0),
-                colorend=rgba(246, 222, 183, 1.0),
+                color=rgba(255, 164, 28, 1.0),
+                colorend=rgba(255, 99, 17, 1.0),
                 tcol=0.5,
                 pdir=Vec3(0,0,1),
                 emradius=0.5,
-                texture="images/particles/explosion6-1.png",
-                glowmap=rgba(255, 255, 255, 1.0),
+                texture="images/particles/explosion7-1.png",
+                glowmap=rgba(255, 255, 255, 0.4),
+                additive=True,
                 ltoff=True,
                 frameskip=2,
                 dbin=0,
