@@ -623,19 +623,19 @@ class Explosion (object):
 class PolyExplosion (object):
 
     def __init__ (self, world, pos,
-                  firetex=("explosion6-1", "explosion6-2", "explosion6-3", "explosion6-4"),
-                  fireglow=rgba(255, 255, 255, 1.0),
+                  firetex=("explosion7-1", "explosion7-2", "explosion7-3", "explosion7-4"),
+                  fireglow=rgba(255, 255, 255, 0.5),
                   firetexsplit=1,
                   firenumframes=1,
                   #firetex="images/particles/effects-rocket-exp-4.png",
                   #fireglow="images/particles/effects-rocket-exp-4_gw.png",
                   #firetexsplit=8,
                   #firenumframes=48,
-                  smoketex=("smoke6-1", "smoke6-2", "smoke6-3", "smoke6-4"),
+                  smoketex=("smoke7-1", "smoke7-2", "smoke7-3", "smoke7-4"),
                   smokeglow=rgba(0, 0, 0, 0.1),
                   smoketexsplit=1,
                   smokenumframes=1,
-                  firepart=1, smokepart=1,
+                  firepart=1, firepool=8, smokepart=1, smokepool=11,
                   sizefac=1.0, timefac=1.0, amplfac=1.0,
                   smgray=pycv(py=(30, 45), c=(254, 255)), smred=10, firepeak=(0.4, 0.8),
                   dirlit=pycv(py=False, c=True),
@@ -679,10 +679,14 @@ class PolyExplosion (object):
                 fpos = Point3(pdir * (2.0 * sizefac))
             else:
                 fpos = Point3(0.0, 0.0, 0.0)
-            frad = 5.0 * sizefac
+            if amplfac >= 0:
+                frad = 5.0 * sizefac
+                fampl = 1.2 * amplfac
+            else:
+                frad = 0.0
+                fampl = 0.0
             fsz1 = 1.0 * sizefac
             fsz2 = self._rg.uniform(9.0, 18.0) * sizefac
-            fampl = 1.2 * amplfac
             flspan = self._rg.uniform(0.5, 1.0) * timefac
             fpeak1, fpeak2 = firepeak
             if fanim:
@@ -691,14 +695,14 @@ class PolyExplosion (object):
                 fcol3 = Vec4(0.0, 0.0, 0.0, 0.0)
                 fpeak1 = 1.0
             else:
-                fcol1 = rgba(255, 248, 243, 1.0)
+                fcol1 = rgba(255, 99, 37, 1.0)
                 if fpeak1 < 1.0:
-                    fcol2 = rgba(255, 255, 255, 1.0)
-                    fcol3 = rgba(112, 62, 23, 1.0)
+                    fcol2 = rgba(255, 173, 96, 1.0)
+                    fcol3 = rgba(255, 79, 25, 1.0)
                 else:
                     fcol2 = Vec4(0.0, 0.0, 0.0, 0.0)
                     fcol3 = Vec4(0.0, 0.0, 0.0, 0.0)
-            fplsz = 8
+            fplsz = firepool
             part = self._create_part(
                 world=world, pnode=self.node, dirlit=dirlit,
                 texture=ftex, glowmap=fglow,
@@ -709,7 +713,8 @@ class PolyExplosion (object):
                 pos=fpos, radius=frad, amplitude=fampl,
                 lifespan=flspan, poolsize=fplsz,
                 starttime=fstime,
-                randgen=self._rg)
+                randgen=self._rg,
+                additive=True)
             self._parts.append(part)
             max_flspan = max(max_flspan, flspan)
 
@@ -724,11 +729,16 @@ class PolyExplosion (object):
             #sanim = pick(smokeanim, si)
             sanim = (stexsp > 1 and snumfr > 1)
             spos = Point3(0.0, 0.0, 0.0)
-            srad = 5.0 * sizefac
+            if amplfac >= 0:
+                srad = 5.0 * sizefac
+                sampl = 5.0 * amplfac
+                slspan = self._rg.uniform(4.5, 5.0) * timefac
+            else:
+                srad = 0.0
+                sampl = 0.0
+                slspan = self._rg.uniform(2.5, 3.0) * timefac
             ssz1 = 1.5 * sizefac
             ssz2 = 30.0 * sizefac
-            sampl = 5.0 * amplfac
-            slspan = self._rg.uniform(4.5, 5.0) * timefac
             sstime = 0.0 * timefac
             smokepeak = pycv(py=(0.2, 0.6), c=(0.2, 0.4))
             speak1, speak2 = smokepeak
@@ -754,7 +764,7 @@ class PolyExplosion (object):
                 else:
                     scol2 = Vec4(0.0, 0.0, 0.0, 0.0)
                     scol3 = Vec4(0.0, 0.0, 0.0, 0.0)
-            splsz = 11
+            splsz = smokepool
             part = self._create_part(
                 world=world, pnode=self.node, dirlit=dirlit,
                 texture=stex, glowmap=sglow,
@@ -765,15 +775,16 @@ class PolyExplosion (object):
                 pos=spos, radius=srad, amplitude=sampl,
                 lifespan=slspan, poolsize=splsz,
                 starttime=sstime,
-                randgen=self._rg)
+                randgen=self._rg,
+                additive=False)
             self._parts.append(part)
 
         # Lighting.
-        if firepart > 0:
-            self._lt1_color_atstart = rgba(255, 255, 0, 1.0) * 1
+        if firepart > 0 and firepool > 1:
+            self._lt1_color_atstart = rgba(255, 99, 37, 1.0) * 1
             self._lt1_radius_atstart = 10.0 * sizefac
-            self._lt1_color_atpeak = rgba(255, 255, 0, 1.0) * 10
-            self._lt1_radius_atpeak = 100.0 * sizefac
+            self._lt1_color_atpeak = rgba(255, 173, 96, 1.0) * 10
+            self._lt1_radius_atpeak = 80.0 * sizefac
             self._lt1_color_atend = rgba(0, 0, 0, 1.0)
             self._lt1_radius_atend = 10.0 * sizefac
             self._lt1 = AutoPointLight(
@@ -836,7 +847,7 @@ class PolyExplosion (object):
                       size1, size2,
                       color1, color2, color3, colpeak1, colpeak2,
                       pos, radius, amplitude, lifespan, poolsize,
-                      randgen, starttime):
+                      randgen, starttime, additive):
 
         geom = PolyExplosionGeom(pnode,
                                  texsplit, numframes, animated,
@@ -859,9 +870,11 @@ class PolyExplosion (object):
         else:
             glow = (glowmap is not None)
         shader = make_shader(ambln=ambln, dirlns=dirlns,
-                             glow=glow, modcol=True)
+                             glow=glow, modcol=True, selfalpha=additive)
         gnode.setShader(shader)
         set_texture(gnode, texture=texture, glowmap=glowmap, clamp=True)
+        if additive:
+            gnode.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
 
         part = SimpleProps(geom=geom, starttime=starttime, started=False)
 
@@ -1203,7 +1216,7 @@ class Splash (object):
             self._cache_geom[gkey] = base_node
         self.node = world.node.attachNewNode("splash")
         if numquads == 1:
-            self.node.setBillboardAxis()
+            self.node.setBillboardPointEye(0.0)
         sub_node = base_node.copyTo(self.node)
         sub_node.setP(90.0)
         sub_node.setZ(-size * relsink)
