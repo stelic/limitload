@@ -5,13 +5,18 @@ from math import radians
 from pandac.PandaModules import Vec3, Point3
 
 from src.core.body import Body, HitboxData
-from src.core.effect import fire_n_smoke
+from src.core.effect import fire_n_smoke_2
 from src.core.misc import rgba, remove_subnodes
 from src.core.misc import fx_uniform
 from src.core.ship import Ship
 from src.core.trail import PolyTrail
 from src.core.transl import *
 
+
+firecolor = rgba(255, 114, 18, 1.0) # Default fire color, used in class ship
+firecolorend = rgba(255, 113, 52, 1.0) # Default fire color end, used in class ship
+firecolor1 = rgba(255, 118, 55, 1.0)
+firecolor1end = rgba(255, 93, 62, 1.0)
 
 class Ticonderoga (Ship):
 
@@ -287,112 +292,96 @@ class OilPlatform1 (Ship):
         if self._hbx_hpad.hitpoints <= 0 and not self._hbx_hpad.out:
             self.explode_minor(offset=self._hbx_hpad.center)
             self._hbx_hpad.out = True
+            remove_subnodes(self.node, ["oilplat_helipad", "oilplat_chopper",])
         if self._hbx_cns1.hitpoints <= 0 and not self._hbx_cns1.out:
             self.explode_minor(offset=self._hbx_cns1.center)
             self._hbx_cns1.out = True
+            remove_subnodes(self.node, ["oilplat_constr1",])
         if self._hbx_ins1.hitpoints <= 0 and not self._hbx_ins1.out:
             self.explode(offset=self._hbx_ins1.center)
-            fire_n_smoke(parent=self, store=self.damage_trails,
-                         fcolor=rgba(255, 255, 255, 1.0),
-                         fcolorend=rgba(236, 112, 27, 1.0),
-                         fpos=Vec3(-9.0, -11.0, 51.0),
-                         spos=Vec3(-9.0, -11.0, 54.0),
-                         spos2=None,
-                         ftcol=0.6,
-                         stcol=0.6,
-                         fforce=10.0,
-                         sforce=10.0,
-                         flifespan=1.2,
-                         slifespan=3.2,
-                         sclfact=2.4,
-                         psfact=0.8,
-                         pdir=Vec3(0, 0, 1),
-                         fphpr=Vec3(0,0,0),
-                         sphpr=Vec3(0,0,0),
-                         emradfact=fx_uniform(0.04, 0.08) * self._size_xy,
-                         emampfact=1.1,
-                         absolute=True,
-                         fdelay=fx_uniform(1.0, 4.0))
+            fire_n_smoke_2(
+                parent=self, store=self.damage_trails,
+                sclfact = fx_uniform(0.035, 0.05) * self._size_xy,
+                emradfact = fx_uniform(0.04, 0.06) * self._size_xy,
+                zvelfact = 20.0,
+                fcolor = firecolor1,
+                fcolorend = firecolor1end,
+                ftcol = 0.5,
+                fspacing = 0.1,
+                flifespan = 1.2,
+                fpos = Vec3(-9.0, -11.0, 51.0),
+                fdelay = 0.0,
+                spos = Vec3(-9.0, -11.0, 54.0),
+                stcol = 0.4,
+                slifespan = 4.0)
             self._hbx_ins1.out = True
+            remove_subnodes(self.node, ["oilplat_installation1",])
         if self._hbx_ins2.hitpoints <= 0 and not self._hbx_ins2.out:
             self.explode_minor(offset=self._hbx_ins2.center)
-            fire_n_smoke(parent=self, store=self.damage_trails,
-                         fcolor=rgba(255, 255, 255, 1.0),
-                         fcolorend=rgba(231, 132, 47, 1.0),
-                         fpos=Vec3(18.0, -25.0, 51.0),
-                         spos=Vec3(18.0, -25.0, 54.0),
-                         spos2=None,
-                         ftcol=0.6,
-                         stcol=0.6,
-                         fforce=8.0,
-                         sforce=8.0,
-                         flifespan=1.2,
-                         slifespan=2.8,
-                         sclfact=2.3,
-                         psfact=0.6,
-                         pdir=Vec3(0, 0, 1),
-                         fphpr=Vec3(0,0,0),
-                         sphpr=Vec3(0,0,0),
-                         emradfact=fx_uniform(0.02, 0.04) * self._size_xy,
-                         emampfact=1.2,
-                         absolute=True,
-                         fdelay=fx_uniform(0.1, 4.0))
+            fire_n_smoke_2(
+                parent=self, store=self.damage_trails,
+                sclfact = fx_uniform(0.025, 0.04) * self._size_xy,
+                emradfact = fx_uniform(0.04, 0.06) * self._size_xy,
+                zvelfact = 20.0,
+                fcolor = firecolor1,
+                fcolorend = firecolor1end,
+                ftcol = 0.5,
+                fspacing = 0.1,
+                flifespan = 1.0,
+                fpos = Vec3(18.0, -25.0, 51.0),
+                fdelay = 0.0,
+                spos = Vec3(18.0, -25.0, 54.0),
+                stcol = 0.4,
+                slifespan = 3.4)
             if self._defsam2on:
                 self._hbx_def2.hitpoints = 0 # Defense
             self._hbx_ins2.out = True
+            remove_subnodes(self.node, ["oilplat_installation2",])
         if self._hbx_ins3.hitpoints <= 0 and not self._hbx_ins3.out:
             self.explode_minor(offset=self._hbx_ins3.center)
-            fire_n_smoke(parent=self, store=self.damage_trails,
-                         fcolor=rgba(255, 255, 255, 1.0),
-                         fcolorend=rgba(241, 132, 87, 1.0),
-                         fpos=Vec3(20.0, 1.0, 51.0),
-                         spos=Vec3(20.0, 1.0, 54.0),
-                         spos2=None,
-                         ftcol=0.8,
-                         stcol=0.6,
-                         fforce=8.0,
-                         sforce=8.0,
-                         flifespan=1.3,
-                         slifespan=2.9,
-                         sclfact=2.2,
-                         psfact=0.6,
-                         pdir=Vec3(0, 0, 1),
-                         fphpr=Vec3(0,0,0),
-                         sphpr=Vec3(0,0,0),
-                         emradfact=fx_uniform(0.02, 0.04) * self._size_xy,
-                         emampfact=1.2,
-                         absolute=True,
-                         fdelay=fx_uniform(0.1, 4.0))
+            fire_n_smoke_2(
+                parent=self, store=self.damage_trails,
+                sclfact = fx_uniform(0.03, 0.045) * self._size_xy,
+                emradtype="fat-y",
+                emradfact = fx_uniform(0.05, 0.07) * self._size_xy,
+                zvelfact = 20.0,
+                fcolor = firecolor1,
+                fcolorend = firecolor1end,
+                ftcol = 0.5,
+                fspacing = 0.1,
+                flifespan = 1.0,
+                fpos = Vec3(20.0, 1.0, 51.0),
+                fdelay = 0.0,
+                spos = Vec3(20.0, 1.0, 54.0),
+                stcol = 0.4,
+                slifespan = 3.4)
             self._hbx_ins3.out = True
+            remove_subnodes(self.node, ["oilplat_installation3",])
         if self._hbx_ins4.hitpoints <= 0 and not self._hbx_ins4.out:
             self.explode_minor(offset=self._hbx_ins4.center)
             self._hbx_ins4.out = True
+            remove_subnodes(self.node, ["oilplat_installation4",])
         if self._hbx_ins5.hitpoints <= 0 and not self._hbx_ins5.out:
             self.explode(offset=self._hbx_ins5.center)
-            fire_n_smoke(parent=self, store=self.damage_trails,
-                         fcolor=rgba(255, 255, 255, 1.0),
-                         fcolorend=rgba(241, 96, 53, 1.0),
-                         fpos=Vec3(-20.0, 20.0, 51.0),
-                         spos=Vec3(-20.0, 20.0, 54.0),
-                         spos2=None,
-                         ftcol=0.6,
-                         stcol=0.6,
-                         fforce=12.0,
-                         sforce=12.0,
-                         flifespan=1.4,
-                         slifespan=3.4,
-                         sclfact=2.5,
-                         psfact=0.8,
-                         pdir=Vec3(0, 0, 1),
-                         fphpr=Vec3(0,0,0),
-                         sphpr=Vec3(0,0,0),
-                         emradfact=fx_uniform(0.04, 0.08) * self._size_xy,
-                         emampfact=1.3,
-                         absolute=True,
-                         fdelay=fx_uniform(1.0, 4.0))
+            fire_n_smoke_2(
+                parent=self, store=self.damage_trails,
+                sclfact = fx_uniform(0.05, 0.07) * self._size_xy,
+                emradfact = fx_uniform(0.07, 0.08) * self._size_xy,
+                zvelfact = 20.0,
+                fcolor = firecolor1,
+                fcolorend = firecolor1end,
+                ftcol = 0.5,
+                fspacing = 0.1,
+                flifespan = 2.0,
+                fpos = Vec3(-20.0, 20.0, 51.0),
+                fdelay = 0.0,
+                spos = Vec3(-20.0, 20.0, 54.0),
+                stcol = 0.4,
+                slifespan = 5.0)
             if self._defsam1on:
                 self._hbx_def1.hitpoints = 0 # Defense
             self._hbx_ins5.out = True
+            remove_subnodes(self.node, ["oilplat_installation5", "oilplat_constr3",])
 
         ##### Defense
         if self._defsam1on:
@@ -577,107 +566,73 @@ class OilPlatform2 (Ship):
             self._hbx_leg3.out = True
         if self._hbx_hpad.hitpoints <= 0 and not self._hbx_hpad.out:
             self.explode_minor(offset=self._hbx_hpad.center)
-            fire_n_smoke(parent=self, store=self.damage_trails,
-                         fcolor=None,
-                         fcolorend=None,
-                         fpos=None,
-                         spos=Vec3(-48.0, -18.0, 40.0),
-                         spos2=None,
-                         ftcol=None,
-                         stcol=0.6,
-                         fforce=None,
-                         sforce=10.0,
-                         flifespan=None,
-                         slifespan=2.6,
-                         sclfact=2.2,
-                         psfact=0.4,
-                         pdir=Vec3(0, 0, 1),
-                         fphpr=None,
-                         sphpr=Vec3(0,0,0),
-                         emradfact=fx_uniform(0.01, 0.02) * self._size_xy,
-                         emampfact=1.0,
-                         absolute=True,
-                         fdelay=None)
+            fire_n_smoke_2(
+                parent=self, store=self.damage_trails,
+                sclfact = fx_uniform(0.06, 0.08) * self._size_xy,
+                emradfact = fx_uniform(0.07, 0.08) * self._size_xy,
+                zvelfact = 20.0,
+                fcolor = None,
+                fcolorend = None,
+                ftcol = None,
+                fspacing = None,
+                flifespan = None,
+                fpos = None,
+                fdelay = None,
+                spos = Vec3(-48.0, -18.0, 40.0),
+                stcol = 0.4,
+                slifespan = 2.8)
             self._hbx_hpad.out = True
         if self._hbx_cns1.hitpoints <= 0 and not self._hbx_cns1.out:
             self.explode_minor(offset=self._hbx_cns1.center)
             self._hbx_cns1.out = True
-        if self._hbx_cns2.hitpoints <= 0 and not self._hbx_cns1.out:
-            self.explode_minor(offset=self._hbx_cns1.center)
+            remove_subnodes(self.node, ["oilplat_constr1",])
+        if self._hbx_cns2.hitpoints <= 0 and not self._hbx_cns2.out:
+            self.explode_minor(offset=self._hbx_cns2.center)
             self._hbx_cns2.out = True
+            remove_subnodes(self.node, ["oilplat_constr2",])
         if self._hbx_ins1.hitpoints <= 0 and not self._hbx_ins1.out:
             self.explode(offset=self._hbx_ins1.center)
-            fire_n_smoke(parent=self, store=self.damage_trails,
-                         fcolor=rgba(255, 255, 255, 1.0),
-                         fcolorend=rgba(242, 137, 29, 1.0),
-                         fpos=Vec3(-5.0, 3.0, 41.0),
-                         spos=Vec3(-5.0, 3.0, 45.0),
-                         spos2=None,
-                         ftcol=0.5,
-                         stcol=0.6,
-                         fforce=12.0,
-                         sforce=12.0,
-                         flifespan=1.2,
-                         slifespan=3.2,
-                         sclfact=2.6,
-                         psfact=1.0,
-                         pdir=Vec3(0, 0, 1),
-                         fphpr=Vec3(0,0,0),
-                         sphpr=Vec3(0,0,0),
-                         emradfact=fx_uniform(0.04, 0.08) * self._size_xy,
-                         emampfact=1.2,
-                         absolute=True,
-                         fdelay=fx_uniform(1.0, 6.0))
+            fire_n_smoke_2(
+                parent=self, store=self.damage_trails,
+                sclfact = fx_uniform(0.06, 0.08) * self._size_xy,
+                emradfact = fx_uniform(0.07, 0.08) * self._size_xy,
+                zvelfact = 20.0,
+                fcolor = firecolor1,
+                fcolorend = firecolor1end,
+                ftcol = 0.5,
+                fspacing = 0.1,
+                flifespan = 1.8,
+                fpos = Vec3(-5.0, 3.0, 41.0),
+                fdelay = 0.0,
+                spos = Vec3(-5.0, 3.0, 45.0),
+                stcol = 0.4,
+                slifespan = 4.8)
             self._hbx_ins1.out = True
             self._hbx_ins3.hitpoints = 0
+            remove_subnodes(self.node, ["oilplat_installation1",])
         if self._hbx_ins2.hitpoints <= 0 and not self._hbx_ins2.out:
             self.explode(offset=self._hbx_ins2.center)
-            fire_n_smoke(parent=self, store=self.damage_trails,
-                         fcolor=rgba(255, 255, 255, 1.0),
-                         fcolorend=rgba(247, 141, 96, 1.0),
-                         fpos=Vec3(23.0, 1.0, 48.0),
-                         spos=Vec3(23.0, 1.0, 52.0),
-                         spos2=None,
-                         ftcol=0.5,
-                         stcol=0.6,
-                         fforce=12.0,
-                         sforce=12.0,
-                         flifespan=1.4,
-                         slifespan=3.0,
-                         sclfact=2.3,
-                         psfact=0.8,
-                         pdir=Vec3(0, 0, 1),
-                         fphpr=Vec3(0,0,0),
-                         sphpr=Vec3(0,0,0),
-                         emradfact=fx_uniform(0.015, 0.03) * self._size_xy,
-                         emampfact=1.1,
-                         absolute=True,
-                         fdelay=fx_uniform(1.0, 4.0))
+            fire_n_smoke_2(
+                parent=self, store=self.damage_trails,
+                sclfact = fx_uniform(0.05, 0.07) * self._size_xy,
+                emradtype="fat-y",
+                emradfact = fx_uniform(0.10, 0.13) * self._size_xy,
+                zvelfact = 20.0,
+                fcolor = firecolor1,
+                fcolorend = firecolor1end,
+                ftcol = 0.5,
+                fspacing = 0.1,
+                flifespan = 1.4,
+                fpos = Vec3(23.0, 1.0, 48.0),
+                fdelay = 0.0,
+                spos = Vec3(23.0, 1.0, 52.0),
+                stcol = 0.4,
+                slifespan = 3.4)
             self._hbx_ins2.out = True
         if self._hbx_ins3.hitpoints <= 0 and not self._hbx_ins3.out:
             self.explode_minor(offset=self._hbx_ins3.center)
-            fire_n_smoke(parent=self, store=self.damage_trails,
-                         fcolor=rgba(255, 255, 255, 1.0),
-                         fcolorend=rgba(239, 121, 85, 1.0),
-                         fpos=Vec3(3.0, 6.0, 58.0),
-                         spos=Vec3(3.0, 6.0, 62.0),
-                         spos2=None,
-                         ftcol=0.6,
-                         stcol=0.6,
-                         fforce=14.0,
-                         sforce=14.0,
-                         flifespan=1.2,
-                         slifespan=3.2,
-                         sclfact=2.4,
-                         psfact=0.6,
-                         pdir=Vec3(0, 0, 1),
-                         fphpr=Vec3(0,0,0),
-                         sphpr=Vec3(0,0,0),
-                         emradfact=fx_uniform(0.02, 0.04) * self._size_xy,
-                         emampfact=1.1,
-                         absolute=True,
-                         fdelay=fx_uniform(1.0, 4.0))
             self._hbx_ins3.out = True
+            remove_subnodes(self.node, ["oilplat_installation3",])
 
         if ((self._hbx_ins1.hitpoints <= 0 and self._hbx_ins2.hitpoints <= 0 and self._hbx_ins3.hitpoints <= 0) or
             self._hbx_plat.hitpoints <= 0 or

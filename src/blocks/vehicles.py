@@ -14,6 +14,11 @@ from src.core.turret import CustomTurret
 from src.core.vehicle import Vehicle
 
 
+firecolor = rgba(255, 94, 15, 1.0) # Default fire color, used in class vehicle
+firecolorend = rgba(255, 107, 56, 1.0) # Default fire color end, used in class vehicle
+firecolor1 = rgba(255, 106, 21, 1.0),
+firecolor1end = rgba(255, 107, 47, 1.0),
+
 def breakup_small (handle, prob=0.5):
     return GroundBreakupData(handle=handle, breakprob=prob,
                              duration=(8, 10),
@@ -905,8 +910,8 @@ class TankCruiser (Vehicle):
                 sclfact = 4.2,
                 emradfact = 6.0,
                 zvelfact = 9.0,
-                fcolor = rgba(255, 255, 255, 1.0),
-                fcolorend = rgba(246, 112, 27, 1.0),
+                fcolor = firecolor1,
+                fcolorend = firecolor1end,
                 ftcol = 0.6,
                 flifespan = 2.2,
                 fpos = self._hbx_turm.center + Point3(0,0,-8),

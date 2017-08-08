@@ -11,6 +11,9 @@ from src.core.transl import *
 from src.core.turret import CustomTurret
 
 
+firecolor = rgba(255, 173, 96, 1.0) # Default fire color, used in class heli
+firecolorend = rgba(255, 94, 25, 1.0) # Default fire color end, used in class heli
+
 def breakup_small_front (handle):
     return AirBreakupData(handle=handle, limdamage=200,
                           duration=(5, 10), termspeed=(200, 300),

@@ -66,6 +66,10 @@ file: images/particles/airplanedebris*.png
 author: unknown
 license: unknown
 
+file: images/particles/corona*.png
+copyright: Stefan Ilić <stef@sezampro.rs>
+license: CC-by-SA 4.0
+
 file: images/particles/exhaust*.png
 copyright: Stefan Ilić <stef@sezampro.rs>
 license: CC-by-SA 4.0
@@ -87,6 +91,10 @@ copyright: Panda3D
 license: BSD 3-clause
 
 file: images/particles/smoke6*.png
+copyright: Killst4r
+license: unknown
+
+file: images/particles/smoke7*.png
 copyright: Killst4r
 license: unknown
 
