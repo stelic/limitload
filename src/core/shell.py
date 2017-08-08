@@ -8,7 +8,7 @@ from pandac.PandaModules import ColorBlendAttrib
 
 from src import internal_path, join_path
 from src.core.body import Body, EnhancedVisual
-from src.core.fire import MuzzleFlash, Splash
+from src.core.fire import MuzzleFlash, PolyExplosion, Splash
 from src.core.misc import AutoProps, SimpleProps, rgba, unitv, vtod
 from src.core.misc import hprtovec, vectohpr
 from src.core.misc import get_cache_key_section
@@ -147,10 +147,15 @@ class Shell (Body):
         if self._vpuff and self.world.below_surface(self._pos):
             posg = self.world.intersect_surface(self._pos - self._vel * self.world.dt, self._pos)
             size = 10.0 * (self.caliber / 0.030)
-            Splash(world=self.world, pos=posg, size=3.0, relsink=0.5,
-                   numquads=1, texture="images/particles/effects-rocket-exp-3.png",
-                   texsplit=8, fps=24, numframes=28,
-                   glowmap="images/particles/effects-rocket-exp-3_gw.png")
+            # Splash(world=self.world, pos=posg, size=3.0, relsink=0.5,
+                   # numquads=1, texture="images/particles/effects-rocket-exp-3.png",
+                   # texsplit=8, fps=24, numframes=28,
+                   # glowmap="images/particles/effects-rocket-exp-3_gw.png")
+            PolyExplosion(
+                world=self.world, pos=posg,
+                fireglow=rgba(255, 255, 255, 1.0),
+                firepool=1, smokepool=0,
+                sizefac=1.2, timefac=0.1, amplfac=-1)
             self.destroy()
             return task.done
 

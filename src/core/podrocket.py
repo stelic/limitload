@@ -6,9 +6,9 @@ from pandac.PandaModules import Vec3, Vec4, Point3
 from pandac.PandaModules import NodePath, TransparencyAttrib, AmbientLight
 
 from src.core.body import Body, EnhancedVisual
-from src.core.fire import Splash
+from src.core.fire import PolyExplosion, Splash
 from src.core.misc import AutoProps, load_model_lod_chain
-from src.core.misc import make_quad_lattice, set_texture
+from src.core.misc import make_quad_lattice, rgba, set_texture
 from src.core.shader import make_stores_shader, make_shader
 from src.core.sound import Sound3D
 from src.core.transl import *
@@ -202,11 +202,16 @@ class PodRocket (Body):
 
         if pos is None:
             pos = self.pos()
-        exp = Splash(world=self.world, pos=pos, size=8.0, relsink=0.5,
-                     numquads=1,
-                     texture="images/particles/effects-rocket-exp-3.png",
-                     glowmap="images/particles/effects-rocket-exp-3_gw.png",
-                     texsplit=8, fps=24, numframes=28)
+        # exp = Splash(world=self.world, pos=pos, size=8.0, relsink=0.5,
+                     # numquads=1,
+                     # texture="images/particles/effects-rocket-exp-3.png",
+                     # glowmap="images/particles/effects-rocket-exp-3_gw.png",
+                     # texsplit=8, fps=24, numframes=28)
+        exp = PolyExplosion(
+            world=self.world, pos=pos,
+            fireglow=rgba(255, 255, 255, 1.0),
+            firepool=1, smokepool=0,
+            sizefac=3.0, timefac=0.4, amplfac=-1)
         snd = Sound3D(
             "audio/sounds/%s.ogg" % "explosion-missile",
             parent=exp, volume=0.8, fadetime=0.1)
