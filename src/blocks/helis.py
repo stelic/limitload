@@ -7,6 +7,7 @@ from pandac.PandaModules import Vec3, Point3
 from src.blocks.weapons import M230
 from src.core.debris import AirBreakupData
 from src.core.heli import Heli
+from src.core.misc import rgba
 from src.core.transl import *
 from src.core.turret import CustomTurret
 
