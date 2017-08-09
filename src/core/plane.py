@@ -7,7 +7,7 @@ import os
 from direct.directtools.DirectGeometry import LineNodePath
 from pandac.PandaModules import Vec2, Vec3, Vec4, Vec3D, Point2, Point3, Point3D
 from pandac.PandaModules import NodePath, Quat, QuatD
-from pandac.PandaModules import TransparencyAttrib
+from pandac.PandaModules import ColorBlendAttrib, TransparencyAttrib
 
 from src import join_path, path_exists, path_dirname, path_basename
 from src import pycv
@@ -472,8 +472,10 @@ class Plane (Body):
             if not flwnd.isEmpty():
                 shader = make_shader(ambln=self.world.shdinp.ambln,
                                      glow=rgba(255, 255, 255, 1.0),
-                                     glowfacn=self.world.shdinp.glowfacn)
+                                     glowfacn=self.world.shdinp.glowfacn,
+                                     selfalpha=True)
                 flwnd.setShader(shader)
+                flwnd.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
                 flwnd.setTransparency(TransparencyAttrib.MAlpha)
                 texture = None
                 if base.with_bloom:
@@ -487,8 +489,10 @@ class Plane (Body):
             if not ehwnd.isEmpty():
                 shader = make_shader(ambln=self.world.shdinp.ambln,
                                      glow=rgba(255, 255, 255, 1.0),
-                                     glowfacn=self.world.shdinp.glowfacn)
+                                     glowfacn=self.world.shdinp.glowfacn,
+                                     selfalpha=True)
                 ehwnd.setShader(shader)
+                ehwnd.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
                 set_texture(ehwnd, normalmap=-1, glowmap=-1, glossmap=-1,
                             shadowmap=-1)
                 self._engine_hot_walls.append(ehwnd)
