@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-from pandac.PandaModules import VBase2, VBase2D, Vec3, Point2, Point3
+from pandac.PandaModules import VBase2, VBase2D, Vec3, Vec4, Point2, Point3
 from pandac.PandaModules import NodePath
 
 from src import pycv
@@ -109,6 +109,12 @@ class Building (Body):
             obright=True, ltrefl=(self.glossmap is not None),
             shdshow=True, shdmodind=shdmodind,
             pos=pos1, hpr=hpr)
+
+        self._normalmap_res = normalmap
+        self._glowmap_res = (self.glowmap
+                             if not isinstance(self.glowmap, Vec4) else None)
+        self._glossmap_res = (self.glossmap
+                              if not isinstance(self.glossmap, Vec4) else None)
 
         width, length, height = self.bbox
         self._size_xy = min(width, length)
@@ -224,7 +230,11 @@ class Building (Body):
             if self.desttextures:
                 desttexture = fx_choice(self.desttextures)
                 for model in self.models:
-                    set_texture(model, texture=desttexture)
+                    set_texture(model, texture=desttexture,
+                                normalmap=self._normalmap_res,
+                                glowmap=self._glowmap_res,
+                                glossmap=self._glossmap_res,
+                                shadowmap=self.world.shadow_texture)
 
             if self._burns:
                 fire_n_smoke_3(
@@ -250,7 +260,8 @@ class Building (Body):
         exp = PolyExplosion(world=self.world, pos=self.pos(offset=offset),
                             firepart=3, smokepart=3,
                             sizefac=6.0, timefac=1.4, amplfac=1.8,
-                            smgray=pycv(py=(30,60), c=(220, 255)), smred=0, firepeak=(0.3, 0.6))
+                            smgray=pycv(py=(30,60), c=(220, 255)), smred=0,
+                            firepeak=(0.3, 0.6))
         snd = Sound3D("audio/sounds/%s.ogg" % "explosion01",
                       parent=exp, volume=1.0, fadetime=0.1)
         snd.play()

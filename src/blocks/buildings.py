@@ -258,7 +258,7 @@ class RadarRussian1 (Building):
     destfirepos = Vec3(0.0, 0.0, 6.0)
     destoffparts = ["radar_sphere_part", "radar_roof", "radar_misc",
                     "glass", "door"]
-    desttexture = "models/buildings/radarstation/sov_radarstation_burn.png"
+    desttextures = ["models/buildings/radarstation/sov_radarstation_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -286,7 +286,7 @@ class WarehouseRussian1 (Building):
     destfirepos = Vec3(-4.0, 4.0, 0.0)
     destoffparts = ["wh_roof", "wh_door_rmain", "wh_door_lmain", "wh_door_side", "wh_misc",
                     "glass"]
-    desttexture = "models/buildings/warehouse/sov_warehouse_burn.png"
+    desttextures = ["models/buildings/warehouse/sov_warehouse_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -313,7 +313,7 @@ class Warehouse1 (Building):
     #glossmap = "models/buildings/warehouse/warehouse_1_gls.png"
     destfirepos = Vec3(0.0, 0.0, 0.0)
     destoffparts = ["wh_roof", "wh_doors", "wh_door_main", "wh_misc"]
-    desttexture = "models/buildings/warehouse/warehouse_1_burn.png"
+    desttextures = ["models/buildings/warehouse/warehouse_1_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -341,7 +341,7 @@ class CampShed1 (Building):
     #glossmap = "models/buildings/misc/camp_shed_1_gls.png"
     destfirepos = None
     destoffparts = ["cs1_body", "cs1_front"]
-    desttexture = "models/buildings/misc/camp_shed_1_burn.png"
+    desttextures = ["models/buildings/misc/camp_shed_1_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -368,7 +368,7 @@ class Bunker1 (Building):
     #glossmap = "models/buildings/misc/bunker_1_gls.png"
     destfirepos = None
     destoffparts = ["bu1_body_part"]
-    desttexture = "models/buildings/misc/bunker_1_burn.png"
+    desttextures = ["models/buildings/misc/bunker_1_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -396,7 +396,7 @@ class Bunker2 (Building):
     #glossmap = "models/buildings/misc/bunker_2_gls.png"
     destfirepos = Vec3(13.0, -14.3, 0.3)
     destoffparts = ["bu2_misc_1", "bu2_misc_2", "bu2_doors", "bu2_roof", "glass"]
-    desttexture = "models/buildings/misc/bunker_2_burn.png"
+    desttextures = ["models/buildings/misc/bunker_2_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -423,7 +423,7 @@ class BarrackRussian1 (Building):
     #glossmap = "models/buildings/barrack/sov_bunker_1_gls.png"
     destfirepos = None
     destoffparts = ["brk_roof", "brk_misc", "brk_door", "glass"]
-    desttexture = "models/buildings/barrack/sov_barrack_1_burn.png"
+    desttextures = ["models/buildings/barrack/sov_barrack_1_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -451,7 +451,7 @@ class BarrackRussian2 (Building):
     #glossmap = "models/buildings/barrack/sov_bunker_2_gls.png"
     destfirepos = None
     destoffparts = ["brk_roof", "brk_misc", "brk_door", "glass"]
-    desttexture = "models/buildings/barrack/sov_barrack_2_burn.png"
+    desttextures = ["models/buildings/barrack/sov_barrack_2_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -478,7 +478,7 @@ class ComtowerRussian1 (Building):
     #glossmap = "models/buildings/comtower/sov_comtower_1_gls.png"
     destfirepos = None
     destoffparts = ["ct_tower", "ct_roof", "ct_misc", "ct_door", "glass"]
-    desttexture = "models/buildings/comtower/sov_comtower_1_burn.png"
+    desttextures = ["models/buildings/comtower/sov_comtower_1_burn.png"]
 
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
@@ -507,7 +507,7 @@ class OutpostUs1 (Building):
     destfirepos = None
     destoffparts = ["op_sandbags", "op_canvas", "op_canvas2", "op_crates",
                     "op_machineguns", "op_flag", "op_misc"]
-    desttexture = "models/buildings/warehouse/us_01_burn.png"
+    desttextures = ["models/buildings/warehouse/us_01_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -556,7 +556,7 @@ class OutpostUs2 (Building):
                   "com_tower_misc",
                   "watch_tower_misc",
                   "fuel_barrels"],
-    desttexture = "models/buildings/outpost/us_02_burn.png"
+    desttextures = ["models/buildings/outpost/us_02_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -826,7 +826,7 @@ class PowgeneratorRussian1 (Building):
     #glossmap = "models/buildings/powerplant/sov_powergenerator_1_gls.png"
     destfirepos = None
     destoffparts = ["pwg_misc"]
-    desttexture = "models/buildings/powerplant/sov_powergenerator_1_burn.png"
+    desttextures = ["models/buildings/powerplant/sov_powergenerator_1_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -871,7 +871,7 @@ class OilGasStorage1 (Building):
     #glossmap = "models/buildings/oil-gas/oil_gas_storage_1_gls.png"
     destfirepos = Vec3(-12.3, -1.0, 2.0)
     destoffparts = ["ogs1_roofs", "ogs1_misc"]
-    desttexture = "models/buildings/oil-gas/oil_gas_storage_1_burn.png"
+    desttextures = ["models/buildings/oil-gas/oil_gas_storage_1_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -898,7 +898,7 @@ class FuelTank1 (Building):
     #glossmap = "models/buildings/oil-gas/fuel_tank_1_gls.png"
     destfirepos = Vec3(0.0, 0.0, 4.2)
     destoffparts = ["flt_misc", "flt_body_part"]
-    desttexture = "models/buildings/oil-gas/fuel_tank_1_burn.png"
+    desttextures = ["models/buildings/oil-gas/fuel_tank_1_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
@@ -987,7 +987,7 @@ class Mansion1 (Building):
     #glossmap = "models/buildings/mansion/mansion_1_gls.png"
     destfirepos = Vec3(1.0, 9.0, 7.5)
     destoffparts = ["h_roof", "h_misc_1", "h_misc_2", "glass"]
-    desttexture = "models/buildings/house/mansion_1_burn.png"
+    desttextures = ["models/buildings/house/mansion_1_burn.png"]
 
     def __init__ (self, world, name, side, texture=None, normalmap=None,
                   pos=None, hpr=None, sink=None,
