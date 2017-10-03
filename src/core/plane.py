@@ -611,7 +611,7 @@ class Plane (Body):
 
         self._wait_damage_recovery = 0.0
         self._wait_cannon_burst = 0.0
-        self._cannon_burst_period = 2.0
+        self._cannon_burst_period = 1.0
 
         self._dummy_cannon = None
 
@@ -627,6 +627,7 @@ class Plane (Body):
         self._aatk_prev_formpos = None
 
         # Autopilot constants and state.
+        self._act_state = AutoProps()
         self._act_shootdist = 700.0
         self._act_input_controlout = None
         # FIXME: Dirty way of firing missiles.
@@ -1115,34 +1116,33 @@ class Plane (Body):
     def _set_cntl_with_spdacc (self, da, dr, dtl, dbrd, fld, dtmu):
 
         dq = self.dynstate
-        cq = self._act_state
+        mq = self._act_state
 
         pomax, romax, tlvmax = dq.pomax, dq.romax, dq.tlvmax
         psmax, rsmax, tlcmax = dq.psmax, dq.rsmax, dq.tlcmax
         brdvmax = dq.brdvmax
 
-        if not cq.inited:
-            cq.ao, cq.ro, cq.tlv = dq.ao, dq.ro, dq.tlv
-            cq.inited = True
-        cao, cro, ctlv = cq.ao, cq.ro, cq.tlv
+        if mq.ao is None:
+            mq.ao, mq.ro, mq.tlv = dq.ao, dq.ro, dq.tlv
+        cao, cro, ctlv = mq.ao, mq.ro, mq.tlv
         tcao, tcro, tctlv = 0.0, 0.0, 0.0
 
         def getca ():
-            return cq.dtmca, cq.dac, cq.ao
+            return mq.dtmca, mq.dac, mq.ao
         def setca (dtmca, dac, ao):
-            cq.dtmca, cq.dac, cq.ao = dtmca, dac, ao
+            mq.dtmca, mq.dac, mq.ao = dtmca, dac, ao
         def getcr ():
-            return cq.dtmcr, cq.drc, cq.ro
+            return mq.dtmcr, mq.drc, mq.ro
         def setcr (dtmcr, drc, ro):
-            cq.dtmcr, cq.drc, cq.ro = dtmcr, drc, ro
+            mq.dtmcr, mq.drc, mq.ro = dtmcr, drc, ro
         def getctl ():
-            return cq.dtmctl, cq.dtlc, cq.tlv
+            return mq.dtmctl, mq.dtlc, mq.tlv
         def setctl (dtmctl, dtlc, tlv):
-            cq.dtmctl, cq.dtlc, cq.tlv = dtmctl, dtlc, tlv
+            mq.dtmctl, mq.dtlc, mq.tlv = dtmctl, dtlc, tlv
         def getcbrd ():
-            return cq.dtmcbrd, cq.dbrdc
+            return mq.dtmcbrd, mq.dbrdc
         def setcbrd (dtmcbrd, dbrdc):
-            cq.dtmcbrd, cq.dbrdc = dtmcbrd, dbrdc
+            mq.dtmcbrd, mq.dbrdc = dtmcbrd, dbrdc
 
         dtmeps = self.world.dt * 1e-2
 
@@ -2270,7 +2270,6 @@ class Plane (Body):
             if contacts_selected:
                 self._attacking_missile = min(contacts_selected)[1]
                 if self.evade_missile_manouver:
-                    self._act_state = AutoProps()
                     self._act_pause = 0.0
                     if not self._aatk_paused:
                         self._evade_missile_aatk_paused = True
@@ -2283,7 +2282,6 @@ class Plane (Body):
                     self._evade_missile_aatk_paused = False
                     self._aatk_paused = False
                 if self.evade_missile_manouver:
-                    self._act_state = AutoProps()
                     self._act_pause = 0.0
 
         # Update decoys.
@@ -2322,7 +2320,7 @@ class Plane (Body):
                         if self._act_leader:
                             self._aatk_prev_leader = self._act_leader
                             self._aatk_prev_formpos = self._act_formpos
-                        self.set_act(target=tbody)
+                        self.set_act(target=tbody, useab=True)
                         self._aatk_targprio = prio
                         self._aatk_paused = False
 
@@ -2348,7 +2346,7 @@ class Plane (Body):
                     self.target = self._act_target
                 self._act_pause = self._act_input_mslevade()
             elif self._act_target:
-                if self._act_target.alive and not self._act_target.shotdown:
+                if self._act_target.alive and not self._act_target.controlout:
                     self.target = self._act_target
                     self._act_pause = self._act_input_attack()
                 elif self._aatk_prev_leader:
@@ -2358,7 +2356,7 @@ class Plane (Body):
                     self.set_act(enroute=True)
                     # ...if no route set, goes circling.
             elif self._act_leader:
-                if self._act_leader.alive and not self._act_leader.shotdown:
+                if self._act_leader.alive and not self._act_leader.controlout:
                     self._act_pause = self._act_input_form()
                 else:
                     if self._act_leader._route_points:
@@ -2428,7 +2426,7 @@ class Plane (Body):
                 contact = min(contacts_selected)[1]
                 return contact.body, 5
 
-        # Find first family with an attackabe contact,
+        # Find first family with an attackable contact,
         # and sort by increasing distance within that family.
         contacts_by_family = self.sensorpack.contacts_by_family()
         contacts_selected = []
@@ -2578,7 +2576,9 @@ class Plane (Body):
         tmaxab = dq.tmaxab
         zdir = Vec3D(0.0, 0.0, 1.0)
 
-        if cq.speed0 is None:
+        if cq.inited != "nav":
+            cq.reinit()
+            cq.inited = "nav"
             cq.speed0, cq.alt0, cq.phead0 = speed, alt, phead
 
         # NOTE: Quantity set and ordering as returned by PlaneDynamics.comp_env.
@@ -2877,7 +2877,12 @@ class Plane (Body):
         w = self.world
         l = self._act_leader
         dq = self.dynstate
+        cq = self._act_state
         dql = l.dynstate
+
+        if cq.inited != "form":
+            cq.reinit()
+            cq.inited = "form"
 
         tformpos = self._act_formpos
         tinvert = self._act_invert
@@ -3071,6 +3076,12 @@ class Plane (Body):
         dq = self.dynstate
         cq = self._act_state
 
+        if cq.inited != "attack":
+            cq.reinit()
+            cq.inited = "attack"
+            cq.sub_ins = AutoProps()
+            cq.sub_trk = AutoProps()
+
         atime = w.time
         dt = w.dt
 
@@ -3083,12 +3094,19 @@ class Plane (Body):
             tvel = tdq.u
             tacc = tdq.b
             tant = tdq.ant
+            tat = tdq.at
+            tan = tdq.an
+            tab = tdq.ab
         else:
             tpos = ptod(t.pos())
             tvel = vtod(t.vel())
             tacc = vtod(t.acc())
             tant = Vec3D(0, 0, 1)
+            tat = unitv(tvel)
+            tan = unitv(tacc - tat * tacc.dot(tat))
+            tab = unitv(tat.cross(tan))
         tsize = t.size
+        size = self.size
 
         elev = w.elevation(dq.p)
 
@@ -3102,6 +3120,11 @@ class Plane (Body):
             refcannon = self._dummy_cannon
         shdist = self._act_shootdist
         shldf = lambda: refcannon.launch_dynamics(dbl=True)
+        if t.cannons:
+            trefcannon = t.cannons[0]
+            tshldf = lambda: trefcannon.launch_dynamics(dbl=True)
+        else:
+            tshldf = lambda: None
         freeab = self._act_useab
         skill = self.skill
 
@@ -3110,17 +3133,49 @@ class Plane (Body):
         #mon = (self.name == "blue1")
         atyp = 1
         if atyp == 1:
-            ret = self.dyn.diff_to_path_gatk(cq, dq, atime, dt, elev,
-                                             tpos, tvel, tacc, tsize,
-                                             shdist, shldf, freeab,
-                                             skill=skill, mon=mon)
+            ret = self.dyn.input_to_path_gatk(cq, dq, atime, dt, elev,
+                                              tpos, tvel, tacc, tsize,
+                                              shdist, shldf, freeab,
+                                              skill=skill, mon=mon)
             dtmu, inpfa, inpfr, inpftl, inpfbrd, sig, release = ret
         elif atyp == 2:
-            ret = self.dyn.diff_to_path_gtrk(cq, dq, atime, dt, elev,
-                                             tpos, tvel, tacc, tant, tsize,
-                                             shdist, shldf, freeab,
-                                             skill=skill, mon=mon)
-            dtmu, inpfa, inpfr, inpftl, inpfbrd, sig, release = ret
+            if cq.do_ins is None:
+                cq.do_ins = True
+                cq.do_trk = False
+            while True:
+                if cq.do_ins:
+                    ret = self.dyn.input_to_path_gins(cq.sub_ins, dq,
+                                                      atime, dt, elev,
+                                                      tpos, tvel, tacc,
+                                                      tat, tan, tab,
+                                                      size, tsize,
+                                                      shdist, shldf, freeab,
+                                                      tshldf,
+                                                      skill=skill, mon=mon)
+                    if ret is not None:
+                        dtmu, inpfa, inpfr, inpftl, inpfbrd = ret
+                        release = False
+                        break
+                    else:
+                        # cq.sub_ins.reinit() do not reset
+                        cq.do_trk = True
+                        cq.do_ins = False
+                if cq.do_trk:
+                    ret = self.dyn.input_to_path_gtrk(cq.sub_trk, dq,
+                                                      atime, dt, elev,
+                                                      tpos, tvel, tacc, tant,
+                                                      size, tsize,
+                                                      cq.sub_ins.shdist, shldf, freeab,
+                                                      snapshot=cq.sub_ins.snapshot,
+                                                      tszaimfac=cq.sub_ins.tszaimfac,
+                                                      skill=skill, mon=mon)
+                    if ret is not None:
+                        dtmu, inpfa, inpfr, inpftl, inpfbrd, sig, release = ret
+                        break
+                    else:
+                        cq.sub_trk.reinit()
+                        cq.do_ins = True
+                        cq.do_trk = False
         else:
             assert False
 
@@ -3213,9 +3268,9 @@ class Plane (Body):
         mon = False
         #mon = (self.name == "red1")
         #mon = (self.name == "blue1")
-        ret = self.dyn.diff_to_path_mevd(cq, dq, atime, dt, elev,
-                                         mpos, mvel, macc, freeab,
-                                         skill=skill, mon=mon)
+        ret = self.dyn.input_to_path_mevd(cq, dq, atime, dt, elev,
+                                          mpos, mvel, macc, freeab,
+                                          skill=skill, mon=mon)
         dtmu, inpfa, inpfr, inpftl, inpfbrd = ret
 
         fld = FLAPS.RETRACTED
@@ -3263,6 +3318,10 @@ class Plane (Body):
         w = self.world
         dq = self.dynstate
         cq = self._act_state
+
+        if cq.inited != "rlfl":
+            cq.reinit()
+            cq.inited = "rlfl"
 
         if self.helix_dummy is not None:
             dq.cr = -100.0

@@ -8,7 +8,7 @@ from pandac.PandaModules import Vec3D, Point3D, QuatD
 
 from src import join_path, internal_path
 from src.core.curve import ArcedHelixZ
-from src.core.misc import sign, clamp, unitv, vtod, norm_ang_delta
+from src.core.misc import sign, clamp, pclamp, unitv, vtod, norm_ang_delta
 from src.core.misc import int1r0, intl01v, intl01r, intl01vr
 from src.core.misc import intc01, intc10, intc10r, intc01vr
 from src.core.misc import AutoProps, SimpleProps, intercept_time, solve_quad
@@ -16,6 +16,8 @@ from src.core.misc import get_cache_key_section
 from src.core.misc import read_cache_object, write_cache_object
 from src.core.misc import uniform, randvec
 from src.core.misc import debug, dbgval
+from src.core.misc import absmax
+from src.core.misc import TimeMaxed, TimeAveraged
 from src.core.table import Table2, Table3
 
 
@@ -2393,9 +2395,9 @@ class PlaneDynamics (object):
         return da, dr, dtl, dbrd, fld, phi_t, inv
 
 
-    def diff_to_path_gatk (self, cq, dq, tm, dtm, gh,
-                           tp, tu, tb, tsz, shd, shldf, freeab,
-                           skill=None, mon=False):
+    def input_to_path_gatk (self, cq, dq, tm, dtm, gh,
+                            tp, tu, tb, tsz, shd, shldf, freeab,
+                            skill=None, mon=False):
 
         if mon:
             debug(1, "gatk ==================== start")
@@ -2432,8 +2434,9 @@ class PlaneDynamics (object):
         psmax, rsmax, tlcmax = dq.psmax, dq.rsmax, dq.tlcmax
         brdvmax = dq.brdvmax
 
-        if not cq.inited:
-            cq.inited = True
+        if cq.inited != "gatk":
+            cq.reinit()
+            cq.inited = "gatk"
             cq.ao, cq.ro, cq.tlv = ao, ro, tlv
             cq.dac = 0.0
             cq.da_ib = [0.0, 0.0]
@@ -3159,14 +3162,17 @@ class PlaneDynamics (object):
         return ret + (sig_ati, release)
 
 
-    def diff_to_path_gtrk (self, cq, dq, tm, dtm, gh,
-                           tp, tu, tb, tant, tsz, shd, shldf, freeab,
-                           skill=None, mon=False):
+    GTRK_SIGMAX_OUT = radians(45.0)
+
+    def input_to_path_gtrk (self, cq, dq, tm, dtm, gh,
+                            tp, tu, tb, tant, sz, tsz, shd, shldf, freeab,
+                            snapshot=False, tszaimfac=0.6,
+                            skill=None, mon=False):
 
         vec = Vec3D
 
         if mon:
-            debug(1, "gtrk ==================== start")
+            debug(1, "gtrk00: ==================== start")
             vf = lambda v, d=6: "(%s)" % ", ".join(("%% .%df" % d) % e for e in v)
 
         ff, ad, pd = self, self, self
@@ -3202,8 +3208,9 @@ class PlaneDynamics (object):
         at, an, ab, ant = dq.at, dq.an, dq.ab, dq.ant
         xit, xin, xib = dq.xit, dq.xin, dq.xib
         ao, ro, tlv = dq.ao, dq.ro, dq.tlv
-        if not cq.inited:
-            cq.inited = True
+        if cq.inited != "gtrk":
+            cq.reinit()
+            cq.inited = "gtrk"
             cq.ao, cq.ro, cq.tlv = ao, ro, tlv
             cq.dtmu = 0.0
             cq.dac, cq.drc = 0.0, 0.0
@@ -3211,6 +3218,20 @@ class PlaneDynamics (object):
         cao, cro, ctlv = cq.ao, cq.ro, cq.tlv
         dac, drc = cq.dac, cq.drc
         dtmu = cq.dtmu
+
+        cr, tr = dq.cr, dq.tr
+        hdg, tht = dq.hdg, dq.tht
+        rd = v / (abs(tr) + 1e-10)
+        bn = b - xit * b.dot(xit)
+        cn = bn.length()
+        rda = v**2 / (cn + 1e-10)
+        tra = v / (rda + 1e-10)
+        if mon:
+            debug(1, "gtrk05:  h=%.0f[m]  v=%.1f[m/s]  "
+                  "cr=%.1f[m/s]  tr=%.1f[deg/s]  rd=%.0f[m]  snap=%s" %
+                  (h, v, cr, degrees(tr), rd, snapshot))
+            debug(1, "gtrk06:  tra=%.1f[deg/s]  rda=%.0f[m]" %
+                  (degrees(tra), rda))
 
         # Target position and attitude.
         th = tp[2]
@@ -3221,14 +3242,20 @@ class PlaneDynamics (object):
         tcn = tbn.length()
         txin = unitv(tbn)
         trd = tv**2 / (tcn + 1e-10)
-        ttr = tv / (trd + 1e-10)
+        ttra = tv / (trd + 1e-10)
         txib = txit.cross(txin)
         dp = tp - p
         td = dp.length()
         if mon:
-            debug(1, "gtrk:  td=%.0f[m]  dh=%.0f[m]  "
-                  "tv=%.2f[m/s]  ttr=%.1f[deg/s]" %
-                  (td, dh, tv, degrees(ttr)))
+            debug(1, "gtrk11:  td=%.0f[m]  dh=%.0f[m]  "
+                  "tv=%.2f[m/s]  ttra=%.1f[deg/s]" %
+                  (td, dh, tv, degrees(ttra)))
+
+        # Cancel track on collision danger.
+        if self.collision_imminent(p, u, sz, tp, tu, tsz, dtm):
+            if mon:
+                debug(1, "gtrk15:  collision-imminent")
+            return None
 
         # Target direction.
         ad = unitv(vec(dp))
@@ -3241,7 +3268,7 @@ class PlaneDynamics (object):
         sig_xitn = xit.signedAngleRad(ad_xitn, xib)
         sig_xitb = xit.signedAngleRad(ad_xitb, xin)
         if mon:
-            debug(1, "gtrk:  "
+            debug(1, "gtrk21:  "
                   "sig_atn=%.1f[deg]  sig_atb=%.1f[deg]  "
                   "sig_xitn=%.1f[deg]  sig_xitb=%.1f[deg]" %
                   (degrees(sig_atn), degrees(sig_atb),
@@ -3249,34 +3276,18 @@ class PlaneDynamics (object):
 
         # Target cannon intercept direction.
         sfu, sdup, sfb, sdbp, setm = shldf()
-        ret = intercept_time(tp, tu, tb, p, sfu, sdup, sfb, sdbp,
-                             finetime=setm, epstime=dtm, maxiter=5)
-        if not ret:
-            debug(1, "gtrk:  nointc")
-            ret = 0.0, tp, unitv(dp)
-        dtint, tp1, adi = ret
-        adi_atn = unitv(adi - ab * adi.dot(ab))
-        adi_atb = unitv(adi - an * adi.dot(an))
-        sig_atni = at.signedAngleRad(adi_atn, ab)
-        sig_atbi = at.signedAngleRad(adi_atb, an)
-        batadi = unitv(at.cross(adi))
-        if batadi.lengthSquared() > 0.5:
-            sig_adi = at.signedAngleRad(adi, batadi)
-        else:
-            sig_adi = 0.0
-        thszref = 0.5 * (0.6 * tsz)
-        sigmax_adi = atan(thszref / td)
-        romax_adi = radians(900.0)
-        release = (td < shd and abs(sig_adi) < sigmax_adi and
-                   abs(cro) < romax_adi)
-        if mon:
-            debug(1, "gtrk:  "
-                  "sig_atni=%.2f[deg]  sig_atbi=%.2f[deg]  "
-                  "sig_adi=%.2f[deg]  sigmax_adi=%.2f[deg]  "
-                  "release=%s" %
-                  (degrees(sig_atni), degrees(sig_atbi),
-                   degrees(sig_adi), degrees(sigmax_adi),
-                   release))
+        ret = self.cannon_intercept(p, u, at, an, ab, cro,
+                                    tp, tu, tb, tsz, shd,
+                                    sfu, sdup, sfb, sdbp, setm,
+                                    dtm, tszaimfac,
+                                    mon=mon)
+        (dtint, adi, tpi, tui, sig_atni, sig_atbi, sig_adi, sigmax_adi,
+         in_adi, release) = ret
+        sigmax_out = PlaneDynamics.GTRK_SIGMAX_OUT
+        if abs(sig_adi) > sigmax_out:
+            if mon:
+                debug(1, "gtrk27:  faroff")
+            return None
 
         # Performance limits.
         # NOTE: Quantity set and ordering as returned by comp_env.
@@ -3287,8 +3298,9 @@ class PlaneDynamics (object):
         ret_mhv = ff.tab_all_mhv[useab](m, h, v)
         (crmax, trimax, trsmax, rfmax, ctmaxv, tmaxv, tlvlv, sfcv,
          vias) = ret_mhv
+        rdimin = v / trimax; rdsmin = v / trsmax
         if mon:
-            debug(1, "gtrk:  crmax=%.1f[m/s]  "
+            debug(1, "gtrk31:  crmax=%.1f[m/s]  "
                   "trimax=%.1f[deg/s]  trsmax=%.1f[deg/s]  "
                   "nmin=%.2f  nmax=%.2f" %
                   (crmax, degrees(trimax), degrees(trsmax),
@@ -3303,134 +3315,157 @@ class PlaneDynamics (object):
         a_min = a_min_i
         a_max = a_max_i
 
+        # Cancel track if near ground.
+        if tht < 0.0:
+            r_pu = rdimin * 1.5
+            dh_pu = r_pu * (1.0 - cos(tht))
+            dh_ag = h - gh
+            dtm_g = 2.0
+            if dh_ag < dh_pu or -cr * dtm_g > dh_ag or 4.0 * sz > dh_ag:
+                if mon:
+                    debug(1, "gtrk33:  near-ground")
+                return None
+
         # Roll delta to intercept-vertical plane.
-        # Two possible, pick the one nearer to target's path-up.
+        # Two possible, pick the one smaller, unless too much negative load
+        # or opposite direction to target path-up in tight turn.
         adi_xnb = unitv(adi - xit * adi.dot(xit))
-        tant_xnb = unitv(tant - xit * tant.dot(xit))
-        max_tant_dot_adi = -1.1 # < -1
+        nmin_i = max(nmin, -2.0)
+        dr_sel = None
         for sg in (1, -1):
+            if mon:
+                debug(1, "gtrk40:  sg=%d" % sg)
             adi_xnb_sg = adi_xnb * sg
+            dr_i = ant.signedAngleRad(adi_xnb_sg, xit)
+            dr = dr_i
+
+            # Correct roll delta by achieved control in previous cycle.
+            ddr_cc = dr - cq.dr_base + drc
+            dr_cc = intc01vr(abs(sig_atbi), sigmax_adi, sigmax_adi + radians(30.0),
+                             dr + ddr_cc, dr)
+            #dr = dr_cc
+
+            if mon:
+                debug(1, "gtrk42:  "
+                      "dr_i=%.2f[deg]  dr_cc=%.2f[deg]" %
+                      (degrees(dr_i), degrees(dr_cc)))
+
+            # Pitch delta to intercept-horizontal plane, after roll.
+            rot = QuatD()
+            rot.setFromAxisAngleRad(dr, xit)
+            at_ar = unitv(Vec3D(rot.xform(at)))
+            ab_ar = unitv(Vec3D(rot.xform(ab)))
+            da_ar = at_ar.signedAngleRad(adi, ab_ar)
+            da = da_ar
+
+            # Correct pitch delta for far roll.
+            da_fr = intl01vr(abs(dr), sigmax_adi, sigmax_adi + radians(60.0),
+                             da, 0.0)
+            da = da_fr
+
+            # Correct pitch delta for limit angle of attack.
+            a_lc = clamp(a + da, a_min + radians(0.5), a_max - radians(0.5))
+            da_lc = a_lc - a
+            da = da_lc
+
+            # Correct pitch delta by achieved control in previous cycle.
+            dda_cc = da - cq.da_base + dac
+            da_cc = intc01vr(abs(sig_atni), sigmax_adi, sigmax_adi + radians(5.0),
+                             da + dda_cc, da)
+            da = da_cc
+
+            if mon:
+                debug(1, "gtrk44:  "
+                      "da_ar=%.2f[deg]  da_fr=%.2f[deg]  da_lc=%.2f[deg]  "
+                      "da_cc=%.2f[deg]" %
+                      (degrees(da_ar), degrees(da_fr), degrees(da_lc),
+                       degrees(da_cc)))
+
+            # Target acceleration.
+            v_a = intc01vr(td, shd * 1.0, shd * 2.0, tu.dot(xit), tu.length())
+            vmin_i = max(0.6 * v_a, 0.9 * voptts, vmin)
+            vmax_i = min(1.4 * v_a, max(1.2 * v_a, 1.2 * voptti), vmax)
+            if vmin_i > vmax_i:
+                vmax_i = vmin_i
+            td_eqv = shd * 0.3 # must be < 1.0
+            v_i = clamp(v_a + 0.1 * (td - td_eqv), vmin_i, vmax_i)
+            dtmc = 2.0
+            ct_i = (v_i - v) / dtmc
+
+            # Throttle delta for target angle of attack and acceleration.
+            a_i = da
+            q = 0.5 * rho * v**2
+            ret = ff.resliftafp(amin, a1m, a0, a1, amax, sla, sla1, a_i, q)
+            sl_i, l_i, slcd_i = ret
+            sd_i = sd0 + ks * slcd_i**2
+            d_i = q * sd_i
+            w = m * g
+            wt = -ez.dot(xit) * w
+            ft_i = m * ct_i
+            t_i = (ft_i + d_i - wt) / (1.0 - 0.5 * a_i**2)
+            tmaxref = tmaxab if useab else tmax
+            t_i = clamp(t_i, 0.0, tmaxref)
+            n_i = (l_i + t_i * a_i) / w
+            tl_i = ff.restlth(t_i, tmax, tmaxab)
+            dtl_i = tl_i - tl
+
+            dtl = dtl_i
+
+            # Air brake.
+            brd_i = AIRBRAKE.RETRACTED
+            dbrd = brd_i - brd
+
+            tant_xnb = unitv(tant - xit * tant.dot(xit))
             tant_dot_adi = adi_xnb_sg.dot(tant_xnb)
-            if max_tant_dot_adi < tant_dot_adi:
-                max_tant_dot_adi = tant_dot_adi
-                dr_i = ant.signedAngleRad(adi_xnb_sg, xit)
-        dr = dr_i
 
-        # Correct roll delta by achieved control in previous cycle.
-        ddr_cc = dr - cq.dr_base + drc
+            if mon:
+                debug(1, "gtrk48:  "
+                      "v=%.1f[m/s]  "
+                      "v_i=%.1f[m/s]  ct_i=%.2f[m/s^2]  dtl_i=%.4f  "
+                      "n_i=%.2f  tda=%.2f" %
+                      (v, v_i, ct_i, dtl_i, n_i, tant_dot_adi))
+
+            acceptable = (n_i > nmin_i)
+            if acceptable and not snapshot:
+                acceptable = (tant_dot_adi > 0.0 or ttra < 0.5 * trimax)
+            if acceptable:
+                if dr_sel is None or abs(dr_sel) > abs(dr):
+                    dr_sel = dr
+                    da_sel = da
+                    dtl_sel = dtl
+                    dbrd_sel = dbrd
+
+        if dr_sel is None:
+            if mon:
+                debug(1, "gtrk52:  no-solution")
+            return None
+        if not snapshot and dr_sel > radians(150.0):
+            if mon:
+                debug(1, "gtrk52b:  large-roll")
+            return None
+        dr = dr_sel
+        da = da_sel
+        dtl = dtl_sel
+        dbrd = dbrd_sel
+
         cq.dr_base = dr
-        dr_cc = intc01vr(abs(sig_atbi), sigmax_adi, sigmax_adi + radians(30.0),
-                         dr + ddr_cc, dr)
-
-        if mon:
-            debug(1, "gtrk:  "
-                  "dr_i=%.2f[deg]  dr_cc=%.2f[deg]" %
-                  (degrees(dr_i), degrees(dr_cc)))
-
-        # Pitch delta to intercept-horizontal plane, after roll.
-        rot = QuatD()
-        rot.setFromAxisAngleRad(dr, xit)
-        at_ar = unitv(Vec3D(rot.xform(at)))
-        ab_ar = unitv(Vec3D(rot.xform(ab)))
-        da_ar = at_ar.signedAngleRad(adi, ab_ar)
-        da = da_ar
-
-        # Correct pitch delta for far roll.
-        da_fr = intl01vr(abs(dr), sigmax_adi, sigmax_adi + radians(60.0),
-                         da, 0.0)
-        da = da_fr
-
-        # Correct pitch delta for limit angle of attack.
-        a_lc = clamp(a + da, a_min + radians(0.5), a_max - radians(0.5))
-        da_lc = a_lc - a
-        da = da_lc
-
-        # Correct pitch delta by achieved control in previous cycle.
-        dda_cc = da - cq.da_base + dac
         cq.da_base = da
-        da_cc = intc01vr(abs(sig_atni), sigmax_adi, sigmax_adi + radians(5.0),
-                         da + dda_cc, da)
-        da = da_cc
 
         if mon:
-            debug(1, "gtrk:  "
-                  "da_ar=%.2f[deg]  da_fr=%.2f[deg]  da_lc=%.2f[deg]  "
-                  "da_cc=%.2f[deg]" %
-                  (degrees(da_ar), degrees(da_fr), degrees(da_lc),
-                   degrees(da_cc)))
-
-        # Target acceleration.
-        v_a = intc01vr(td, shd * 1.0, shd * 2.0, tu.dot(xit), tu.length())
-        vmin_i = max(0.6 * v_a, 0.9 * voptts, vmin)
-        vmax_i = min(1.4 * v_a, max(1.2 * v_a, 1.2 * voptti), vmax)
-        if vmin_i > vmax_i:
-            vmax_i = vmin_i
-        td_eqv = shd * 0.3 # must be < 1.0
-        v_i = clamp(v_a + 0.1 * (td - td_eqv), vmin_i, vmax_i)
-        dtmc = 2.0
-        ct_i = (v_i - v) / dtmc
-
-        # Throttle delta for target angle of attack and acceleration.
-        a_i = da
-        q = 0.5 * rho * v**2
-        ret = ff.resliftafp(amin, a1m, a0, a1, amax, sla, sla1, a_i, q)
-        sl_i, l_i, slcd_i = ret
-        sd_i = sd0 + ks * slcd_i**2
-        d_i = q * sd_i
-        w = m * g
-        wt = -ez.dot(xit) * w
-        ft_i = m * ct_i
-        t_i = (ft_i + d_i - wt) / (1.0 - 0.5 * a_i**2)
-        tmaxref = tmaxab if useab else tmax
-        t_i = clamp(t_i, 0.0, tmaxref)
-        n_i = (l_i + t_i * a_i) / w
-        tl_i = ff.restlth(t_i, tmax, tmaxab)
-        dtl_i = tl_i - tl
-
-        dtl = dtl_i
-
-        if mon:
-            debug(1, "gtrk:  "
-                  "v=%.1f[m/s]  v_i=%.1f[m/s]  ct_i=%.2f[m/s^2]  dtl_i=%.4f" %
-                  (v, v_i, ct_i, dtl_i))
-
-        # Air brake.
-        brd_i = AIRBRAKE.RETRACTED
-        dbrd = brd_i - brd
-
-        #xib1 = unitv(ad.cross(txin))
-        ##xit1 = unitv(xit - xib1 * xit.dot(xib1))
-        #xit1 = xit
-        #xin1 = unitv(xib1.cross(xit1))
-        #rd1 = trd * 0.9
-
-        #v1 = tv * 1.2
-        #dtmc = 2.0 #!!!
-        #ct1 = (v1 - v) / dtmc
-
-        #tmaxref = tmaxab #if useab else tmax
-        #nmin1 = max(nmin, -2.5)
-        #fdir1 = 1
-        #ret = self.diff_to_path_tnr(dq, xit1, xin1, rd1,
-                                    #v1, ct1, tmaxref=tmaxref,
-                                    #nmininv=nmin1, facedir=fdir1,
-                                    #bleedv=True, bleedr=True)
-        #da, dr, dtl, dbrd = ret[:4]
-        #if da is None:
-            #da, dr, dtl, dbrd = 0.0, 0.0, 0.0, 0.0
-            #if mon:
-                #debug(1, "gtrk:  noturn")
-
-        if mon:
-            debug(1, "gtrk:  "
+            debug(1, "gtrk54:  "
                   "da=%.2f[deg]  dr=%.2f[deg]  dtl=%.2f  dbrd=%.2f" %
                   (degrees(da), degrees(dr), dtl, dbrd))
 
         tcao, tcro, tctlv = 0.0, 0.0, 0.0
 
-        pomax1 = pomax; psmax1 = psmax
-        romax1 = romax; rsmax1 = rsmax
-        tlvmax1 = tlvmax; tlcmax1 = tlcmax
+        pomax1 = pomax
+        psmax1 = psmax
+        #psmax1 = intc01vr(abs(da), 0.0, radians(5.0), 0.1 * psmax, psmax)
+        romax1 = romax
+        rsmax1 = rsmax
+        #rsmax1 = intc01vr(abs(dr), 0.0, radians(60.0), 0.1 * rsmax, rsmax)
+        tlvmax1 = tlvmax
+        tlcmax1 = tlcmax
         brdvmax1 = brdvmax
 
         #dtmumin, dtmumax = 0.5, 1.0
@@ -3450,14 +3485,676 @@ class PlaneDynamics (object):
         cq.dtmu = ret[0]
 
         if mon:
-            debug(1, "gtrk ==================== end")
+            debug(1, "gtrk99: ==================== end")
 
         return ret + (sig_adi, release)
 
 
-    def diff_to_path_mevd (self, cq, dq, tm, dtm, gh,
-                           mp, mu, mb, freeab,
-                           skill=None, mon=False):
+    def input_to_path_gins (self, cq, dq, tm, dtm, gh,
+                            tp, tu, tb, tat, tan, tab,
+                            sz, tsz,
+                            shd, shldf, freeab,
+                            tshldf,
+                            skill=None, mon=False):
+
+        vec = Vec3D
+
+        if mon:
+            debug(1, "gins00: ==================== start")
+            vf = lambda v, d=6: "(%s)" % ", ".join(("%% .%df" % d) % e for e in v)
+
+        ff, ad, pd = self, self, self
+
+        # State.
+        m, p, u, b, an, tl, phi = dq.m, dq.p, dq.u, dq.b, dq.an, dq.tl, dq.phi
+
+        ez = vec(0.0, 0.0, 1.0)
+
+        h = p[2]
+        v = u.length()
+        g, rho, rhofac, pr, prfac, vsnd = ff.resatm(h)
+        ma = v / vsnd
+        tmaxz, tmaxabz = pd.tmaxz, pd.tmaxabz
+        tmax1, tmaxab1 = ff.restmaxh(tmaxz, tmaxabz, h, rho, vsnd)
+        (vsd0cr, vsd0sp, vsd0spab, sd0cr, sd0sp, sd0spab,
+         dsd0br, dsd0lg) = ff.reshvsd(h)
+        tmax, tmaxab = ff.restmaxv(h, vsnd, vsd0sp, vsd0spab, tmax1, tmaxab1, v)
+        a0z, amaxz, a1z, slaz, sla1z = pd.a0z, pd.amaxz, pd.a1z, pd.slaz, pd.sla1z
+        amin, a1m, a0, a1, amax, sla, sla1 = (
+            ff.ressla(a0z, a1z, amaxz, slaz, sla1z, ma))
+        sd0, = (
+            ff.ressd0(vsnd, vsd0cr, vsd0sp, vsd0spab,
+                      sd0cr, sd0sp, sd0spab, v, ma))
+        ks = pd.ks
+        mref, nmaxref = pd.mref, pd.nmaxref
+        nmin, nmax = ff.resnmax(mref, nmaxref, m)
+        pomax, romax, tlvmax = dq.pomax, dq.romax, dq.tlvmax
+        psmax, rsmax, tlcmax = dq.psmax, dq.rsmax, dq.tlcmax
+        brdvmax = dq.brdvmax
+
+        at, an, ab = dq.at, dq.an, dq.ab
+        xit, xin, xib = dq.xit, dq.xin, dq.xib
+        ao, ro, tlv = dq.ao, dq.ro, dq.tlv
+        if cq.inited != "gins":
+            cq.reinit()
+            cq.inited = "gins"
+            cq.ao, cq.ro, cq.tlv = ao, ro, tlv
+            #cq.dac = 0.0
+            cq.dtmu = 0.0
+            cq.state = "insert"
+        cao, cro, ctlv = cq.ao, cq.ro, cq.tlv
+        #dac = cq.dac
+        dtmu = cq.dtmu
+
+        cr, tr = dq.cr, dq.tr
+        hdg, tht = dq.hdg, dq.tht
+        rd = v / (abs(tr) + 1e-10)
+        bn = b - xit * b.dot(xit) - (ez * -g)
+        cn = bn.length()
+        rda = v**2 / (cn + 1e-10)
+        tra = v / (rda + 1e-10)
+        if mon:
+            debug(1, "gins05:  h=%.0f[m]  v=%.1f[m/s]  "
+                  "tht=%.1f[deg]  hdg=%.0f[deg]  "
+                  "cr=%.1f[m/s]  tr=%.1f[deg/s]  rd=%.0f[m]" %
+                  (h, v, degrees(tht), degrees(hdg),
+                   cr, degrees(tr), rd))
+            debug(1, "gins06:  tra=%.1f[deg/s]  rda=%.0f[m]" %
+                  (degrees(tra), rda))
+
+        # Performance limits.
+        # NOTE: Quantity set and ordering as returned by comp_env.
+        freeab = True # force it
+        useab = int(freeab and pd.hasab)
+        ret_mh = ff.tab_all_mh[useab](m, h)
+        (vmin, vmax, crmaxa, voptc, trimaxa, trsmaxa, voptti, voptts,
+         rfmaxa, voptrf, tloptrf) = ret_mh
+        ret_mhv = ff.tab_all_mhv[useab](m, h, v)
+        (crmax, trimax, trsmax, rfmax, ctmaxv, tmaxv, tlvlv, sfcv,
+         vias) = ret_mhv
+        rdimin = v / trimax; rdsmin = v / trsmax
+        if mon:
+            debug(1, "gins10:  crmax=%.1f[m/s]  "
+                  "trimax=%.1f[deg/s]  trsmax=%.1f[deg/s]  "
+                  "rdimin=%.0f[m]  rdsmin=%.0f[m]  "
+                  "nmin=%.2f  nmax=%.2f" %
+                  (crmax, degrees(trimax), degrees(trsmax),
+                   rdimin, rdsmin, nmin, nmax))
+
+        # Target position and attitude.
+        th = tp[2]
+        dh = th - h
+        tv = tu.length()
+        txit = unitv(tu)
+        tbn = tb - txit * tb.dot(txit) - (ez * -g)
+        tcn = tbn.length()
+        txin_z = unitv(txit.cross(ez))
+        d_tbn_norm = txin_z * (0.01 * g) * (sign(tbn.dot(txin_z)) or 1)
+        #d_tbn_norm = vec(0.0, 0.0, 0.0)
+        txin = unitv(tbn + d_tbn_norm)
+        trda = tv**2 / (tcn + 1e-10)
+        ttra = tv / (trda + 1e-10)
+        txib = txit.cross(txin)
+        ttr = ttra * sign(txib.dot(ez)) # not really, missing projection
+        dp = tp - p
+        td = dp.length()
+        dpu = unitv(dp)
+        sig = acos(clamp(dpu.dot(xit), -1.0, 1.0))
+        tsig = acos(clamp(-dpu.dot(txit), -1.0, 1.0))
+        delt = acos(clamp(txit.dot(xit), -1.0, 1.0))
+        tdelt = acos(clamp(xit.dot(txit), -1.0, 1.0))
+        td_fh = dp.dot(unitv(xit - ez * xit.dot(ez)))
+        td_sh = dp.dot(unitv(xit.cross(ez)))
+        if cq.ttra_max_seen is None:
+            tm_ttra_trk = radians(360) / trimaxa
+            cq.ttra_smooth = TimeAveraged(2.0, 0.0)
+            cq.ttra_max_seen = TimeMaxed(tm_ttra_trk)
+            cq.ttra_prev_tm = tm
+            ttrams = ttra
+        else:
+            dtm_ttra_trk = tm - cq.ttra_prev_tm
+            cq.ttra_prev_tm = tm
+            ttra_smooth = cq.ttra_smooth.update(ttra, dtm_ttra_trk)
+            ttrams = cq.ttra_max_seen.update(ttra_smooth, dtm_ttra_trk)
+        if mon:
+            debug(1, "gins15:  td=%.0f[m]  td_fh=%.0f[m]  td_sh=%.0f[m]  "
+                  "dh=%.0f[m]  sig=%.0f[deg]  delt=%.0f[deg]  "
+                  "tsig=%.0f[deg]  tdelt=%.0f[deg]" %
+                  (td, td_fh, td_sh, dh, degrees(sig), degrees(delt),
+                   degrees(tsig), degrees(tdelt)))
+            debug(1, "gins16:  tv=%.1f[m/s]  ttra=%.1f[deg/s]  "
+                  "ttr=%.1f[deg/s]  trda=%.1f[m]  "
+                  "ttrams=%.1f[deg/s]" %
+                  (tv, degrees(ttra), degrees(ttr), trda,
+                   degrees(ttrams)))
+
+        # Distances and speeds for rough checks.
+        td_near = rdimin * 2.5 * 2
+        td_tight = rdimin * 1.2 * 2
+        sfu, sdup, sfb, sdbp, setm = shldf()
+        sv = sfu.length() * 0.5 + sdup # assume average shell speed
+        shd_i = min(shd * 1.0, trda * 1.0)
+
+        # Aim to target.
+        if td < td_near:
+            tszaimfac = 1.2
+            ret = self.cannon_intercept(p, u, at, an, ab, cro,
+                                        tp, tu, tb, tsz, shd,
+                                        sfu, sdup, sfb, sdbp, setm,
+                                        dtm, tszaimfac,
+                                        mon=mon)
+            (dtint, adi, tpi, tui, sig_atni, sig_atbi, sig_adi, sigmax_adi,
+            in_adi, release) = ret
+            dpi = tpi - p
+            dpiu = unitv(dpi)
+        else:
+            dpi = dp
+            dpiu = dpu
+            sig_adi = radians(180.0)
+
+        # Aim from target to self, for dodging.
+        dr_dodge = 0.0
+        shd_dodge = intl01vr(delt, radians(120.0), radians(180.0),
+                             shd_i * 1.0, shd_i * 2.0) * 1.1
+        if td < shd_dodge:
+            ret = tshldf()
+            if ret is not None:
+                tsfu, tsdup, tsfb, tsdbp, tsetm = ret
+                tcro = 0.0
+                ttszaimfac = 4.0
+                ret = self.cannon_intercept(tp, tu, tat, tan, tab, tcro,
+                                            p, u, b, sz, shd,
+                                            tsfu, tsdup, tsfb, tsdbp, tsetm,
+                                            dtm, ttszaimfac,
+                                            mon=mon)
+                (dtint_s, adi_s, tpi_s, tui_s, sig_atni_s, sig_atbi_s,
+                 sig_adi_s, sigmax_adi_s, in_adi_s, release_s) = ret
+                if dtint_s > 0.0 and in_adi_s:
+                    if cq.dr_dodge_max is None:
+                        cq.dr_dodge_max = 1.0
+                    cq.dr_dodge_max = uniform(radians(90.0), radians(120.0)) * -sign(cq.dr_dodge_max)
+                    dr_dodge_c = cq.dr_dodge_max
+                    dr_dodge = absmax(dr_dodge, dr_dodge_c)
+                    if mon:
+                        debug(1, "gins16:  dr_dodge=%.0f[deg]" % degrees(dr_dodge))
+
+        if self.collision_imminent(p, u, sz, tp, tu, tsz, dtm):
+            cq.state = "chicken"
+
+        trmaxtp = trimax - radians(0.0)
+
+        pass_control = False
+        seen_states = set()
+        while True:
+            if mon:
+                debug(1, "gins17:  st=%s" % cq.state)
+            assert cq.state not in seen_states
+            seen_states.add(cq.state)
+
+            if False:
+                pass
+
+            elif cq.state == "insert":
+                dtmumin, dtmumax = 0.5, 1.0
+
+                if trmaxtp > ttrams:
+                    if abs(delt) > radians(150.0) and abs(sig) < radians(30.0):
+                        attack_state = "snap"
+                    else:
+                        attack_state = "turn"
+                else:
+                    attack_state = "snap"
+
+                if sig > radians(90.0):
+                    if mon:
+                        debug(1, "gins31:  high-aspect")
+                    cq.state = attack_state
+                    continue
+
+                if ttra > 0.1 * trimax:
+                    if mon:
+                        debug(1, "gins31b:  high-turning")
+                    cq.state = attack_state
+                    continue
+
+                ret = self.lead_circle_position(tv, trda, sv, shd_i, mon=mon)
+                r_a = ret[1]
+                d_rda_i = trda - r_a
+                assert d_rda_i > 0.0
+                if mon:
+                    debug(1, "gins32:  "
+                          "tv=%.1f[m/s]  trda=%.1f[m]  "
+                          "r_a=%.1f[m]  shd_i=%.1f[m]  d_rda_i=%.1f[m]" %
+                          (tv, trda, r_a, shd_i, d_rda_i))
+                rda_i = min(rdsmin, rdimin)
+                delta_phi = radians(10.0)
+                max_off_phi = radians(90.0)
+                ret = self.circle_insertion_point(p, u, xin, rda_i,
+                                                  tp, tu, txin, rda_i, # not trda
+                                                  shd_i, d_rda_i,
+                                                  delta_phi=delta_phi,
+                                                  max_off_phi=max_off_phi,
+                                                  mon=mon)
+                if ret is None:
+                    if mon:
+                        debug(1, "gins34:  no-insert")
+                    cq.state = attack_state
+                    continue
+                p_c, dtm_c, d_phi_c, dtm_phi = ret
+                if mon:
+                    debug(1, "gins36:  dtm_c=%.1f[s]  d_phi_c=%.1f[deg]  "
+                          "dtm_phi=%.1f[s]" %
+                          (dtm_c, degrees(d_phi_c), dtm_phi))
+                d_p_c = p_c - p
+                tht_c = atan2(d_p_c.getZ(), d_p_c.getXy().length())
+                hdg_c = atan2(-d_p_c.getX(), d_p_c.getY())
+                d_tht = norm_ang_delta(tht, tht_c)
+                d_hdg = norm_ang_delta(hdg, hdg_c)
+                #v_c = max(voptti, tu.dot(dpu) * 1.1)
+                vmin_c = max(0.8 * voptts, vmin)
+                vmax_c = max(vmax * 0.95, vmin_c)
+                v_cd = clamp(tu.dot(dpu) + 0.1 * (td - shd_i), vmin_c, vmax_c)
+                v_cds = intl01vr(delt, 0.0, radians(90.0), v_cd, voptti)
+                v_cdst = intl01vr(d_hdg, 0.0, trimax, v_cds, voptti)
+                v_c = max(voptti, v_cdst)
+                if mon:
+                    debug(1, "gins37:  voptti=%.1f[m/s]  v_c=%.1f[m/s]" %
+                          (voptti, v_c))
+                if dtm_c + dtm_phi < dtmumax:
+                    if mon:
+                        debug(1, "gins38:  near-circle")
+                    cq.state = attack_state
+                    continue
+                dtmumin = min(dtmumin, dtm_c)
+                break
+
+            elif cq.state == "pass":
+                dtmumin, dtmumax = 0.5, 1.0
+
+                #if td > td_tight:
+                    #cq.state = "insert"
+                    #continue
+
+                shd_ic = intl01vr(delt, 0.0, radians(90.0), shd_i, 0.0)
+                dtm_c = (dp.dot(xit) - shd_ic) / (u - tu).dot(xit)
+                if dtm_c < 0.0 and td < td_near:
+                    if trmaxtp > ttrams:
+                        cq.state = "turn"
+                    else:
+                        cq.state = "snap"
+                    continue
+                if dtm_c < 0.0:
+                    dtm_c = dtmumin
+                dtmumin = min(dtmumin, dtm_c)
+
+                dpu_s = unitv(dpu - xit * dpu.dot(xit))
+                dpu_sh = unitv(dpu_s - ez * dpu_s.dot(ez))
+                d_p_sh = dpu_sh * (tsz * 0.5 + sz * 0.5 + sz * 1.0)
+                p_c = tp - d_p_sh
+                #p_c = tp
+                d_p_c = p_c - p
+                tht_c = atan2(d_p_c.getZ(), d_p_c.getXy().length())
+                hdg_c = atan2(-d_p_c.getX(), d_p_c.getY())
+                d_tht = norm_ang_delta(tht, tht_c)
+                d_hdg = norm_ang_delta(hdg, hdg_c)
+                #v_c = max(voptti, tu.dot(dpu) * 1.1)
+                vmin_c = max(0.8 * voptts, vmin)
+                vmax_c = max(vmax * 0.95, vmin_c)
+                v_cd = clamp(tu.dot(dpu) + 0.1 * (td - shd_i), vmin_c, vmax_c)
+                v_cds = intl01vr(delt, 0.0, radians(90.0), v_cd, voptti)
+                v_cdst = intl01vr(d_hdg, 0.0, trimax, v_cds, voptti)
+                v_c = max(voptti, v_cdst)
+
+                break
+
+            elif cq.state == "turn":
+
+                if trmaxtp <= ttrams and abs(sig) > radians(45.0):
+                    cq.state = "snap"
+                    continue
+
+                ret = self.lead_circle_position(tv, trda, sv, shd_i, mon=mon)
+                r_a, gam_a = ret[1:3]
+                d_f = r_a * gam_a
+                d_rda_i = trda - r_a
+                if mon:
+                    debug(1, "gins52:  tv=%.1f[m/s]  trda=%.1f[m]  "
+                        "r_a=%.1f[m]  shd_i=%.1f[m]  d_rda_i=%.1f[m]" %
+                        (tv, trda, r_a, shd_i, d_rda_i))
+                ret = self.turn_track_point(p, u, tr, tp, tu, ttr,
+                                            r_a, gam_a, d_rda_i,
+                                            mon=mon)
+                p_c, xit_i = ret
+
+                ret = self.turn_circle_location(tp, tu, ttra, txin,
+                                                p, u, tra, xin,
+                                                mon=mon)
+                traddist, tradang, ttangang = ret
+                traddist_rel = traddist / (trda + 1e-10)
+                if cq.prev_targ_raddist is not None:
+                    cq.prev_targ_raddist = 1.0
+                tovershot = (cq.prev_targ_rel_raddist < 1.0 and traddist_rel >= 1.0)
+                cq.prev_targ_rel_raddist = traddist_rel
+                shd_revmin = min(rda * 1.4, shd * 2.0)
+                # ...rda * 1.4 for approx. quarter own circle.
+                #tangang_revmin = intl01vr(td, 0.0, shd_revmin, 0.0, radians(30.0))
+                tangang_revmin = -radians(180.0)
+                if mon:
+                    debug(1, "gins53:  "
+                          "traddis_rel=%.2f  tradang=%.0f[deg]  "
+                          "ttangang=%.0f[deg]  ttangang_revmin=%.0f[deg]  "
+                          "shd_revmin=%.0f[m]  tovershot=%s" %
+                          (traddist_rel, degrees(tradang), degrees(ttangang),
+                           degrees(tangang_revmin), shd_revmin, tovershot))
+
+                if False:
+                    pass
+                elif cq.reverse_hdg is not None:
+                    dtmumin, dtmumax = 0.2, 1.0
+                    d_hdg = cq.reverse_hdg
+                    tht_i = atan2(dpu.getZ(), dpu.getXy().length())
+                    d_tht = norm_ang_delta(tht, tht_i)
+                    revsd = xit.cross(ez).dot(dpu)
+                    if mon:
+                        debug(1, "gins54b:  d_tht=%.1f[deg]  "
+                              "start_revsd=%.2f  revsd=%.2f" %
+                              (degrees(d_tht), cq.reverse_side, revsd))
+                    if cq.reverse_side * revsd < 0.0 or abs(sig) < radians(90.0):
+                        cq.reverse_hdg = None
+                elif (tovershot and ttangang > tangang_revmin and
+                      tradang < 0.0 and td < shd_revmin and
+                      cq.time_same_ttr_dir > 2.0):
+                    dtmumin, dtmumax = 0.2, 1.0
+                    d_hdg = -(0.5 * pi) * sign(tr)
+                    tht_i = atan2(dpu.getZ(), dpu.getXy().length())
+                    d_tht = norm_ang_delta(tht, tht_i)
+                    revsd = xit.cross(ez).dot(dpu)
+                    if mon:
+                        debug(1, "gins54:  d_hdg=%.1f[deg]  d_tht=%.1f[deg]  "
+                              "revsd=%.2f" %
+                              (degrees(d_hdg), degrees(d_tht), revsd))
+                    cq.reverse_hdg = d_hdg
+                    cq.reverse_side = revsd
+                else:
+
+                    dtmumin, dtmumax = 0.5, 1.0
+                    xit_h = unitv(xit - ez * xit.dot(ez))
+                    xit_ih = unitv(xit_i - ez * xit_i.dot(ez))
+                    dpiu_h = unitv(dpiu - ez * dpiu.dot(ez))
+                    d_hdg_ap = xit_h.signedAngleRad(dpiu_h, ez)
+                    d_hdg_pi = dpiu_h.signedAngleRad(xit_ih, ez)
+                    d_hdg_r = d_hdg_ap
+                    #if d_hdg_pi * d_hdg_r >= 0.0:
+                        #d_hdg_r += d_hdg_pi
+                    d_hdg = d_hdg_r
+                    #if abs(d_hdg_ap) > radians(135.0) and d_hdg * tr_a < 0.0:
+                        #d_hdg = pclamp(2 * pi - d_hdg, -pi, pi)
+                    tht_i = atan2(dpiu.getZ(), dpiu.getXy().length())
+                    d_tht = norm_ang_delta(tht, tht_i)
+                    if mon:
+                        debug(1, "gins55:  "
+                              "d_hdg_ap=%.1f[deg]  d_hdg_pi=%.1f[deg]  "
+                              "d_hdg_r=%.1f[deg]  d_hdg=%.1f[deg]  "
+                              "d_tht=%.1f[deg]" %
+                              (degrees(d_hdg_ap), degrees(d_hdg_pi),
+                               degrees(d_hdg_r), degrees(d_hdg),
+                               degrees(d_tht)))
+
+                #v_c = max(voptti, tv * (r_a / trda) * 1.2)
+                vmin_c = max(0.8 * voptts, vmin)
+                vmax_c = max(vmax * 0.95, vmin_c)
+                v_cd = clamp(tu.dot(dpu) + 0.1 * (td - shd_i), vmin_c, vmax_c)
+                v_cdt = intl01vr(d_hdg, 0.0, trimax * 1.0, v_cd, voptti)
+                v_c = max(voptti, v_cdt)
+
+                dtm_c = td / (abs((u - tu).dot(xit)) + 1e-3)
+                dtmumin = min(dtmumin, dtm_c)
+
+                shd_near = shd_i * 0.1
+                shd_far = shd_i * 1.0
+                sig_adi_in = PlaneDynamics.GTRK_SIGMAX_OUT * 0.3
+                if 0.5 * td < trda:
+                    delt_in = 2 * asin((0.5 * td) / trda) + sig_adi_in
+                else:
+                    delt_in = 0.0
+                if mon:
+                    debug(1, "gins58:  "
+                          "shd_near=%.0f[m]  shd_far=%.0f[m]  td=%.0f[m]  "
+                          "sig_adi_in=%.1f[deg]  sig_adi=%.1f[deg]  "
+                          "delt_in=%.1f[deg]  delt=%.1f[deg]" %
+                          (shd_near, shd_far, td,
+                           degrees(sig_adi_in), degrees(sig_adi),
+                           degrees(delt_in), degrees(delt)))
+                if (shd_near < td < shd_far and abs(sig_adi) < sig_adi_in and
+                    abs(delt) < delt_in):
+                    if cq.time_in_track is None:
+                        cq.time_in_track = 0.0
+                    if mon:
+                        debug(1, "gins58:  in-track  tmit=%.2f[s]" %
+                              cq.time_in_track)
+                    if cq.time_in_track >= 1.0:
+                        pass_control = True
+                        cq.shdist = shd_far
+                        cq.snapshot = False
+                        cq.tszaimfac = 0.6 # stricter
+                        cq.time_in_track = None
+                        # ...must be set to None, in case track decides to
+                        # decline control and returns to insert immediately.
+                else:
+                    cq.time_in_track = None
+
+                break
+
+            elif cq.state == "snap":
+
+                if trmaxtp > ttrams and abs(sig) > radians(45.0):
+                    cq.state = "turn"
+                    continue
+
+                if False:
+                    pass
+                elif (td < rdimin * 4 and
+                      abs(sig) > radians(90.0) and abs(delt) > radians(90.0)):
+                    dtmumin, dtmumax = 0.2, 1.0
+
+                    extd = -dpu
+                    tht_c = atan2(extd.getZ(), extd.getXy().length())
+                    hdg_c = atan2(-extd.getX(), extd.getY())
+                    d_tht = norm_ang_delta(tht, tht_c)
+                    d_hdg = norm_ang_delta(hdg, hdg_c)
+
+                    v_c = vmax * 0.95
+
+                else:
+                    dtmumin, dtmumax = 0.2, 1.0
+
+                    tht_c = atan2(dpiu.getZ(), dpiu.getXy().length())
+                    hdg_c = atan2(-dpiu.getX(), dpiu.getY())
+                    d_tht = norm_ang_delta(tht, tht_c)
+                    d_hdg = norm_ang_delta(hdg, hdg_c)
+
+                    vmin_c = max(0.8 * voptts, vmin)
+                    vmax_c = max(vmax * 0.95, vmin_c)
+                    v_cd = clamp(tu.dot(dpu) + 0.1 * (td - shd_i), vmin_c, vmax_c)
+                    v_cdt = intl01vr(d_hdg, 0.0, trimax * 1.0, v_cd, voptti)
+                    v_c = max(voptti, v_cdt)
+
+                dtm_c = dtmumax
+
+                shd_near = shd_i * 0.1
+                shd_far = intl01vr(delt, radians(120.0), radians(180.0),
+                                   shd_i * 1.0, shd_i * 2.0)
+                sig_adi_in = PlaneDynamics.GTRK_SIGMAX_OUT * 0.2
+                if mon:
+                    debug(1, "gins66:  "
+                          "shd_near=%.0f[m]  shd_far=%.0f[m]  td=%.0f[m]  "
+                          "sig_adi_in=%.1f[deg]  sig_adi=%.1f[deg]" %
+                          (shd_near, shd_far, td,
+                           degrees(sig_adi_in), degrees(sig_adi)))
+                if shd_near < td < shd_far and abs(sig_adi) < sig_adi_in:
+                    if cq.time_in_track is None:
+                        cq.time_in_track = 0.0
+                    if mon:
+                        debug(1, "gins68:  in-track  tmit=%.2f[s]" %
+                              cq.time_in_track)
+                    if cq.time_in_track >= 0.2:
+                        pass_control = True
+                        cq.shdist = shd_far
+                        cq.snapshot = True
+                        cq.tszaimfac = tszaimfac
+                        cq.time_in_track = None
+                        # ...must be set to None, in case track decides to
+                        # decline control and returns to insert immediately.
+                else:
+                    cq.time_in_track = None
+
+                break
+
+            elif cq.state == "chicken":
+                dtmumin, dtmumax = 0.1, 0.2
+                evd = unitv(dpu.cross(ez))
+                #evd *= -sign(tu.dot(evd))
+                if evd.length() < 1e-5:
+                    evd = an
+                #eoff = shd * 0.5
+                eoff = td * 2.0
+                evdpu = unitv(dp + evd * eoff)
+                tht_c = atan2(evdpu.getZ(), evdpu.getXy().length())
+                hdg_c = atan2(-evdpu.getX(), evdpu.getY())
+                d_tht = norm_ang_delta(tht, tht_c)
+                d_hdg = norm_ang_delta(hdg, hdg_c)
+                v_c = v
+                dtm_c = dtmumax
+                cq.state = "snap"
+                break
+
+            else:
+                assert False
+
+        if pass_control:
+            if mon:
+                debug(1, "gins98: ==================== end")
+            return None
+
+        if abs(dr_dodge) > 0.0:
+            dtmumin, dtmumax = 0.2, 0.4
+
+        # Correct for near ground.
+        if tht < 0.0:
+            r_pu = rdimin * 1.5
+            dh_pu = r_pu * (1.0 - cos(tht))
+            dh_ag = h - gh
+            dtm_g = 2.0
+            if dh_ag < dh_pu or -cr * dtm_g > dh_ag or 4.0 * sz > dh_ag:
+                tht_c = acos(clamp(1.0 - (dh_pu - dh_ag) / (r_pu + 1e-3), -1.0, 1.0))
+                d_tht = norm_ang_delta(tht, tht_c)
+                dr_dodge = 0.0
+                if mon:
+                    debug(1, "gins91:  avoid-ground  "
+                          "tht_c=%.1f[deg]  d_tht=%.1f[deg]  dr_dodge=%.0f[deg]" %
+                          (degrees(tht_c), degrees(d_tht), degrees(dr_dodge)))
+                dtmumin, dtmumax = 0.5, 1.0
+
+        if mon:
+            debug(1, "gins92:  "
+                  "d_hdg=%.1f[deg]  d_tht=%.1f[deg]  "
+                  "v_c=%.1f[m/s]  dtm_c=%.2f[sec]" %
+                  (degrees(d_hdg), degrees(d_tht), v_c, dtm_c))
+
+        # Target controls.
+        nmax_c = min(nmax, 9.0)
+        nmin_c = max(nmin, -2.5)
+        dtmc_c = dtmumax
+
+        #n_cp = nmax_c if d_tht > 0.0 else nmin_c
+        n_cp = nmax_c
+        r_cp = abs(v**2 / ((n_cp - 1.0) * g))
+        r_cpb = abs(v * dtmc_c / (d_tht or 1e-10))
+        r_cp = max(r_cp, r_cpb)
+        r_cp *= sign(d_tht) or 1
+
+        trimax_cn = g * (nmax_c**2 - 1.0)**0.5 / v
+        trimax_c = min(trimax, trimax_cn)
+        trsmax_c = min(trsmax, trimax_c)
+        trmax_c = intl01vr(td, 2.0 * rdimin, 4.0 * rdimin, trimax_c, trsmax_c)
+        #trmax_c = trimax_c
+        tr_c = clamp(d_hdg / dtmc_c, -trmax_c, trmax_c)
+        r_ct = abs(v / tr_c) if abs(tr_c) > 1e-5 else 1e30
+        #n_ct = (v**2 / (r_ct * g))**2 + 1.0
+        r_ctb = abs(v * dtmc_c / (d_hdg or 1e-10))
+        r_ct = max(r_ct, r_ctb)
+
+        path = ArcedHelixZ(r_ct, d_hdg, r_cp, Vec3D(), xit)
+        xit1 = path.tangent(0.0)
+        xin1 = path.normal(0.0)
+        rd1 = path.radius(0.0)
+
+        v1 = v_c
+        ct1 = clamp((v1 - v) / dtmc_c, 0.0, ctmaxv)
+        #ct1 = ctmaxv
+
+        tmaxref = tmaxab
+        nmin1 = nmin_c
+        fdir1 = 1
+        ret = self.diff_to_path_tnr(dq, xit1, xin1, rd1, v1, ct1,
+                                    tmaxref=tmaxref,
+                                    nmininv=nmin1, facedir=fdir1,
+                                    bleedv=True, bleedr=True)
+        da, dr, dtl, dbrd = ret[:4]
+        if da is None:
+            da, dr, dtl, dbrd = 0.0, 0.0, 0.0, 0.0
+            if mon:
+                debug(1, "gins80:  no-solution")
+        dr += dr_dodge
+
+        if mon:
+            debug(1, "gins95:  "
+                  "da=%.2f[deg]  dr=%.2f[deg]  dtl=%.2f  dbrd=%.2f" %
+                  (degrees(da), degrees(dr), dtl, dbrd))
+
+        tcao, tcro, tctlv = 0.0, 0.0, 0.0
+
+        # Actual controls.
+        pomax1 = pomax; psmax1 = psmax
+        romax1 = romax; rsmax1 = rsmax
+        tlvmax1 = tlvmax; tlcmax1 = tlcmax
+        brdvmax1 = brdvmax
+
+        rfacdtmu = 0.9
+        dtmeps = dtm * 1e-2
+
+        ret = self.input_program(cq,
+                                 da, cao, tcao, pomax1, psmax1,
+                                 dr, cro, tcro, romax1, rsmax1,
+                                 dtl, ctlv, tctlv, tlvmax1, tlcmax1,
+                                 dbrd, brdvmax,
+                                 dtmumin, dtmumax, rfacdtmu, dtmeps,
+                                 mon=mon)
+
+        cq.dtmu = ret[0]
+        cq.dtmu = min(cq.dtmu, dtm_c)
+
+        if cq.time_in_track is not None:
+            cq.time_in_track += cq.dtmu
+
+        if cq.time_same_ttr_dir is None:
+            cq.time_same_ttr_dir = 0.0
+            cq.prev_ttr = 0.0
+        if ttr * cq.prev_ttr > 0.0:
+            cq.time_same_ttr_dir += cq.dtmu
+        else:
+            cq.time_same_ttr_dir = 0.0
+        cq.prev_ttr = ttr
+
+        if mon:
+            debug(1, "gins99: ==================== end")
+
+        return ret
+
+
+    def input_to_path_mevd (self, cq, dq, tm, dtm, gh,
+                            mp, mu, mb, freeab,
+                            skill=None, mon=False):
 
         vec = Vec3D
 
@@ -3495,8 +4192,9 @@ class PlaneDynamics (object):
         at, an, ab = dq.at, dq.an, dq.ab
         xit, xin, xib = dq.xit, dq.xin, dq.xib
         ao, ro, tlv = dq.ao, dq.ro, dq.tlv
-        if not cq.inited:
-            cq.inited = True
+        if cq.inited != "mevd":
+            cq.reinit()
+            cq.inited = "mevd"
             cq.ao, cq.ro, cq.tlv = ao, ro, tlv
             #cq.dac = 0.0
             cq.dtmu = 0.0
@@ -3625,7 +4323,7 @@ class PlaneDynamics (object):
 
 
     @staticmethod
-    def input_program (cq,
+    def input_program (mq,
                        da, cao, tcao, pomax, psmax,
                        dr, cro, tcro, romax, rsmax,
                        dtl, ctlv, tctlv, tlvmax, tlcmax,
@@ -3634,21 +4332,21 @@ class PlaneDynamics (object):
                        mon=False):
 
         def getca ():
-            return cq.dtmca, cq.dac, cq.ao
+            return mq.dtmca, mq.dac, mq.ao
         def setca (dtmca, dac, ao):
-            cq.dtmca, cq.dac, cq.ao = dtmca, dac, ao
+            mq.dtmca, mq.dac, mq.ao = dtmca, dac, ao
         def getcr ():
-            return cq.dtmcr, cq.drc, cq.ro
+            return mq.dtmcr, mq.drc, mq.ro
         def setcr (dtmcr, drc, ro):
-            cq.dtmcr, cq.drc, cq.ro = dtmcr, drc, ro
+            mq.dtmcr, mq.drc, mq.ro = dtmcr, drc, ro
         def getctl ():
-            return cq.dtmctl, cq.dtlc, cq.tlv
+            return mq.dtmctl, mq.dtlc, mq.tlv
         def setctl (dtmctl, dtlc, tlv):
-            cq.dtmctl, cq.dtlc, cq.tlv = dtmctl, dtlc, tlv
+            mq.dtmctl, mq.dtlc, mq.tlv = dtmctl, dtlc, tlv
         def getcbrd ():
-            return cq.dtmcbrd, cq.dbrdc
+            return mq.dtmcbrd, mq.dbrdc
         def setcbrd (dtmcbrd, dbrdc):
-            cq.dtmcbrd, cq.dbrdc = dtmcbrd, dbrdc
+            mq.dtmcbrd, mq.dbrdc = dtmcbrd, dbrdc
 
         tcls = PlaneDynamics
 
@@ -3940,7 +4638,7 @@ class PlaneDynamics (object):
         if not 0.0 <= wtcr <= 1.0:
             raise StandardError(
                 "Coupling weighting parameter out of range "
-                "(0.0 <= wtcr <= 1.0; got %.5f)." % wtcr)
+                "(0.0 <= wtcr <= 1.0; got wtcr=%.3f)." % wtcr)
         wttr = 1.0 - wtcr
         crref = crmax
         trref = trmax
@@ -3958,135 +4656,345 @@ class PlaneDynamics (object):
 
 
     @staticmethod
-    def lead_circle_position (u_t, r_t, u_i, l_r_t, mon=False):
+    def cannon_intercept (p, u, at, an, ab, cro,
+                          tp, tu, tb, tsz, shd,
+                          sfu, sdup, sfb, sdbp, setm,
+                          dtm, tszaimfac,
+                          mon=False):
 
-        assert u_i > u_t
-
-        gam_a = - l_r_t / r_t
-        k_u2 = - u_i / (u_i - u_t)
-        r_a = r_t * (1.0 - 0.5 * (gam_a * k_u2)**2)
-        k_u1 = u_t / (u_i - u_t)
-        gam_t_i = -gam_a * k_u1
+        dp = tp - p
+        td = dp.length()
+        ret = intercept_time(tp, tu, tb, p, sfu, sdup, sfb, sdbp,
+                             finetime=setm, epstime=dtm, maxiter=5)
+        if not ret:
+            if mon:
+                debug(1, "tci12:  no-solution")
+            ret = 0.0, tp, unitv(dp)
+        dtint, tp1, adi = ret
+        tu1 = tu + tb * dtint
+        adi_atn = unitv(adi - ab * adi.dot(ab))
+        adi_atb = unitv(adi - an * adi.dot(an))
+        sig_atni = at.signedAngleRad(adi_atn, ab)
+        sig_atbi = at.signedAngleRad(adi_atb, an)
+        batadi = unitv(at.cross(adi))
+        if batadi.lengthSquared() > 0.5:
+            sig_adi = at.signedAngleRad(adi, batadi)
+        else:
+            sig_adi = 0.0
+        thszref = 0.5 * (tszaimfac * tsz)
+        sigmax_adi = atan(thszref / td)
+        romax_adi = radians(900.0)
+        in_adi = (abs(sig_adi) < sigmax_adi)
+        xit = unitv(u)
+        txit = unitv(tu)
+        delt = acos(clamp(txit.dot(xit), -1.0, 1.0))
+        shd_fr = intl01vr(delt, radians(2.0), radians(15.0), shd * 1.2, shd)
+        release = (in_adi and td < shd_fr and abs(cro) < romax_adi)
         if mon:
-            dt_i = (r_t * gam_t_i) / u_t
-            u_a = (r_a / r_t) * u_t
-            debug(1, "lcp12:  u_a=%.1f[m/s]  r_a=%.1f[m]  "
-                  "gam_a=%.1f[deg]  gam_t_i=%.1f[deg]  dt_i=%.2f[s]" %
-                  (u_a, r_a, degrees(gam_a), degrees(gam_t_i), dt_i))
-        r_a_p = 0.0
-        it = 0
-        while abs(r_a - r_a_p) > 1.0 and it < 5:
-            r_a_p = r_a
-            gam_t_i = (u_t / u_i) * sin(gam_t_i - gam_a)
-            r_a = r_t * cos(gam_t_i - gam_a)
-            it += 1
-        dt_i = (r_t * gam_t_i) / u_t
-        u_a = (r_a / r_t) * u_t
-        if mon:
-            debug(1, "lcp16:  it=%d  u_a=%.1f[m/s]  r_a=%.1f[m]  "
-                  "gam_a=%.1f[deg]  gam_t_i=%.1f[deg]  dt_i=%.2f[s]" %
-                  (it, u_a, r_a, degrees(gam_a), degrees(gam_t_i), dt_i))
+            debug(1, "tci25:  "
+                  "sig_atni=%.2f[deg]  sig_atbi=%.2f[deg]  "
+                  "sig_adi=%.2f[deg]  sigmax_adi=%.2f[deg]  "
+                  "in_adi=%s  release=%s" %
+                  (degrees(sig_atni), degrees(sig_atbi),
+                   degrees(sig_adi), degrees(sigmax_adi),
+                   in_adi, release))
 
-        return u_a, r_a, gam_a, gam_t_i, dt_i
+        return (dtint, adi, tp1, tu1, sig_atni, sig_atbi, sig_adi, sigmax_adi,
+                in_adi, release)
 
 
     @staticmethod
-    def circle_insertion_path (p_0, v_0, xin_0, r_0, trsmax_0,
-                               p_1, v_1, xin_1, r_1, trsmax_1,
-                               mon=False):
+    def lead_circle_position (v_t, r_t, v_i, l_r_t, maxiter=5, mon=False):
+
+        if not v_i > v_t:
+            raise StandardError(
+                "It must hold v_i > v_t (v_i=%.1f[m/s], v_t=%.1f[m/s]." %
+                (v_i, v_t))
+
+        #r_t = min(r_t, 1e6)
+        gam_a = - l_r_t / r_t
+        k_v2 = - v_i / (v_i - v_t)
+        r_a = r_t * (1.0 - 0.5 * (gam_a * k_v2)**2)
+        k_v1 = v_t / (v_i - v_t)
+        gam_t_i = -gam_a * k_v1
+        if mon:
+            dt_i = (r_t * gam_t_i) / v_t
+            v_a = (r_a / r_t) * v_t
+            debug(1, "lcp12:  v_a=%.1f[m/s]  r_a=%.1f[m]  "
+                  "gam_a=%.1f[deg]  gam_t_i=%.1f[deg]  dt_i=%.2f[s]" %
+                  (v_a, r_a, degrees(gam_a), degrees(gam_t_i), dt_i))
+        r_a_p = 0.0
+        it = 0
+        while abs(r_a - r_a_p) > 1.0 and it < maxiter:
+            r_a_p = r_a
+            gam_t_i = (v_t / v_i) * sin(gam_t_i - gam_a)
+            r_a = r_t * cos(gam_t_i - gam_a)
+            it += 1
+        dt_i = (r_t * gam_t_i) / v_t
+        v_a = (r_a / r_t) * v_t
+        if mon:
+            debug(1, "lcp16:  it=%d  v_a=%.1f[m/s]  r_a=%.1f[m]  "
+                  "gam_a=%.1f[deg]  gam_t_i=%.1f[deg]  dt_i=%.2f[s]" %
+                  (it, v_a, r_a, degrees(gam_a), degrees(gam_t_i), dt_i))
+
+        return v_a, r_a, gam_a, gam_t_i, dt_i
+
+
+    @staticmethod
+    def circle_insertion_point (p_a, u_a, xin_a, r_a,
+                                p_d, u_d, xin_d, r_d,
+                                d_f, d_r,
+                                delta_phi=radians(10.0),
+                                max_off_phi=pi,
+                                mon=False):
+
+        #def debug (l, m): print m
+        if mon:
+            vf = lambda v, d=6: "(%s)" % ", ".join(("%% .%df" % d) % e for e in v)
 
         ez = Vec3D(0.0, 0.0, 1.0)
-        u_0 = v_0.length()
-        u_1 = v_1.length()
-        xit_0 = unitv(v_0)
-        xit_1 = unitv(v_1)
-        r_min_0 = u_0 / trsmax_0
-        r_min_1 = u_1 / trsmax_1
-        if mon:
-            debug(1, "cip10:  r_min_0=%.1f[m]  r_min_1=%.1f[m]" %
-                  (r_min_0, r_min_1))
+        v_a = u_a.length()
+        v_d = u_d.length()
+        xit_a = unitv(u_a)
+        xit_d = unitv(u_d)
+        tr_a = v_a / r_a
+        tr_d = v_d / r_d
 
-        # Project everything to maneuver plane, containing p_1, p_0, xit_0.
-        # Center on p_0, x-axis to xit_0.
-        ez_m = xit_0.cross(unitv(p_1 - p_0))
-        ez_m = unitv(ez_m) if ez_m.length() > 1e-6 else ez
-        ex_m = xit_0
+        # Project everything to maneuver plane, containing p_a and p_d,
+        # with zero roll to horizontal.
+        # Center on p_d, x-axis to projected xit_d.
+        dp_ad_u = unitv(p_a - p_d)
+        ez_m = dp_ad_u.cross(ez).cross(dp_ad_u)
+        if ez_m.length() < 1e-6:
+            debug(1, "cip01:  ez_m-zero")
+            return None
+        ez_m = unitv(ez_m)
+        projp = lambda p: (p - p_d) - ez_m * (p - p_d).dot(ez_m)
+        proju = lambda u: u - ez_m * u.dot(ez_m)
+        xit_dm = proju(xit_d)
+        if xit_dm.length() < 1e-6:
+            debug(1, "cip02:  xit_dm-zero")
+            return None
+        xit_dm = unitv(xit_dm)
+        ex_m = xit_dm
         ey_m = ez_m.cross(ex_m)
-        projp = lambda p: (p - p_0) - ez_m * (p - p_0).dot(ez_m)
-        projv = lambda v: v - ez_m * v.dot(ez_m)
-        xin_0m = ey_m
-        xit_0m = ex_m
-        p_0m = projp(p_0)
-        p_1m = projp(p_1)
-        xit_1m = projv(xit_1)
-        xit_1m = unitv(xit_1m) if xit_1m.length() > 1e-6 else unitv(p_1m)
-        xin_1mb = projv(xin_1)
-        xin_1m = xit_1m.cross(xin_1mb).cross(xit_1m)
-        xin_1m = unitv(xin_1m) if xin_1m.length() > 1e-6 else ez_m.cross(xit_1m)
-        r_0m = r_0
-        r_1m = r_1 # not projected
+        p_am = projp(p_a)
+        p_dm = projp(p_d)
+        u_am = proju(u_a)
+        u_dm = proju(u_d)
+        xit_am = proju(xit_a)
+        if xit_am.length() < 1e-6:
+            debug(1, "cip03:  xit_am-zero")
+            return None
+        xit_am = unitv(xit_am)
+        r_am = r_a # not projected
+        r_dm = r_d # not projected
 
-        # Pick arc radii.
-        r_a0m = r_min_0
-        r_a1m = r_min_1
-
-        # Examine all possible arc-segment-arc insertions.
+        # Set up insertion problem.
+        dp_dam = p_am - p_dm
+        d_p = dp_dam.dot(ex_m)
+        d_s = (dp_dam - ex_m * dp_dam.dot(ex_m)).dot(ey_m)
+        v_a = u_am.length()
+        v_d = u_dm.length()
         if mon:
-            debug(1, "cip12 %s %s" % (p_0m, p_1m))
-        for k_0 in (1, -1):
-            xin_0mk = xin_0m * k_0
-            p_r0m = p_0m + xin_0mk * r_a0m
-            xib_0mk = xit_0m.cross(xin_0mk)
-            for k_1 in (1, -1):
-                xin_1mk = xin_1m * k_1
-                p_r1m = p_1m + xin_1mk * r_a1m
-                xib_1mk = xit_1m.cross(xin_1mk)
-                dp_rm = p_r1m - p_r0m
-                d_rm = dp_rm.length()
-                if mon:
-                    debug(1, "cip14 %s %s %s" % (p_r0m, p_r1m, d_rm))
-                k_ts = xib_0mk.dot(xib_1mk)
-                phi = None
-                if k_ts > 0.0 and d_rm > abs(r_a0m - r_a1m):
-                    # Outer tangent insertion possible.
-                    phi = acos((r_a0m - r_a1m) / d_rm)
-                    k_io = 1
-                    if mon:
-                        debug(1, "cip15a outer %s %s %s" % (r_a0m, r_a1m, d_rm))
-                elif k_ts < 0.0 and d_rm > r_a0m + r_a1m:
-                    # Inner tangent insertion possible.
-                    phi = acos((r_a0m + r_a1m) / d_rm)
-                    k_io = -1
-                    if mon:
-                        debug(1, "cip15b inner %s %s %s" % (r_a0m, r_a1m, d_rm))
-                if phi is not None:
-                    rot0 = QuatD()
-                    rot0.setFromAxisAngleRad(-phi, xib_0mk)
-                    xin_a0mk = -unitv(Vec3D(rot0.xform(unitv(dp_rm))))
-                    sig_a0mk = (-xin_0mk).signedAngleRad(-xin_a0mk, xib_0mk)
-                    if sig_a0mk < 0.0:
-                        sig_a0mk += 2 * pi
-                    l_a0mk = r_a0m * sig_a0mk
-                    rot1 = QuatD()
-                    rot1.setFromAxisAngleRad(-phi * k_io, xib_1mk)
-                    xin_a1mk = -unitv(Vec3D(rot1.xform(unitv(dp_rm * k_io))))
-                    sig_a1mk = (-xin_a1mk).signedAngleRad(-xin_1mk, xib_1mk)
-                    if sig_a1mk < 0.0:
-                        sig_a1mk += 2 * pi
-                    l_a1mk = r_a1m * sig_a1mk
-                    l_smk = d_rm * cos(0.5 * pi - phi)
-                    l_mk = l_a0mk + l_smk + l_a1mk
-                    if mon:
-                        debug(1, "cip18:  k_0=%d  k_1=%d  phi=%.1f[deg]  "
-                              "sig_a0mk=%.1f[deg]  sig_a1mk=%.1f[deg]  "
-                              "l_a0mk=%.1f[m]  l_a1mk=%.1f[m]  "
-                              "l_smk=%.1f[m]  l_mk=%.1f[m]" %
-                              (k_0, k_1, degrees(phi),
-                               degrees(sig_a0mk), degrees(sig_a1mk),
-                               l_a0mk, l_a1mk, l_smk, l_mk))
+            debug(1, "cip10:  "
+                  "d_p=%.0f[m]  d_s=%.0f[m]  d_f=%.0f[m]  d_r=%.0f[m]  "
+                  "v_am=%.0f[m/s]  v_dm=%.0f[m/s]" %
+                  (d_p, d_s, d_f, d_r, v_a, v_d))
+        def eval1 (phi, k_1):
+            phi = pclamp(phi, -pi, pi)
+            phi_r = - phi * k_1
+            if phi_r < 0.0:
+                phi_r += 2 * pi
+            if (v_d - v_a * cos(phi)) == 0.0:
+                print "--here745  v_d=%.2f[m/s]  v_a=%.2f[m/s]  phi=%.2f[deg]" % (v_d, v_a, degrees(phi))
+            t_3 = (d_p + d_f - r_d * (phi_r * cos(phi) + sin(phi) * k_1)) / (v_d - v_a * cos(phi))
+            t_1 = t_3 - r_d * phi_r / v_a
+            d_c = v_a * t_1
+            y_a_3 = d_s + d_c * sin(phi) - r_d * (1.0 - cos(phi)) * k_1
+            y_d_3 = 0.0
+            d_y = y_a_3 - y_d_3 - d_r * k_1
+            if False:
+            #if mon:
+                debug(1, "cip15:  phi=%.1f[deg]  "
+                      "phi_r=%.1f[deg]  "
+                      "t_1=%.2f[s]  t_3=%.2f[s]  "
+                      "d_y=%.1f[m]" %
+                      (degrees(phi), degrees(phi_r),
+                       t_1, t_3, d_y))
+            return t_1, t_3, d_y
+        def eval2 (phi, k_1):
+            d_c = v_a * t_1
+            x_a_1 = d_p + d_c * cos(phi)
+            y_a_1 = d_s + d_c * sin(phi)
+            return x_a_1, y_a_1
 
-        path = None
-        return path
+        # Bracket and converge insertion problem.
+        # Take solution with lesser time, when adding time to turn to angle.
+        phi_c = xit_dm.signedAngleRad(xit_am, ez_m)
+        phi_c = pclamp(phi_c, -pi, pi)
+        if mon:
+            debug(1, "cip20:  phi_c=%.1f[deg]" % degrees(phi_c))
+        tol_d_y = r_d * 0.01
+        t_3_corr_sel = None
+        phi_sel = None
+        for k_1 in (1, -1):
+            if mon:
+                debug(1, "cip21:  k_1=%d" % k_1)
+            off_phi = 0.0
+            sgn_off = k_1
+            phi = phi_c
+            prev_val =  {-1: None, 1: None}
+            bracketed = False
+            while off_phi < max_off_phi + 0.5 * delta_phi:
+                t_1, t_3, d_y = eval1(phi, k_1)
+                if phi == phi_c:
+                    prev_val[-1] = prev_val[1] = (phi, d_y, t_1)
+                prev_phi, prev_d_y, prev_t_1 = prev_val[sgn_off]
+                bracketed = ((prev_d_y * d_y < 0.0 or abs(d_y) < tol_d_y) and
+                             (t_1 > 0.0 and prev_t_1 > 0.0))
+                if bracketed:
+                    phi_l = prev_phi
+                    phi_r = phi
+                    d_y_l = prev_d_y
+                    d_y_r = d_y
+                    if mon:
+                        debug(1, "cip24:  bracketed  "
+                              "phi_l=%.1f[deg]  phi_r=%.1f[deg]" %
+                              (degrees(phi_l), degrees(phi_r)))
+                    break
+                else:
+                    prev_val[sgn_off] = (phi, d_y, t_1)
+                    sgn_off *= -1
+                    if sgn_off == -k_1:
+                        off_phi += delta_phi
+                    phi = phi_c + off_phi * sgn_off
+            if not bracketed:
+                continue
+            while abs(d_y) > tol_d_y:
+                phi = 0.5 * (phi_l + phi_r)
+                t_1, t_3, d_y = eval1(phi, k_1)
+                if d_y * d_y_l < 0.0:
+                    phi_r = phi
+                    d_y_r = d_y
+                else:
+                    phi_l = phi
+                    d_y_l = d_y
+            phi = pclamp(phi, -pi, pi)
+            d_phi_c = norm_ang_delta(phi_c, phi)
+            dt_phi = abs(d_phi_c) / tr_a
+            t_3_corr = t_3 + dt_phi
+            if t_3_corr_sel is None or t_3_corr < t_3_corr_sel:
+                t_3_corr_sel = t_3_corr
+                phi_sel = phi
+                t_1_sel = t_1
+                k_1_sel = k_1
+                dt_phi_sel = dt_phi
+            if mon:
+                debug(1, "cip26:  converged  phi=%.1f[deg]  "
+                      "t_3=%.2f[s]  t_3_corr=%.2f[s]  dt_phi=%.2f[s]" %
+                      (degrees(phi), t_3, t_3_corr, dt_phi))
+        if phi_sel is None:
+            return None
+        phi = phi_sel
+        k_1 = k_1_sel
+        x_a_1, y_a_1 = eval2(phi, k_1)
+        p_c = p_d + ex_m * x_a_1 + ey_m * y_a_1
+        t_c = t_1_sel
+        d_phi_c = norm_ang_delta(phi_c, phi)
+        dt_phi = dt_phi_sel
+        return p_c, t_c, d_phi_c, dt_phi
+
+
+    @staticmethod
+    def turn_track_point (p_a, u_a, tr_a,
+                          p_d, u_d, tr_d,
+                          r_i, gam_i, d_r_i,
+                          mon=False):
+
+        ez = Vec3D(0.0, 0.0, 1.0)
+        xit_a = unitv(u_a)
+        xit_d = unitv(u_d)
+        d_p = p_d - p_a
+        d_p_u = unitv(d_p)
+        xib_c_r = xit_a.cross(d_p_u)
+        xib_cz_r = xit_a.cross(ez).cross(xit_a)
+        ifac_xib = xib_c_r.length()**0.01
+        xib_c = unitv(intl01v(ifac_xib, xib_cz_r, xib_c_r))
+        dfac_xib = 1 if xib_c.dot(ez) * tr_d > 0.0 else -1
+        xib_c *= dfac_xib
+        xit_dm_r = xit_d - xib_c * xit_d.dot(xib_c)
+        ifac_xit = xit_dm_r.length()**0.01
+        xit_dm = unitv(intl01v(ifac_xit, xit_d, xit_dm_r))
+        xin_dm = xib_c.cross(xit_dm)
+
+        rot = QuatD()
+        rot.setFromAxisAngleRad(gam_i, xib_c)
+        d_p_dc = xin_dm * (r_i + d_r_i)
+        d_p_dc_gam = Vec3D(rot.xform(d_p_dc))
+        p_i = p_d + d_p_dc - d_p_dc_gam
+        xit_i = unitv(Vec3D(rot.xform(xit_dm)))
+
+        if mon:
+            debug(1, "ctp25:  ifac_xib=%.3f  ifac_xit=%.3f  dfac_xib=%d" %
+                  (ifac_xib, ifac_xit, dfac_xib))
+
+        return p_i, xit_i
+
+
+    @staticmethod
+    def turn_circle_location (p_a, u_a, tra_a, xin_a,
+                              p_d, u_d, tra_d, xin_d,
+                              mon=False):
+
+        xit_d = unitv(u_d)
+        xib_d = unitv(xit_d.cross(xin_d))
+        v_d = u_d.length()
+        rda_d = v_d / (tra_d + 1e-10)
+        p_c = p_d + xin_d * rda_d
+        d_p_ac = p_a - p_c
+        d_p_ac_m = d_p_ac - xib_d * d_p_ac.dot(xib_d)
+        d_p_ac_um = unitv(d_p_ac_m)
+        r = d_p_ac_m.length()
+        phi = (-xin_d).signedAngleRad(d_p_ac_um, xib_d)
+        xit_a = unitv(u_a)
+        xit_am = unitv(xit_a - xib_d * xit_a.dot(xib_d))
+        xit_phi = unitv(xib_d.cross(d_p_ac_um))
+        gam = xit_am.signedAngleRad(xit_phi, xib_d)
+
+        #if mon:
+            #debug(1, "cloc25:  r=%.0f[m]  phi=%.1f[deg]  gam=%.1f[deg]" %
+                  #(r, degrees(phi), degrees(gam)))
+
+        return r, phi, gam
+
+
+    @staticmethod
+    def collision_imminent (p, u, sz, tp, tu, tsz, dtm):
+
+        evtm = 1.5
+
+        climn = False
+        dp = tp - p
+        dpu = unitv(dp)
+        td = dp.length()
+        dup = (u - tu).dot(dpu)
+        if td - dup * evtm < 0.0:
+            tb = Vec3D()
+            sfu = Vec3D()
+            sdup = tu.length()
+            sfb = Vec3D()
+            sdbp = 0.0
+            ret = intercept_time(tp, tu, tb, p, sfu, sdup, sfb, sdbp)
+            if ret:
+                dtint, tp1, adi = ret
+                if dtint < evtm:
+                    xit = unitv(u)
+                    sig_adi = acos(clamp(adi.dot(xit), -1.0, 1.0))
+                    sig_adi_lim = atan2(0.5 * sz + 1.0 * sz + 0.5 * tsz, td)
+                    if abs(sig_adi) < sig_adi_lim:
+                        climn = True
+        return climn
 
 
 class PlaneSkill (object):
