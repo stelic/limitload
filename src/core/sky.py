@@ -13,7 +13,7 @@ from pandac.PandaModules import GeomVertexFormat
 from pandac.PandaModules import GeomVertexWriter, GeomVertexData
 from pandac.PandaModules import Geom, GeomNode, GeomTriangles
 from pandac.PandaModules import NodePath, Shader
-from pandac.PandaModules import TransparencyAttrib, ColorAttrib
+from pandac.PandaModules import TransparencyAttrib, ColorAttrib, ColorBlendAttrib
 from pandac.PandaModules import Texture
 
 from src import join_path, path_exists, path_dirname
@@ -874,11 +874,12 @@ class Moon (object):
         use_glow = True
         if use_glow:
             glowmap = "images/sky/moon_gw.png"
-            shader = make_shader(glow=True, modcol=True)
+            shader = make_shader(glow=True, modcol=True, selfalpha=True)
             halosize = None
         else:
             glowmap = None
-            shader = make_shader(modcol=True)
+            shader = make_shader(modcol=True, selfalpha=true)
+        self.node.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
         self.node.setShader(shader)
 
         moondiam = radius * size
