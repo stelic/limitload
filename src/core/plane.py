@@ -3128,10 +3128,8 @@ class Plane (Body):
         freeab = self._act_useab
         skill = self.skill
 
-        mon = False
-        #mon = (self.name == "red1")
-        #mon = (self.name == "blue1")
-        atyp = 1
+        mon = self.name in base.gameconf.debug.act_attack_monitor
+        atyp = base.gameconf.debug.act_attack_type
         if atyp == 1:
             ret = self.dyn.input_to_path_gatk(cq, dq, atime, dt, elev,
                                               tpos, tvel, tacc, tsize,

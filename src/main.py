@@ -493,6 +493,8 @@ class GameConf (SimpleProps):
                 "fatal", "error", "warning", "info", "debug", "spam"]),
             panda_pstats=False, _panda_pstats_p=pset([True, False]),
             panda_verbose_timer=False, _panda_verbose_timer_p=pset([True, False]),
+            act_attack_type=1, _act_attack_type_p=pset([1, 2]),
+            act_attack_monitor=frozenset(), _act_attack_monitor_p=GameConf._parse_comma_set,
         )
         self.cheat = SimpleProps(
             _silent=True,
@@ -571,6 +573,16 @@ class GameConf (SimpleProps):
             return value
 
         return parsef
+
+
+    @staticmethod
+    def _parse_comma_set (field, valstr):
+
+        if not valstr:
+            return []
+        valstr_lst = valstr.split(",")
+        els = frozenset([x.strip() for x in valstr_lst])
+        return els
 
 
     @staticmethod
