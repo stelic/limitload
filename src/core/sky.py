@@ -213,6 +213,8 @@ class Sky (object):
 
         self.sun_bright_color = Vec4()
 
+        self._sun_halo_rot_fac = 2.0
+
         self.alive = True
         # Should come before body loops.
         task = base.taskMgr.add(self._loop, "sky-loop", sort=-1)
@@ -227,9 +229,11 @@ class Sky (object):
             self.destroy()
             return task.done
 
+        eff_dt = self.world.dt * self.world.day_time_factor
+
         if self.world.frame < 3:
             self._updwait_slow = 0.0
-        self._updwait_slow -= self.world.dt * self.world.day_time_factor
+        self._updwait_slow -= eff_dt
         if self._updwait_slow <= 0.0:
             self._updwait_slow += self._updperiod_slow
 
@@ -369,7 +373,7 @@ class Sky (object):
         # After slow, for correct first update.
         if self.world.frame < 3:
             self._updwait_fast = 0.0
-        self._updwait_fast -= self.world.dt * self.world.day_time_factor
+        self._updwait_fast -= eff_dt
         if self._updwait_fast <= 0.0:
             self._updwait_fast += self._updperiod_fast
 
@@ -397,6 +401,13 @@ class Sky (object):
                     self.fog.set_color(fc)
                 if self.dome:
                     self.dome.set_color(sc, fc)
+
+        if True:
+            if self.sun.halonode and self._sun_halo_rot_fac > 0.0:
+                scpos = self.sun.sunnode.getPos(self.world.camera)
+                scang = atan2(scpos.getXz().length(), scpos.getY())
+                hrang = scang * self._sun_halo_rot_fac
+                self.sun.halonode.setR(degrees(hrang))
 
         return task.cont
 
