@@ -88,7 +88,7 @@ class MuzzleFlash (object):
             minhpr = Vec3(-180, -90, -180)
             maxhpr = Vec3(180, 90, 180)
         else:
-            raise StandardError("Uknown muzzle flash shape '%s'." % shape)
+            raise StandardError("Unknown muzzle flash shape '%s'." % shape)
 
         self._model = base.load_model("data", modelpath)
         self._model.reparentTo(self.node)
@@ -96,22 +96,16 @@ class MuzzleFlash (object):
         # self._model.setTwoSided(True)
         self._model.setTransparency(TransparencyAttrib.MAlpha)
         self._model.setDepthWrite(False)
-        use_glow = True
-        if use_glow:
-            glowmap = rgba(255,255,255,1.0)
-            self._model.setSa(1.0)
-
-            if isinstance(glowmap, Vec4):
-                glow = glowmap
-                glowmap = None
-            else:
-                glow = (glowmap is not None)
-            shader = make_shader(ambln=parent.world.shdinp.ambln, glow=glow)
-        else:
+        glowmap = rgba(255,255,255,0.5)
+        self._model.setSa(1.0)
+        if isinstance(glowmap, Vec4):
+            glow = glowmap
             glowmap = None
-            self._model.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
-            self._model.setSa(0.5)
-            shader = make_shader(selfalpha=True)
+        else:
+            glow = (glowmap is not None)
+        self._model.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
+        shader = make_shader(ambln=parent.world.shdinp.ambln, glow=glow,
+                             selfalpha=True)
         self._model.setShader(shader)
 
         set_texture(self._model, texture=texture, glowmap=glowmap)
@@ -1312,8 +1306,10 @@ class Corona (object):
 
     def __init__ (self, world, pos, size, parent=None,
                   shape="circle", scaling="base",
-                  color=rgba(255, 255, 255, 1.0), density=None,
-                  blinking=None, flickering=None, lifespan=None):
+                  color=rgba(255, 255, 255, 1.0),
+                  glowmap=rgba(255, 255, 255, 0.1),
+                  density=None, blinking=None,
+                  flickering=None, lifespan=None):
 
         self.world = world
         self.parent = parent if parent is not None else world
@@ -1337,7 +1333,7 @@ class Corona (object):
         bnd.setDepthWrite(False)
         self.world.add_altbin_node(bnd)
         bnd.setColorScale(color)
-        glow = rgba(255, 255, 255, 0.1)
+        glow = glowmap
         shader = make_shader(glow=glow, modcol=True, selfalpha=True)
         bnd.setShader(shader)
         self._fx_node = bnd
