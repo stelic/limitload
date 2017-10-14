@@ -20,7 +20,7 @@ Before we move on to the mission examples, where the code will be explained in d
  - the header
  - one or more zones
  - any amount of dialogues during the mission
- - a set of specific options or flags
+ - a set of specific attributes
  - three possible general dialogues on the stage, that is set outside of the mission action
 
 The first, more basic example, will cover only the header and single zone for the whole mission, which is the least amount of necessary content in order to make one mission and be able to start it.
@@ -564,6 +564,22 @@ The complete code of the mission::
     from src.blocks import *
     from __init__ import *
 
+
+    # ========================================
+    # Description.
+
+    mission_shortdes = p_("mission name",
+        "Area of Interest")
+
+    mission_subshortdes = p_("mission subtitle",
+        "Las Palmas airbase, Canary Islands, early spring")
+
+    mission_longdes = p_("mission description", """
+    PRIMARY OBJECTIVES:
+    - Fly to area NAV1 and search waypoint PATX for any activity of interest.
+    """).strip()
+
+    # ========================================
 
     def airfield_2000x30 (zc, mc, gc, pos, hpr, side):
 
@@ -1315,13 +1331,22 @@ The complete code of the mission::
 
     mission_skipmenu = False
     mission_skipconfirm = False
+    mission_escbutton = "menu"
     mission_menumusic = "audio/music/cr-menu.ogg"
     mission_debriefing = "late"
     mission_mustdrink = False
 
-    def mission_setbg (mc, gc):
+    mission_menuconv = menu_info([_("Four days later")])
 
-        pass
+    mission_bgmain = "images/ui/world_map.png"
+    mission_bgdrink = ("images/ui/lsplm-canteen.png", Point2(0.35, 0.25))
+    mission_bgarchive = "images/ui/cr-archive.png"
+    mission_bgmission = ("images/ui/lsplm-briefing.png", Point2(-0.30, -0.15))
+
+    mission_anntable = SimpleProps(pos=Point2(base.aspect_ratio - 0.80, 0.55))
+    mission_announce = _("Next weekend day off, will start at Friday, 1600.\n--Colonel")
+
+    mission_hasarchive = True
 
 
     # ========================================
@@ -1773,8 +1798,28 @@ The complete code of the mission::
             },
         )
 
-As usual, at the beginning we import all necessary functions for constructing mission, and immediately after that we are making a function for one building::
+As usual, at the beginning we import all necessary functions for constructing mission, and immediately after that we are making mission description, which consists of several attributes::
 
+    # ========================================
+    # Description.
+
+    mission_shortdes = p_("mission name",
+        "Area of Interest")
+
+    mission_subshortdes = p_("mission subtitle",
+        "Las Palmas airbase, Canary Islands, early spring")
+
+    mission_longdes = p_("mission description", """
+    PRIMARY OBJECTIVES:
+    - Fly to area NAV1 and search waypoint PATX for any activity of interest.
+    """).strip()
+
+    # ========================================
+
+Use of these attributes will be mentioned later.
+
+Now, we are making a function for one building::
+    
     def airfield_2000x30 (zc, mc, gc, pos, hpr, side):
 
         runway_pos = pos
@@ -2998,19 +3043,54 @@ We come to the end of scripting the mission itself. All that remains now is -- t
 
     mission_skipmenu = False
     mission_skipconfirm = False
+    mission_escbutton = "menu"
     mission_menumusic = "audio/music/cr-menu.ogg"
     mission_debriefing = "late"
     mission_mustdrink = False
 
-    def mission_setbg (mc, gc):
+    mission_menuconv = menu_info([_("Four days later")])
 
-        pass
+    mission_bgmain = "images/ui/world_map.png"
+    mission_bgdrink = ("images/ui/lsplm-canteen.png", Point2(0.35, 0.25))
+    mission_bgarchive = "images/ui/cr-archive.png"
+    mission_bgmission = ("images/ui/lsplm-briefing.png", Point2(-0.30, -0.15))
 
-In a campaign, the stage is the place where player spends his time between the missions. Function ``mission_setbg`` is the place where stage is constructed (scenography, and other stuff). However, at this moment, the code for stage construction is still in a template phase, and the stage itself consists only of one menu and four buttons: "Mission", "Drink", "Archive" (button that is leading nowhere at the moment) and "Exit". That is why at this time, we will not talk about construction of the stage, instead we will simply skip it::
+    mission_anntable = SimpleProps(pos=Point2(base.aspect_ratio - 0.80, 0.55))
+    mission_announce = _("Next weekend day off, will start at Friday, 1600.\n--Colonel")
 
-    def mission_setbg (mc, gc):
+    mission_hasarchive = True
 
-        pass
+In a campaign, the stage is the place where player spends his time between the missions. Stage is made of multiple screens that player can switch between, and each can have its own background theme. In the background of the stage menu, is displayed text from ``mission_shortdes`` and ``mission_subshortdes`` attributes from mission description, message board and short general statistics of the game. Further more, there are five buttons present too. Three large buttons and two small buttons.
+
+Large buttons are:
+
+* ``Mission``, this button leads to the briefing of the next mission, and its beginning.
+* ``Drink``, it leads to usually an optional dialogue. In case that dialogue is not an optional, where player has to click on it first, before mission button is unlocked, it changes its name to ``Event``.
+* ``Archive``, it leads to menu filled with various documents unlocked so far in the campaign, like player's statistics, character biographies, historical or event references, etc. Content of the archive is read from the special campaign file -- ``archive.py``, a file that also track if pieces of the content are always present or those have to be unlocked first.
+
+Small buttons are:
+
+* ``Save Game``, leads to menu where player can save progress.
+* ``Exit``, button that quits campaign and returns player to the main menu of the game.
+
+In the code, stage consists of various attributes::
+
+* ``mission_skipmenu``, if it is ``True``, skips the stage and all menus of the stage and jumps immediately to ``mission_inconv``.
+* ``mission_skipconfirm``, at the end of every stage dialogue, the player is offered two buttons, to repeat dialogue or to proceed further. If this option is set to ``True``, those two buttons don't show up.
+* ``mission_menumusic``, music that is played in the background, in the main menu of the stage.
+* ``mission_debriefing``, can have three strings as values:
+    - ``"early"``, report from the mission (along with statistics) is showing up before ``mission_outconv`` dialogue.
+    - ``"late"``, report from the mission (along with statistics) is showing up after ``mission_outconv`` dialogue.
+    - ``"skip"``, report from the mission (along with statistics) doesn't show up at all.
+* ``mission_mustdrink``, this is about the dialogue ``mission_drinkconv``. This dialogue between missions is optional by default, however if the mission designer judges that player, for some reason, has to see it before he can proceed to introduction of the next mission, ``mission_inconv``, he can set this attribute to ``True``. In that case, introductory dialogue will be permanently locked until the player watches this optional dialogue at least once.
+* ``mission_menuconv``, this is a short message that is always shown before the stage menu appears. It is meant to announce a timeframe, new location or any important note in the story that campaign designer wants to emphasize to the player, first. If it's ``None``, it's skipped.
+* ``mission_bgmain``, this attribute sets the main background image of the stage.
+* ``mission_bgdrink``, sets the background image for the drink dialogue. It can have additional coordinates, like ``Point2(0.35, 0.25)``. This means that, once the drink button is clicked, before drink dialogue is shown, the screen will atmospherically zoom in some part of main background image, before it fades away and shows up drink background image.
+* ``mission_bgarchive``, sets the background image for the archive menu.
+* ``mission_bgmission``, sets the background image for the briefing dialogue. Like ``mission_bgdrink``, it can have zoom in coordinates.
+* ``mission_anntable``, position of the small window placed at ``SimpleProps(pos=Point2(base.aspect_ratio - 0.80, 0.55))`` coordinates, in the stage main menu. Purpose of this small window is that designer can write whatever messages he wants in it. It is like small public message board.
+* ``mission_announce``, this is where designer can write messages in the previously mention window. In the example, message is ``_("Next weekend day off, will start at Friday, 1600.\n--Colonel")``. If it's ``_("")``, window is shown but there are no messages in it. If it's ``None``, window is hidden.
+* ``mission_hasarchive``, if it's ``True``, archive button is available, otherwise it isn't.
 
 Now it's time to explain three base dialogues of the stage:
 
@@ -3345,7 +3425,7 @@ Colonel Arend is explaining the current situation and the next mission, to all g
                    "Hurricane's task."), branch="north"),
         ]),
 
-to which sector Arend is going to send two specific pilots. Consequences of this choice will be visible a little later.
+to which sector Arend is going to send two specific pilots. Consequences of this choice will be visible a little later. At the end of this dialogue, briefing summary is shown, filled with text from ``mission_longdes`` attribute from mission description. This summary, does not show up if ``mission_skipconfirm`` is set to ``True``.
 
 ``mission_outconv`` is the exit dialogue which begins when the mission is over. This dialogue has multiple purposes. On the one hand, it can be used for detailed debriefing of impressions from the mission itself, that is, be closely tied to the mission that has been just finished. On the other hand, it can be used for some important advancing of the campaign story, which has no relation with the previous mission. In our example, we are using it for immediate impressions from the just finished mission::
 
@@ -3485,19 +3565,6 @@ to which sector Arend is going to send two specific pilots. Consequences of this
         )
 
 Colonel Arend isn't pleased at all with what had happened to him during the mission. Now however we are seeing the consequences of the previous choice, in the introductory dialogue of the mission. As it can be noticed, depending on which two pilots went to patrol the southern sector, those two will go missing in action.
-
-Regarding general options of the mission, or flags as we call them, at this moment there are:
-
-* ``mission_skipmenu``, if it is ``True``, skips the stage and all menus of the stage and jumps immediately to ``mission_inconv``.
-* ``mission_skipconfirm``, at the end of every stage dialogue, the player is offered two buttons, to repeat dialogue or to proceed further. If this option is set to ``True``, those two buttons don't show up.
-* ``mission_menumusic``, music that is played in the background, in the main menu of the stage.
-* ``mission_debriefing``, can have three strings as values:
-    - ``"early"``, report from the mission (along with statistics) is showing up before ``mission_outconv`` dialogue.
-    - ``"late"``, report from the mission (along with statistics) is showing up after ``mission_outconv`` dialogue.
-    - ``"skip"``, report from the mission (along with statistics) doesn't show up at all.
-* ``mission_mustdrink``, this is about the dialogue ``mission_drinkconv``. This dialogue between missions is optional by default, however if the mission designer judges that player, for some reason, has to see it before he can proceed to introduction of the next mission, ``mission_inconv``, he can set this flag to ``True``. In that case, introductory dialogue will be permanently locked until the player watches this optional dialogue at least once.
-
-Important note: number of options, or flags, as well as the way of stage construction, are not yet final, and it is very possible that a lot will change in the future.
 
 With this, we conclude the example 2. Comparing to example 1, which covered the basics of mission scripting and which will more or less remain an accurate manual, example 2 is far more perplexed. Especially because various elements are not yet built, and for some, here described, there is a realistic possibility that those will be altered in the future. Because of that, example 2 should be taken more as description of the concept than an accurate manual.
 
