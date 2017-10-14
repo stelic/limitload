@@ -490,6 +490,7 @@ def formation_pair (acl, acw, compact=1.0, jumpto=False):
         speed = acl.speed()
         posw = pos_from_point(posl, hpr, formposw)
         acw.jump_to(pos=posw, hpr=hpr, speed=speed)
+    acl.set_ap(wingman=acw)
     acw.set_ap(leader=acl, formpos=formposw)
 
 
@@ -508,9 +509,11 @@ def formation_twopairs (acl, acw, acl2, acw2, compact=1.0, jumpto=False):
         acw.jump_to(pos=posw, hpr=hpr, speed=speed)
         acl2.jump_to(pos=posl2, hpr=hpr, speed=speed)
         acw2.jump_to(pos=posw2, hpr=hpr, speed=speed)
+    acl.set_ap(wingman=acw, sublead=acl2)
     acw.set_ap(leader=acl, formpos=formposw)
     acl2.set_ap(leader=acl, formpos=formposl2)
     acw2.set_ap(leader=acl2, formpos=formposw2)
+    acl2.set_ap(wingman=acw2)
 
 
 def formation_triplet (act, ace1, ace2, compact=1.0, jumpto=False):
@@ -525,6 +528,7 @@ def formation_triplet (act, ace1, ace2, compact=1.0, jumpto=False):
         pose2 = pos_from_point(post, hpr, formpose2)
         ace1.jump_to(pos=pose1, hpr=hpr, speed=speed)
         ace2.jump_to(pos=pose2, hpr=hpr, speed=speed)
+    act.set_ap(wingman=ace1, sublead=ace2)
     ace1.set_ap(leader=act, formpos=formpose1)
     ace2.set_ap(leader=act, formpos=formpose2)
 

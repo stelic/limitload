@@ -3495,6 +3495,8 @@ class PlaneDynamics (object):
                             sz, tsz,
                             shd, shldf, freeab,
                             tshldf,
+                            tatkself=False, tatkpair=False, tatkother=False,
+                            atktpair=False, atktother=False,
                             skill=None, mon=False):
 
         vec = Vec3D
@@ -3549,7 +3551,7 @@ class PlaneDynamics (object):
         cr, tr = dq.cr, dq.tr
         hdg, tht = dq.hdg, dq.tht
         rd = v / (abs(tr) + 1e-10)
-        bn = b - xit * b.dot(xit) - (ez * -g)
+        bn = b - xit * b.dot(xit)
         cn = bn.length()
         rda = v**2 / (cn + 1e-10)
         tra = v / (rda + 1e-10)
@@ -3586,7 +3588,7 @@ class PlaneDynamics (object):
         dh = th - h
         tv = tu.length()
         txit = unitv(tu)
-        tbn = tb - txit * tb.dot(txit) - (ez * -g)
+        tbn = tb - txit * tb.dot(txit)
         tcn = tbn.length()
         txin_z = unitv(txit.cross(ez))
         d_tbn_norm = txin_z * (0.01 * g) * (sign(tbn.dot(txin_z)) or 1)
@@ -3685,6 +3687,7 @@ class PlaneDynamics (object):
 
         pass_control = False
         seen_states = set()
+        tried_insert = False
         while True:
             if mon:
                 debug(1, "gins17:  st=%s" % cq.state)
@@ -3695,15 +3698,22 @@ class PlaneDynamics (object):
                 pass
 
             elif cq.state == "insert":
+                if not tried_insert:
+                    seen_states.clear()
+                tried_insert = True
+
                 dtmumin, dtmumax = 0.5, 1.0
 
-                if trmaxtp > ttrams:
-                    if abs(delt) > radians(150.0) and abs(sig) < radians(30.0):
-                        attack_state = "snap"
+                if tatkself and (atktpair or atktother):
+                    if trmaxtp > ttrams and td < td_near:
+                        if abs(delt) > radians(150.0) and abs(sig) < radians(30.0):
+                            attack_state = "snap"
+                        else:
+                            attack_state = "turn"
                     else:
-                        attack_state = "turn"
+                        attack_state = "snap"
                 else:
-                    attack_state = "snap"
+                    attack_state = "turn"
 
                 if sig > radians(90.0):
                     if mon:
@@ -3711,7 +3721,7 @@ class PlaneDynamics (object):
                     cq.state = attack_state
                     continue
 
-                if ttra > 0.1 * trimax:
+                if ttra > 0.1 * trimax and tatkself:
                     if mon:
                         debug(1, "gins31b:  high-turning")
                     cq.state = attack_state
@@ -3768,48 +3778,15 @@ class PlaneDynamics (object):
                 dtmumin = min(dtmumin, dtm_c)
                 break
 
-            elif cq.state == "pass":
-                dtmumin, dtmumax = 0.5, 1.0
-
-                #if td > td_tight:
-                    #cq.state = "insert"
-                    #continue
-
-                shd_ic = intl01vr(delt, 0.0, radians(90.0), shd_i, 0.0)
-                dtm_c = (dp.dot(xit) - shd_ic) / (u - tu).dot(xit)
-                if dtm_c < 0.0 and td < td_near:
-                    if trmaxtp > ttrams:
-                        cq.state = "turn"
-                    else:
-                        cq.state = "snap"
-                    continue
-                if dtm_c < 0.0:
-                    dtm_c = dtmumin
-                dtmumin = min(dtmumin, dtm_c)
-
-                dpu_s = unitv(dpu - xit * dpu.dot(xit))
-                dpu_sh = unitv(dpu_s - ez * dpu_s.dot(ez))
-                d_p_sh = dpu_sh * (tsz * 0.5 + sz * 0.5 + sz * 1.0)
-                p_c = tp - d_p_sh
-                #p_c = tp
-                d_p_c = p_c - p
-                tht_c = atan2(d_p_c.getZ(), d_p_c.getXy().length())
-                hdg_c = atan2(-d_p_c.getX(), d_p_c.getY())
-                d_tht = norm_ang_delta(tht, tht_c)
-                d_hdg = norm_ang_delta(hdg, hdg_c)
-                #v_c = max(voptti, tu.dot(dpu) * 1.1)
-                vmin_c = max(0.8 * voptts, vmin)
-                vmax_c = max(vmax * 0.95, vmin_c)
-                v_cd = clamp(tu.dot(dpu) + 0.1 * (td - shd_i), vmin_c, vmax_c)
-                v_cds = intl01vr(delt, 0.0, radians(90.0), v_cd, voptti)
-                v_cdst = intl01vr(d_hdg, 0.0, trimax, v_cds, voptti)
-                v_c = max(voptti, v_cdst)
-
-                break
-
             elif cq.state == "turn":
 
-                if trmaxtp <= ttrams and abs(sig) > radians(45.0):
+                if td > td_tight and not tried_insert and not tatkself:
+                    cq.state = "insert"
+                    continue
+
+                worse_turning = (trmaxtp <= ttrams)
+                if (worse_turning and abs(sig) > radians(45.0) and
+                    tatkself and (atktpair or atktother)):
                     cq.state = "snap"
                     continue
 
@@ -3926,7 +3903,7 @@ class PlaneDynamics (object):
                            degrees(sig_adi_in), degrees(sig_adi),
                            degrees(delt_in), degrees(delt)))
                 if (shd_near < td < shd_far and abs(sig_adi) < sig_adi_in and
-                    abs(delt) < delt_in):
+                    (abs(delt) < delt_in or worse_turning)):
                     if cq.time_in_track is None:
                         cq.time_in_track = 0.0
                     if mon:
@@ -3954,7 +3931,9 @@ class PlaneDynamics (object):
                 if False:
                     pass
                 elif (td < rdimin * 4 and
-                      abs(sig) > radians(90.0) and abs(delt) > radians(90.0)):
+                      abs(sig) > radians(90.0) and
+                      abs(delt) > radians(90.0) and
+                      tatkself):
                     dtmumin, dtmumax = 0.2, 1.0
 
                     extd = -dpu
@@ -4025,7 +4004,10 @@ class PlaneDynamics (object):
                 d_hdg = norm_ang_delta(hdg, hdg_c)
                 v_c = v
                 dtm_c = dtmumax
-                cq.state = "snap"
+                if tatkself and (atktpair or atktother):
+                    cq.state = "snap"
+                else:
+                    cq.state = "turn"
                 break
 
             else:
@@ -4807,7 +4789,7 @@ class PlaneDynamics (object):
             if phi_r < 0.0:
                 phi_r += 2 * pi
             if (v_d - v_a * cos(phi)) == 0.0:
-                print "--here745  v_d=%.2f[m/s]  v_a=%.2f[m/s]  phi=%.2f[deg]" % (v_d, v_a, degrees(phi))
+                return 0.0, 0.0, 0.0 # really?
             t_3 = (d_p + d_f - r_d * (phi_r * cos(phi) + sin(phi) * k_1)) / (v_d - v_a * cos(phi))
             t_1 = t_3 - r_d * phi_r / v_a
             d_c = v_a * t_1
@@ -4991,7 +4973,7 @@ class PlaneDynamics (object):
                 if dtint < evtm:
                     xit = unitv(u)
                     sig_adi = acos(clamp(adi.dot(xit), -1.0, 1.0))
-                    sig_adi_lim = atan2(0.5 * sz + 1.0 * sz + 0.5 * tsz, td)
+                    sig_adi_lim = atan2(0.5 * sz + 2.0 * sz + 0.5 * tsz, td)
                     if abs(sig_adi) < sig_adi_lim:
                         climn = True
         return climn

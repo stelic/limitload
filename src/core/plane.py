@@ -625,6 +625,8 @@ class Plane (Body):
         self._aatk_targprio = 0
         self._aatk_prev_leader = None
         self._aatk_prev_formpos = None
+        self._aatk_prev_wingman = None
+        self._aatk_prev_sublead = None
 
         # Autopilot constants and state.
         self._act_state = AutoProps()
@@ -2320,7 +2322,12 @@ class Plane (Body):
                         if self._act_leader:
                             self._aatk_prev_leader = self._act_leader
                             self._aatk_prev_formpos = self._act_formpos
-                        self.set_act(target=tbody, useab=True)
+                            self._aatk_prev_wingman = self._act_wingman
+                            self._aatk_prev_sublead = self._act_sublead
+                        self.set_act(target=tbody, useab=True,
+                                     leader=self._act_leader,
+                                     wingman=self._act_wingman,
+                                     sublead=self._act_sublead)
                         self._aatk_targprio = prio
                         self._aatk_paused = False
 
@@ -2351,9 +2358,13 @@ class Plane (Body):
                     self._act_pause = self._act_input_attack()
                 elif self._aatk_prev_leader:
                     self.set_act(leader=self._aatk_prev_leader,
-                                 formpos=self._aatk_prev_formpos)
+                                 formpos=self._aatk_prev_formpos,
+                                 wingman=self._aatk_prev_wingman,
+                                 sublead=self._aatk_prev_sublead)
                 else:
-                    self.set_act(enroute=True)
+                    self.set_act(enroute=True,
+                                 wingman=self._aatk_prev_wingman,
+                                 sublead=self._aatk_prev_sublead)
                     # ...if no route set, goes circling.
             elif self._act_leader:
                 if self._act_leader.alive and not self._act_leader.controlout:
@@ -2363,7 +2374,9 @@ class Plane (Body):
                         self.set_route(points=self._act_leader._route_points,
                                        patrol=self._act_leader._route_patrol,
                                        circle=self._act_leader._route_circle)
-                    self.set_act(enroute=True)
+                    self.set_act(enroute=True,
+                                 wingman=self._act_wingman,
+                                 sublead=self._act_sublead)
             else:
                 self._act_pause = self._act_input_nav()
 
@@ -2428,20 +2441,27 @@ class Plane (Body):
 
         # Find first family with an attackable contact,
         # and sort by increasing distance within that family.
+        # Do not attack contact already under attack by another aircraft
+        # from the same formation, if there is another nearby to attack.
+        others_form = Plane._collect_other_in_formation(self)
         contacts_by_family = self.sensorpack.contacts_by_family()
         contacts_selected = []
+        other_attack_penalty_dist = 5e3
         for family in families:
             for contact in contacts_by_family.get(family, []):
                 if not contact.body.alive or contact.body.shotdown:
                     continue
                 if contact.side not in allied_sides and contact.pos is not None:
                     condist = (self.pos() - contact.pos).length()
-                    contacts_selected.append((condist, contact))
+                    num_atk = sum(o.target is contact.body for o in others_form)
+                    if num_atk:
+                        condist += other_attack_penalty_dist
+                    contacts_selected.append((condist, contact, num_atk))
             if contacts_selected:
                 break
         if contacts_selected:
-            contact = min(contacts_selected)[1]
-            return contact.body, 0
+            contact, num_atk = min(contacts_selected)[1:3]
+            return contact.body, 0 - num_atk
 
         return None, 0
 
@@ -2474,7 +2494,8 @@ class Plane (Body):
     def set_act (self,
                  altitude=None, speed=None, climbrate=None, turnrate=None,
                  heading=None, point=None, otraltitude=None,
-                 leader=None, formpos=None, target=None,
+                 leader=None, formpos=None, wingman=None, sublead=None,
+                 target=None,
                  useab=False, maxg=None, invert=False, enroute=False):
 
         if self.controlout:
@@ -2494,6 +2515,8 @@ class Plane (Body):
         self._act_otraltitude = otraltitude
         self._act_leader = leader
         self._act_formpos = formpos
+        self._act_wingman = wingman
+        self._act_sublead = sublead
         self._act_target = target
         self._act_useab = useab
         self._act_maxg = maxg
@@ -3108,6 +3131,20 @@ class Plane (Body):
         tsize = t.size
         size = self.size
 
+        pair = None
+        for friend in (t._act_wingman, t._act_leader, t._act_sublead): # order matters
+            if friend and not (friend.outofbattle or friend.controlout):
+                pair = friend
+                break
+        others = Plane._collect_other_in_formation(self)
+
+        tt = t.target
+        tatkself = tt is self
+        tatkpair = tt is pair
+        tatkother = tt is not None and not (tt.outofbattle or tt.controlout)
+        atktpair = pair and pair.target is t
+        atktother = any(o.target is t for o in others)
+
         elev = w.elevation(dq.p)
 
         if self.cannons:
@@ -3131,10 +3168,10 @@ class Plane (Body):
         mon = self.name in base.gameconf.debug.act_attack_monitor
         atyp = base.gameconf.debug.act_attack_type
         if atyp == 1:
-            ret = self.dyn.input_to_path_gatk(cq, dq, atime, dt, elev,
-                                              tpos, tvel, tacc, tsize,
-                                              shdist, shldf, freeab,
-                                              skill=skill, mon=mon)
+            ret = self.dyn.input_to_path_gatk(
+                cq, dq, atime, dt, elev,
+                tpos, tvel, tacc, tsize, shdist, shldf, freeab,
+                skill=skill, mon=mon)
             dtmu, inpfa, inpfr, inpftl, inpfbrd, sig, release = ret
         elif atyp == 2:
             if cq.do_ins is None:
@@ -3142,14 +3179,15 @@ class Plane (Body):
                 cq.do_trk = False
             while True:
                 if cq.do_ins:
-                    ret = self.dyn.input_to_path_gins(cq.sub_ins, dq,
-                                                      atime, dt, elev,
-                                                      tpos, tvel, tacc,
-                                                      tat, tan, tab,
-                                                      size, tsize,
-                                                      shdist, shldf, freeab,
-                                                      tshldf,
-                                                      skill=skill, mon=mon)
+                    ret = self.dyn.input_to_path_gins(
+                        cq.sub_ins, dq, atime, dt, elev,
+                        tpos, tvel, tacc, tat, tan, tab,
+                        size, tsize,
+                        shdist, shldf, freeab,
+                        tshldf,
+                        tatkself=tatkself, tatkpair=tatkpair, tatkother=tatkother,
+                        atktpair=atktpair, atktother=atktother,
+                        skill=skill, mon=mon)
                     if ret is not None:
                         dtmu, inpfa, inpfr, inpftl, inpfbrd = ret
                         release = False
@@ -3159,14 +3197,13 @@ class Plane (Body):
                         cq.do_trk = True
                         cq.do_ins = False
                 if cq.do_trk:
-                    ret = self.dyn.input_to_path_gtrk(cq.sub_trk, dq,
-                                                      atime, dt, elev,
-                                                      tpos, tvel, tacc, tant,
-                                                      size, tsize,
-                                                      cq.sub_ins.shdist, shldf, freeab,
-                                                      snapshot=cq.sub_ins.snapshot,
-                                                      tszaimfac=cq.sub_ins.tszaimfac,
-                                                      skill=skill, mon=mon)
+                    ret = self.dyn.input_to_path_gtrk(
+                        cq.sub_trk, dq, atime, dt, elev,
+                        tpos, tvel, tacc, tant, size, tsize,
+                        cq.sub_ins.shdist, shldf, freeab,
+                        snapshot=cq.sub_ins.snapshot,
+                        tszaimfac=cq.sub_ins.tszaimfac,
+                        skill=skill, mon=mon)
                     if ret is not None:
                         dtmu, inpfa, inpfr, inpftl, inpfbrd, sig, release = ret
                         break
@@ -3235,6 +3272,18 @@ class Plane (Body):
 
         #print "========== ap-plane-attack-end"
         return dtmu
+
+
+    @staticmethod
+    def _collect_other_in_formation (this, camefrom=None):
+
+        accu = set()
+        if camefrom and this is not camefrom:
+            accu.add(this)
+        for other in (this._act_leader, this._act_wingman, this._act_sublead):
+            if other and not other is camefrom and not other.outofbattle:
+                accu.update(Plane._collect_other_in_formation(other, this))
+        return accu
 
 
     def _act_input_mslevade (self):
