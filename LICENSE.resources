@@ -114,19 +114,15 @@ file: images/sky/moon.png
 copyright: Gregory H. Revera
 license: CC-by-SA 3.0
 
-file: images/terrain/_*.png
+file: terrains/*
 copyright: Stefan Ilić <stef@sezampro.rs>
 license: CC-by-SA 4.0
 
-file: images/terrain/02-iraq/*
+file: terrains/*/textures/*
 license: public domain
 
-file: images/terrain/heightmaps/*
+file: terrains/*/*-land.png
 license: public domain
-
-file: images/terrain/water*.png
-copyright: Stefan Ilić <stef@sezampro.rs>
-license: CC-by-SA 4.0
 
 file: images/ui/*
 copyright: Stefan Ilić <stef@sezampro.rs>, Nikola Milentijević <nikolmiv@gmail.com>

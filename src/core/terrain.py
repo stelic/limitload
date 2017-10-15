@@ -384,7 +384,7 @@ class Terrain (object):
                     if len(layerspec.spans) == 0:
                         layerspec.spans.append(SpanSpec())
             if cutspec.blendmask is None and numblends > 1:
-                cutspec.blendmask = "images/terrain/_black.png"
+                cutspec.blendmask = "terrains/_black.png"
 
         # Construct texture stages.
         maxblends = max(len(cs.blends) for cs in cuts)
@@ -469,8 +469,8 @@ class Terrain (object):
                     any_normal_layer = any(s.normalmap for s in layerspec.spans)
                     any_glow_layer = any(s.glowmap for s in layerspec.spans)
                     any_gloss_layer = any(s.glossmap for s in layerspec.spans)
-                    glowmap_none = "images/terrain/_clear_black.png"
-                    glossmap_none = "images/terrain/_clear_black.png"
+                    glowmap_none = "terrains/_clear_black.png"
+                    glossmap_none = "terrains/_clear_black.png"
                     for ip, spanspec in enumerate(layerspec.spans):
                         if isinstance(spanspec.glowmap, tuple):
                             glowmap_none = (0, 0, 0, 0)
@@ -485,11 +485,11 @@ class Terrain (object):
                             spanspec.tilemode)
                         for it, jt in tilespec:
                             if any_color_layer:
-                                texture = spanspec.texture or "images/terrain/_black.png"
+                                texture = spanspec.texture or "terrains/_black.png"
                                 texstack_color[it][jt].append(
                                     (texstage_color[ib][il], texture))
                             if any_normal_layer:
-                                normalmap = spanspec.normalmap or "images/terrain/_normal.png"
+                                normalmap = spanspec.normalmap or "terrains/_normal.png"
                                 texstack_normal[it][jt].append(
                                     (texstage_normal[ib][il], normalmap))
                             if any_glow_layer:

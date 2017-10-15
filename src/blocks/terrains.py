@@ -131,7 +131,7 @@ def create_terrain_1 (world, terraintype, visradius,
 
     #00
     if terraintype == "00-flat0":
-        heightmap = "00-flat0.png"
+        heightmap = "00-flat/00-flat0.png"
         tilediv = None
         celldensity = 1.0/2
         groundmask = None
@@ -141,118 +141,118 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "00-flat-water.png"
-        watermask = "00-flat0.png"
+        watermap = "00-flat/00-flat-water.png"
+        watermask = "00-flat/00-flat0.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
         waterlaketex = None
         waterlakemaps = None
         waterlakeparams = None
-        stratusmap = "00-flat0-clouds-strs.png"
-        cumulusmap = "00-flat0-clouds-cmls.png"
-        cirrusmap = "00-flat0-clouds-crrs.png"
+        stratusmap = "00-flat/00-flat0-clouds-strs.png"
+        cumulusmap = "00-flat/00-flat0-clouds-cmls.png"
+        cirrusmap = "00-flat/00-flat0-clouds-crrs.png"
 
     elif terraintype == "00-zangbo":
         sizex = 180000
         sizey = 180000
-        heightmap = "00-zangbo-land.png"
+        heightmap = "00-zangbo/00-zangbo-land.png"
         tilediv = (3, 3)
         groundmask = None
         groundblend = (
             ["global",
-             ("zangbo-test/zangbo-dl.png", None, "zangbo-test/_zangbo-nm.png", "zangbo-test/_zangbo-gw.png", "zangbo-test/_zangbo-gw.png"),
-             ("zangbo-test/zangbo-dc.png", None, "zangbo-test/_zangbo-nm.png", "zangbo-test/_zangbo-gw.png", "zangbo-test/_zangbo-gw.png"),
-             ("zangbo-test/zangbo-dr.png", None, "zangbo-test/_zangbo-nm.png", "zangbo-test/_zangbo-gw.png", "zangbo-test/_zangbo-gw.png"),
-             ("zangbo-test/zangbo-ml.png", None, "zangbo-test/_zangbo-nm.png", "zangbo-test/_zangbo-gw.png", "zangbo-test/_zangbo-gw.png"),
-             ("zangbo-test/zangbo-mc.png", None, "zangbo-test/_zangbo-nm.png", "zangbo-test/_zangbo-gw.png", "zangbo-test/_zangbo-gw.png"),
-             ("zangbo-test/zangbo-mr.png", None, "zangbo-test/_zangbo-nm.png", "zangbo-test/_zangbo-gw.png", "zangbo-test/_zangbo-gw.png"),
-             ("zangbo-test/zangbo-ul.png", None, "zangbo-test/_zangbo-nm.png", "zangbo-test/_zangbo-gw.png", "zangbo-test/_zangbo-gw.png"),
-             ("zangbo-test/zangbo-uc.png", None, "zangbo-test/_zangbo-nm.png", "zangbo-test/_zangbo-gw.png", "zangbo-test/_zangbo-gw.png"),
-             ("zangbo-test/zangbo-ur.png", None, "zangbo-test/_zangbo-nm.png", "zangbo-test/_zangbo-gw.png", "zangbo-test/_zangbo-gw.png"),
+             ("00-zangbo/textures/zangbo-dl.png", None, "00-zangbo/textures/_zangbo-nm.png", "00-zangbo/textures/_zangbo-gw.png", "00-zangbo/textures/_zangbo-gw.png"),
+             ("00-zangbo/textures/zangbo-dc.png", None, "00-zangbo/textures/_zangbo-nm.png", "00-zangbo/textures/_zangbo-gw.png", "00-zangbo/textures/_zangbo-gw.png"),
+             ("00-zangbo/textures/zangbo-dr.png", None, "00-zangbo/textures/_zangbo-nm.png", "00-zangbo/textures/_zangbo-gw.png", "00-zangbo/textures/_zangbo-gw.png"),
+             ("00-zangbo/textures/zangbo-ml.png", None, "00-zangbo/textures/_zangbo-nm.png", "00-zangbo/textures/_zangbo-gw.png", "00-zangbo/textures/_zangbo-gw.png"),
+             ("00-zangbo/textures/zangbo-mc.png", None, "00-zangbo/textures/_zangbo-nm.png", "00-zangbo/textures/_zangbo-gw.png", "00-zangbo/textures/_zangbo-gw.png"),
+             ("00-zangbo/textures/zangbo-mr.png", None, "00-zangbo/textures/_zangbo-nm.png", "00-zangbo/textures/_zangbo-gw.png", "00-zangbo/textures/_zangbo-gw.png"),
+             ("00-zangbo/textures/zangbo-ul.png", None, "00-zangbo/textures/_zangbo-nm.png", "00-zangbo/textures/_zangbo-gw.png", "00-zangbo/textures/_zangbo-gw.png"),
+             ("00-zangbo/textures/zangbo-uc.png", None, "00-zangbo/textures/_zangbo-nm.png", "00-zangbo/textures/_zangbo-gw.png", "00-zangbo/textures/_zangbo-gw.png"),
+             ("00-zangbo/textures/zangbo-ur.png", None, "00-zangbo/textures/_zangbo-nm.png", "00-zangbo/textures/_zangbo-gw.png", "00-zangbo/textures/_zangbo-gw.png"),
              320, 6000, 2000, 1.0, 1.0,
             ],
             None,
             None,
             None,
         )
-        watermap = "00-zangbo-water.png"
-        watermask = "00-zangbo-watermask.png"
+        watermap = "00-zangbo/00-zangbo-water.png"
+        watermask = "00-zangbo/00-zangbo-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
-        cirrusmap = "00-flat0-clouds-crrs.png"
+        cirrusmap = "00-flat/00-flat0-clouds-crrs.png"
 
     elif terraintype == "00-iraq":
-        heightmap = "02-iraq-land.png"
+        heightmap = "02-iraq/02-iraq-land.png"
         tilediv = (3, 3)
-        groundmask = "02-iraq-landmask.png"
+        groundmask = "02-iraq/02-iraq-landmask.png"
         groundblend = (
             ["global",
-             ("02-iraq/_texture-d1.png", None, "02-iraq/__texture-nm.png", "02-iraq/__texture-gw.png", "02-iraq/__texture-gw.png"),
-             ("02-iraq/_texture-d2.png", None, "02-iraq/__texture-nm.png", "02-iraq/__texture-gw.png", "02-iraq/__texture-gw.png"),
-             ("02-iraq/_texture-d3.png", None, "02-iraq/__texture-nm.png", "02-iraq/__texture-gw.png", "02-iraq/__texture-gw.png"),
-             ("02-iraq/_texture-m1.png", None, "02-iraq/__texture-nm.png", "02-iraq/__texture-gw.png", "02-iraq/__texture-gw.png"),
-             ("02-iraq/_texture-m2.png", None, "02-iraq/__texture-nm.png", "02-iraq/__texture-gw.png", "02-iraq/__texture-gw.png"),
-             ("02-iraq/_texture-m3.png", None, "02-iraq/__texture-nm.png", "02-iraq/__texture-gw.png", "02-iraq/__texture-gw.png"),
-             ("02-iraq/_texture-u1.png", None, "02-iraq/__texture-nm.png", "02-iraq/__texture-gw.png", "02-iraq/__texture-gw.png"),
-             ("02-iraq/_texture-u2.png", None, "02-iraq/__texture-nm.png", "02-iraq/__texture-gw.png", "02-iraq/__texture-gw.png"),
-             ("02-iraq/_texture-u3.png", None, "02-iraq/__texture-nm.png", "02-iraq/__texture-gw.png", "02-iraq/__texture-gw.png"),
+             ("02-iraq/textures/_texture-d1.png", None, "02-iraq/textures/__texture-nm.png", "02-iraq/textures/__texture-gw.png", "02-iraq/textures/__texture-gw.png"),
+             ("02-iraq/textures/_texture-d2.png", None, "02-iraq/textures/__texture-nm.png", "02-iraq/textures/__texture-gw.png", "02-iraq/textures/__texture-gw.png"),
+             ("02-iraq/textures/_texture-d3.png", None, "02-iraq/textures/__texture-nm.png", "02-iraq/textures/__texture-gw.png", "02-iraq/textures/__texture-gw.png"),
+             ("02-iraq/textures/_texture-m1.png", None, "02-iraq/textures/__texture-nm.png", "02-iraq/textures/__texture-gw.png", "02-iraq/textures/__texture-gw.png"),
+             ("02-iraq/textures/_texture-m2.png", None, "02-iraq/textures/__texture-nm.png", "02-iraq/textures/__texture-gw.png", "02-iraq/textures/__texture-gw.png"),
+             ("02-iraq/textures/_texture-m3.png", None, "02-iraq/textures/__texture-nm.png", "02-iraq/textures/__texture-gw.png", "02-iraq/textures/__texture-gw.png"),
+             ("02-iraq/textures/_texture-u1.png", None, "02-iraq/textures/__texture-nm.png", "02-iraq/textures/__texture-gw.png", "02-iraq/textures/__texture-gw.png"),
+             ("02-iraq/textures/_texture-u2.png", None, "02-iraq/textures/__texture-nm.png", "02-iraq/textures/__texture-gw.png", "02-iraq/textures/__texture-gw.png"),
+             ("02-iraq/textures/_texture-u3.png", None, "02-iraq/textures/__texture-nm.png", "02-iraq/textures/__texture-gw.png", "02-iraq/textures/__texture-gw.png"),
              320, 6000, 2000, 1.0, 1.0,
             ],
             None,
             None,
             None,
         )
-        watermap = "02-iraq-water.png"
-        watermask = "02-iraq-watermask.png"
+        watermap = "02-iraq/02-iraq-water.png"
+        watermask = "02-iraq/02-iraq-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
-        cumulusmap = "02-iraq-clouds-cmls.png"
-        cirrusmap = "02-iraq-clouds-crrs.png"
+        cumulusmap = "02-iraq/02-iraq-clouds-cmls.png"
+        cirrusmap = "02-iraq/02-iraq-clouds-crrs.png"
 
     elif terraintype == "00-angola":        
-        heightmap = "14-angola-land.png"
+        heightmap = "14-angola/14-angola-land.png"
         tilediv = (3, 3)
-        groundmask = "14-angola-landmask.png",
+        groundmask = "14-angola/14-angola-landmask.png",
         groundblend = (
             ["global",
-             ("14-angola/_texture-d1.png", None, "14-angola/__texture-nm.png", "14-angola/__texture-gw.png", "14-angola/__texture-gw.png"),
-             ("14-angola/_texture-d2.png", None, "14-angola/__texture-nm.png", "14-angola/__texture-gw.png", "14-angola/__texture-gw.png"),
-             ("14-angola/_texture-d3.png", None, "14-angola/__texture-nm.png", "14-angola/__texture-gw.png", "14-angola/__texture-gw.png"),
-             ("14-angola/_texture-m1.png", None, "14-angola/__texture-nm.png", "14-angola/__texture-gw.png", "14-angola/__texture-gw.png"),
-             ("14-angola/_texture-m2.png", None, "14-angola/__texture-nm.png", "14-angola/__texture-gw.png", "14-angola/__texture-gw.png"),
-             ("14-angola/_texture-m3.png", None, "14-angola/__texture-nm.png", "14-angola/__texture-gw.png", "14-angola/__texture-gw.png"),
-             ("14-angola/_texture-u1.png", None, "14-angola/__texture-nm.png", "14-angola/__texture-gw.png", "14-angola/__texture-gw.png"),
-             ("14-angola/_texture-u2.png", None, "14-angola/__texture-nm.png", "14-angola/__texture-gw.png", "14-angola/__texture-gw.png"),
-             ("14-angola/_texture-u3.png", None, "14-angola/__texture-nm.png", "14-angola/__texture-gw.png", "14-angola/__texture-gw.png"),
+             ("14-angola/textures/_texture-d1.png", None, "14-angola/textures/__texture-nm.png", "14-angola/textures/__texture-gw.png", "14-angola/textures/__texture-gw.png"),
+             ("14-angola/textures/_texture-d2.png", None, "14-angola/textures/__texture-nm.png", "14-angola/textures/__texture-gw.png", "14-angola/textures/__texture-gw.png"),
+             ("14-angola/textures/_texture-d3.png", None, "14-angola/textures/__texture-nm.png", "14-angola/textures/__texture-gw.png", "14-angola/textures/__texture-gw.png"),
+             ("14-angola/textures/_texture-m1.png", None, "14-angola/textures/__texture-nm.png", "14-angola/textures/__texture-gw.png", "14-angola/textures/__texture-gw.png"),
+             ("14-angola/textures/_texture-m2.png", None, "14-angola/textures/__texture-nm.png", "14-angola/textures/__texture-gw.png", "14-angola/textures/__texture-gw.png"),
+             ("14-angola/textures/_texture-m3.png", None, "14-angola/textures/__texture-nm.png", "14-angola/textures/__texture-gw.png", "14-angola/textures/__texture-gw.png"),
+             ("14-angola/textures/_texture-u1.png", None, "14-angola/textures/__texture-nm.png", "14-angola/textures/__texture-gw.png", "14-angola/textures/__texture-gw.png"),
+             ("14-angola/textures/_texture-u2.png", None, "14-angola/textures/__texture-nm.png", "14-angola/textures/__texture-gw.png", "14-angola/textures/__texture-gw.png"),
+             ("14-angola/textures/_texture-u3.png", None, "14-angola/textures/__texture-nm.png", "14-angola/textures/__texture-gw.png", "14-angola/textures/__texture-gw.png"),
              320, 6000, 2000, 1.0, 1.0,
             ],
             None,
             None,
             [("africa-luanda.png", None, "africa-luanda-1a-gw.png"), ("asphalt-01.png", None, "africa-luanda-1a-gw.png")],
         )
-        watermap = "14-angola-water.png"
-        watermask = "14-angola-watermask.png"
+        watermap = "14-angola/14-angola-water.png"
+        watermask = "14-angola/14-angola-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
-        stratusmap = "14-angola-clouds-strs.png"
-        #cumulusmap = "14-angola-clouds-cmls.png"
-        cirrusmap = "14-angola-clouds-crrs.png"
+        stratusmap = "14-angola/14-angola-clouds-strs.png"
+        #cumulusmap = "14-angola/14-angola-clouds-cmls.png"
+        cirrusmap = "14-angola/14-angola-clouds-crrs.png"
     #01
     elif terraintype == "01-taymyr":
-        heightmap = "01-taymyr-land.png"
+        heightmap = "01-taymyr/01-taymyr-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -261,40 +261,40 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "01-taymyr-water.png"
-        watermask = "01-taymyr-watermask.png"
+        watermap = "01-taymyr/01-taymyr-water.png"
+        watermask = "01-taymyr/01-taymyr-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
-        cumulusmap = "01-taymyr-clouds-cmls.png"
-        cirrusmap = "01-taymyr-clouds-crrs.png"
+        cumulusmap = "01-taymyr/01-taymyr-clouds-cmls.png"
+        cirrusmap = "01-taymyr/01-taymyr-clouds-crrs.png"
     #02
     elif terraintype == "02-iraq":
-        heightmap = "02-iraq-land.png"
+        heightmap = "02-iraq/02-iraq-land.png"
         tilediv = None
-        groundmask = "02-iraq-landmask.png"
+        groundmask = "02-iraq/02-iraq-landmask.png"
         groundblend = (
             [("middle-east-01-1.png", None, Vec4(0,0,0,0.1)), (None, "middle-east-01-1-nm.png", Vec4(0,0,0,0.1))],
             None,
             None,
             None,
         )
-        watermap = "02-iraq-water.png"
-        watermask = "02-iraq-watermask.png"
+        watermap = "02-iraq/02-iraq-water.png"
+        watermask = "02-iraq/02-iraq-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
-        cumulusmap = "02-iraq-clouds-cmls.png"
-        cirrusmap = "02-iraq-clouds-crrs.png"
+        cumulusmap = "02-iraq/02-iraq-clouds-cmls.png"
+        cirrusmap = "02-iraq/02-iraq-clouds-crrs.png"
     #03
     elif terraintype == "03-iran1":
-        heightmap = "03-iran1-land.png"
+        heightmap = "03-iran1/03-iran1-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -303,8 +303,8 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "03-iran1-water.png"
-        watermask = "03-iran1-watermask.png"
+        watermap = "03-iran1/03-iran1-water.png"
+        watermask = "03-iran1/03-iran1-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
@@ -313,7 +313,7 @@ def create_terrain_1 (world, terraintype, visradius,
         waterlakeparams = (0.0002,)
 
     elif terraintype == "03-iran2":
-        heightmap = "03-iran2-land.png"
+        heightmap = "03-iran2/03-iran2-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -322,40 +322,40 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "03-iran2-water.png"
-        watermask = "03-iran2-watermask.png"
+        watermap = "03-iran2/03-iran2-water.png"
+        watermask = "03-iran2/03-iran2-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
-        cirrusmap = "03-iran2-clouds-crrs.png"
+        cirrusmap = "03-iran2/03-iran2-clouds-crrs.png"
     #04
     elif terraintype == "04-russia1":
-        heightmap = "04-russia1-land.png"
+        heightmap = "04-russia1/04-russia1-land.png"
         tilediv = None
-        groundmask = "04-russia1-landmask.png",
+        groundmask = "04-russia1/04-russia1-landmask.png",
         groundblend = (
             [("russia-europe-01-1.png", None, Vec4(0,0,0,0.1)), (None, "russia-europe-01-1-nm.png", Vec4(0,0,0,0.1))],
             None,
             None,
             [("russia-moscow.png", None, "russia-moscow-gw.png"), ("asphalt-01.png", None, "russia-moscow-gw.png")],
         )
-        watermap = "04-russia1-water.png"
-        watermask = "04-russia1-watermask.png"
+        watermap = "04-russia1/04-russia1-water.png"
+        watermask = "04-russia1/04-russia1-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
-        stratusmap = "04-russia1-clouds-strs.png"
-        cumulusmap = "04-russia1-clouds-cmls.png"
-        cirrusmap = "04-russia1-clouds-crrs.png"
+        stratusmap = "04-russia1/04-russia1-clouds-strs.png"
+        cumulusmap = "04-russia1/04-russia1-clouds-cmls.png"
+        cirrusmap = "04-russia1/04-russia1-clouds-crrs.png"
 
     elif terraintype == "04-russia2":
-        heightmap = "04-russia2-land.png"
+        heightmap = "04-russia2/04-russia2-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -364,19 +364,19 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "04-russia2-water.png"
-        watermask = "04-russia2-watermask.png"
+        watermap = "04-russia2/04-russia2-water.png"
+        watermask = "04-russia2/04-russia2-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
-        cumulusmap = "04-russia2-clouds-cmls.png"
-        cirrusmap = "04-russia2-clouds-crrs.png"
+        cumulusmap = "04-russia2/04-russia2-clouds-cmls.png"
+        cirrusmap = "04-russia2/04-russia2-clouds-crrs.png"
     #05
     elif terraintype == "05-siberia1":
-        heightmap = "05-siberia1-land.png"
+        heightmap = "05-siberia1/05-siberia1-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -385,40 +385,40 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "05-siberia1-water.png"
-        watermask = "05-siberia1-watermask.png"
+        watermap = "05-siberia1/05-siberia1-water.png"
+        watermask = "05-siberia1/05-siberia1-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
-        cumulusmap = "05-siberia1-clouds-cmls.png"
-        cirrusmap = "05-siberia1-clouds-crrs.png"
+        cumulusmap = "05-siberia1/05-siberia1-clouds-cmls.png"
+        cirrusmap = "05-siberia1/05-siberia1-clouds-crrs.png"
 
     elif terraintype == "05-siberia2":
-        heightmap = "05-siberia2-land.png"
+        heightmap = "05-siberia2/05-siberia2-land.png"
         tilediv = None
-        groundmask = "05-siberia2-landmask.png",
+        groundmask = "05-siberia2/05-siberia2-landmask.png",
         groundblend = (
             [("russia-siberia-02-1.png", None, Vec4(0,0,0,0.1)), (None, "russia-siberia-02-1-nm.png", Vec4(0,0,0,0.1))],
             None,
             None,
             [("russia-norilsk.png", None, "russia-norilsk-gw.png"), ("asphalt-01.png", None, "russia-norilsk-gw.png")],
         )
-        watermap = "05-siberia2-water.png"
-        watermask = "05-siberia2-watermask.png"
+        watermap = "05-siberia2/05-siberia2-water.png"
+        watermask = "05-siberia2/05-siberia2-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
-        cumulusmap = "05-siberia2-clouds-cmls.png"
-        cirrusmap = "05-siberia2-clouds-crrs.png"
+        cumulusmap = "05-siberia2/05-siberia2-clouds-cmls.png"
+        cirrusmap = "05-siberia2/05-siberia2-clouds-crrs.png"
 
     elif terraintype == "05-siberia3":
-        heightmap = "05-siberia3-land.png"
+        heightmap = "05-siberia3/05-siberia3-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -427,19 +427,19 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "05-siberia3-water.png"
-        watermask = "05-siberia3-watermask.png"
+        watermap = "05-siberia3/05-siberia3-water.png"
+        watermask = "05-siberia3/05-siberia3-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
-        cumulusmap = "05-siberia3-clouds-cmls.png"
-        cirrusmap = "05-siberia3-clouds-crrs.png"
+        cumulusmap = "05-siberia3/05-siberia3-clouds-cmls.png"
+        cirrusmap = "05-siberia3/05-siberia3-clouds-crrs.png"
 
     elif terraintype == "05-siberia4":
-        heightmap = "05-siberia4-land.png"
+        heightmap = "05-siberia4/05-siberia4-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -448,19 +448,19 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "05-siberia4-water.png"
-        watermask = "05-siberia4-watermask.png"
+        watermap = "05-siberia4/05-siberia4-water.png"
+        watermask = "05-siberia4/05-siberia4-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
-        cumulusmap = "05-siberia4-clouds-cmls.png"
-        cirrusmap = "05-siberia4-clouds-crrs.png"
+        cumulusmap = "05-siberia4/05-siberia4-clouds-cmls.png"
+        cirrusmap = "05-siberia4/05-siberia4-clouds-crrs.png"
 
     elif terraintype == "05-siberia5":
-        heightmap = "05-siberia5-land.png"
+        heightmap = "05-siberia5/05-siberia5-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -469,19 +469,19 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "05-siberia5-water.png"
-        watermask = "05-siberia5-watermask.png"
+        watermap = "05-siberia5/05-siberia5-water.png"
+        watermask = "05-siberia5/05-siberia5-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
-        cumulusmap = "05-siberia5-clouds-cmls.png"
-        cirrusmap = "05-siberia5-clouds-crrs.png"
+        cumulusmap = "05-siberia5/05-siberia5-clouds-cmls.png"
+        cirrusmap = "05-siberia5/05-siberia5-clouds-crrs.png"
 
     elif terraintype == "05-siberia6":
-        heightmap = "05-siberia6-land.png"
+        heightmap = "05-siberia6/05-siberia6-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -490,49 +490,49 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "05-siberia6-water.png"
-        watermask = "05-siberia6-watermask.png"
+        watermap = "05-siberia6/05-siberia6-water.png"
+        watermask = "05-siberia6/05-siberia6-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
-        cumulusmap = "05-siberia6-clouds-cmls.png"
-        cirrusmap = "05-siberia6-clouds-crrs.png"
+        cumulusmap = "05-siberia6/05-siberia6-clouds-cmls.png"
+        cirrusmap = "05-siberia6/05-siberia6-clouds-crrs.png"
     #06
     elif terraintype == "06-cuba1":
-        heightmap = "06-cuba1-land.png"
+        heightmap = "06-cuba1/06-cuba1-land.png"
         tilediv = None
-        groundmask = "06-cuba1-landmask.png",
+        groundmask = "06-cuba1/06-cuba1-landmask.png",
         groundblend = (
             [("cuba-01-1.png", None, Vec4(0,0,0,0.1)), (None, "cuba-01-1-nm.png", Vec4(0,0,0,0.1))],
             None,
             None,
             [("cuba-havana-1.png", None, "cuba-havana-gw.png"), ("asphalt-01.png", None, "cuba-havana-gw.png")],
         )
-        watermap = "06-cuba1-water.png"
-        watermask = "06-cuba1-watermask.png"
+        watermap = "06-cuba1/06-cuba1-water.png"
+        watermask = "06-cuba1/06-cuba1-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
         waterlaketex = None
         waterlakemaps = None
         waterlakeparams = None
-        cirrusmap = "06-cuba1-clouds-crrs.png"
+        cirrusmap = "06-cuba1/06-cuba1-clouds-crrs.png"
 
     elif terraintype == "06-cuba2":
-        heightmap = "06-cuba2-land.png"
+        heightmap = "06-cuba2/06-cuba2-land.png"
         tilediv = None
-        groundmask = "06-cuba2-landmask.png",
+        groundmask = "06-cuba2/06-cuba2-landmask.png",
         groundblend = (
             [("cuba-01-1.png", None, Vec4(0,0,0,0.1)), (None, "cuba-01-1-nm.png", Vec4(0,0,0,0.1))],
             None,
             [("cuba-03-1.png", None, Vec4(0,0,0,0.1)), (None, "cuba-03-1-nm.png", Vec4(0,0,0,0.1))],
             None,
         )
-        watermap = "06-cuba2-water.png"
-        watermask = "06-cuba2-watermask.png"
+        watermap = "06-cuba2/06-cuba2-water.png"
+        watermask = "06-cuba2/06-cuba2-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
@@ -541,7 +541,7 @@ def create_terrain_1 (world, terraintype, visradius,
         waterlakeparams = None
     #07
     elif terraintype == "07-bahamas":
-        heightmap = "07-bahamas-land.png"
+        heightmap = "07-bahamas/07-bahamas-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -550,8 +550,8 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "07-bahamas-water.png"
-        watermask = "07-bahamas-watermask.png",
+        watermap = "07-bahamas/07-bahamas-water.png"
+        watermask = "07-bahamas/07-bahamas-watermask.png",
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
@@ -560,7 +560,7 @@ def create_terrain_1 (world, terraintype, visradius,
         waterlakeparams = (0.0002,)
     #08
     elif terraintype == "08-borderland1":
-        heightmap = "08-borderland1-land.png"
+        heightmap = "08-borderland1/08-borderland1-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -569,8 +569,8 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "08-borderland1-water.png"
-        watermask = "08-borderland1-watermask.png"
+        watermap = "08-borderland1/08-borderland1-water.png"
+        watermask = "08-borderland1/08-borderland1-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
@@ -579,7 +579,7 @@ def create_terrain_1 (world, terraintype, visradius,
         waterlakeparams = (0.0002,)
 
     elif terraintype == "08-borderland2":
-        heightmap = "08-borderland2-land.png"
+        heightmap = "08-borderland2/08-borderland2-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -588,8 +588,8 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "08-borderland2-water.png"
-        watermask = "08-borderland2-watermask.png"
+        watermap = "08-borderland2/08-borderland2-water.png"
+        watermask = "08-borderland2/08-borderland2-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
@@ -598,7 +598,7 @@ def create_terrain_1 (world, terraintype, visradius,
         waterlakeparams = (0.0002,)
 
     elif terraintype == "08-borderland3":
-        heightmap = "08-borderland3-land.png"
+        heightmap = "08-borderland3/08-borderland3-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -607,8 +607,8 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "08-borderland3-water.png"
-        watermask = "08-borderland3-watermask.png"
+        watermap = "08-borderland3/08-borderland3-water.png"
+        watermask = "08-borderland3/08-borderland3-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
@@ -617,7 +617,7 @@ def create_terrain_1 (world, terraintype, visradius,
         waterlakeparams = (0.0002,)
     #09
     elif terraintype == "09-india1":
-        heightmap = "09-india1-land.png"
+        heightmap = "09-india1/09-india1-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -626,8 +626,8 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "09-india1-water.png"
-        watermask = "09-india1-watermask.png"
+        watermap = "09-india1/09-india1-water.png"
+        watermask = "09-india1/09-india1-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
@@ -636,7 +636,7 @@ def create_terrain_1 (world, terraintype, visradius,
         waterlakeparams = (0.0002,)
     #10
     elif terraintype == "10-pakistan1":
-        heightmap = "10-pakistan1-land.png"
+        heightmap = "10-pakistan1/10-pakistan1-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -645,8 +645,8 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "10-pakistan1-water.png"
-        watermask = "10-pakistan1-watermask.png"
+        watermap = "10-pakistan1/10-pakistan1-water.png"
+        watermask = "10-pakistan1/10-pakistan1-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
@@ -655,27 +655,27 @@ def create_terrain_1 (world, terraintype, visradius,
         waterlakeparams = (0.0002,)
     #11
     elif terraintype == "11-afghanistan1":
-        heightmap = "11-afghanistan1-land.png"
+        heightmap = "11-afghanistan1/11-afghanistan1-land.png"
         tilediv = None
-        groundmask = "11-afghanistan1-landmask.png",
+        groundmask = "11-afghanistan1/11-afghanistan1-landmask.png",
         groundblend = (
             [("middle-east-03-1.png", None, Vec4(0,0,0,0.1)), (None, "middle-east-03-1-nm.png", Vec4(0,0,0,0.1))],
             None,
             None,
             None,
         )
-        watermap = "11-afghanistan1-water.png"
-        watermask = "11-afghanistan1-watermask.png"
+        watermap = "11-afghanistan1/11-afghanistan1-water.png"
+        watermask = "11-afghanistan1/11-afghanistan1-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0002,)
-        cirrusmap = "11-afghanistan1-clouds-crrs.png"
+        cirrusmap = "11-afghanistan1/11-afghanistan1-clouds-crrs.png"
     #12
     elif terraintype == "12-europe1":
-        heightmap = "12-europe1-land.png"
+        heightmap = "12-europe1/12-europe1-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -684,8 +684,8 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "12-europe1-water.png"
-        watermask = "12-europe1-watermask.png"
+        watermap = "12-europe1/12-europe1-water.png"
+        watermask = "12-europe1/12-europe1-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
@@ -694,7 +694,7 @@ def create_terrain_1 (world, terraintype, visradius,
         waterlakeparams = (0.0003,)
 
     elif terraintype == "12-europe2":
-        heightmap = "12-europe2-land.png"
+        heightmap = "12-europe2/12-europe2-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -703,8 +703,8 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "12-europe2-water.png"
-        watermask = "12-europe2-watermask.png"
+        watermap = "12-europe2/12-europe2-water.png"
+        watermask = "12-europe2/12-europe2-watermask.png"
         waterseatex = None
         waterseamaps = None
         waterseaparams = None
@@ -713,28 +713,28 @@ def create_terrain_1 (world, terraintype, visradius,
         waterlakeparams = (0.0003,)
     #13
     elif terraintype == "13-korea1":
-        heightmap = "13-korea1-land.png"
+        heightmap = "13-korea1/13-korea1-land.png"
         tilediv = None
-        groundmask = "13-korea1-landmask.png"
+        groundmask = "13-korea1/13-korea1-landmask.png"
         groundblend = (
             [("korea-01-1.png", None, Vec4(0,0,0,0.1)), (None, "korea-01-1-nm.png", Vec4(0,0,0,0.1))],
             None,
             None,
             [("russia-moscow.png", "russia-moscow-nm.png", "russia-moscow-gw.png"), ("asphalt-01.png", "_normal.png", "russia-moscow-gw.png")],
         )
-        watermap = "13-korea1-water.png"
-        watermask = "13-korea1-watermask.png"
+        watermap = "13-korea1/13-korea1-water.png"
+        watermask = "13-korea1/13-korea1-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
-        cumulusmap = "13-korea1-clouds-cmls.png"
-        cirrusmap = "13-korea1-clouds-crrs.png"
+        cumulusmap = "13-korea1/13-korea1-clouds-cmls.png"
+        cirrusmap = "13-korea1/13-korea1-clouds-crrs.png"
 
     elif terraintype == "13-korea2":
-        heightmap = "13-korea2-land.png"
+        heightmap = "13-korea2/13-korea2-land.png"
         tilediv = None
         groundmask = None
         groundblend = (
@@ -743,8 +743,8 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             None,
         )
-        watermap = "13-korea2-water.png"
-        watermask = "13-korea2-watermask.png"
+        watermap = "13-korea2/13-korea2-water.png"
+        watermask = "13-korea2/13-korea2-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
@@ -753,31 +753,31 @@ def create_terrain_1 (world, terraintype, visradius,
         waterlakeparams = (0.0003,)
     #14
     elif terraintype == "14-angola":
-        heightmap = "14-angola-land.png"
+        heightmap = "14-angola/14-angola-land.png"
         tilediv = None
-        groundmask = "14-angola-landmask.png",
+        groundmask = "14-angola/14-angola-landmask.png",
         groundblend = (
             [("africa-02-1.png", None, Vec4(0,0,0,0.1)), (None, "africa-02-1-nm.png", Vec4(0,0,0,0.1))],
             [("africa-01-1.png", None, Vec4(0,0,0,0.1)), (None, "africa-01-1-nm.png", Vec4(0,0,0,0.1))],
             None,
             [("africa-luanda-1.png", None, "africa-luanda-1a-gw.png"), ("asphalt-01.png", None, "africa-luanda-1a-gw.png")],
         )
-        watermap = "14-angola-water.png"
-        watermask = "14-angola-watermask.png"
+        watermap = "14-angola/14-angola-water.png"
+        watermask = "14-angola/14-angola-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
-        stratusmap = "14-angola-clouds-strs.png"
-        #cumulusmap = "14-angola-clouds-cmls.png"
-        cirrusmap = "14-angola-clouds-crrs.png"
+        stratusmap = "14-angola/14-angola-clouds-strs.png"
+        #cumulusmap = "14-angola/14-angola-clouds-cmls.png"
+        cirrusmap = "14-angola/14-angola-clouds-crrs.png"
     #99
     elif terraintype == "99-vietnam":
-        heightmap = "99-vietnam-land.png"
+        heightmap = "99-vietnam/99-vietnam-land.png"
         tilediv = (3, 3)
-        groundmask = "99-vietnam-landmask.png"
+        groundmask = "99-vietnam/99-vietnam-landmask.png"
         groundblend = (
             ["global",
              ("99-vietnam/_texture-ll.png", None, "99-vietnam/__texture-nm.png", "99-vietnam/__texture-gw.png", "99-vietnam/__texture-gw.png"),
@@ -795,15 +795,15 @@ def create_terrain_1 (world, terraintype, visradius,
             None,
             ["vietnam-city.png"],
         )
-        watermap = "99-vietnam-water.png"
-        watermask = "99-vietnam-watermask.png"
+        watermap = "99-vietnam/99-vietnam-water.png"
+        watermask = "99-vietnam/99-vietnam-watermask.png"
         waterseatex = waterseatex
         waterseamaps = waterseamaps
         waterseaparams = (0.0004,)
         waterlaketex = waterlaketex
         waterlakemaps = waterlakemaps
         waterlakeparams = (0.0003,)
-        cirrusmap = "99-vietnam-clouds-crrs.png"
+        cirrusmap = "99-vietnam/99-vietnam-clouds-crrs.png"
 
     else:
         raise StandardError("Unknown terrain type '%s'." % terraintype)
@@ -819,7 +819,7 @@ def create_terrain_1 (world, terraintype, visradius,
     cuts, tiledivx, tiledivy = ret
     terrain = Terrain(world=world, name=terraintype,
                       sizex=sizex, sizey=sizey, visradius=visradius,
-                      heightmap=("images/terrain/heightmaps/%s" % heightmap),
+                      heightmap=("terrains/%s" % heightmap),
                       minheight=minheight, maxheight=maxheight,
                       celldensity=celldensity,
                       tiledivx=tiledivx, tiledivy=tiledivy,
@@ -829,7 +829,7 @@ def create_terrain_1 (world, terraintype, visradius,
 
     cloudtex = "images/sky/clouds_tex.png"
     if cumulusmap and cumulusdens > 0.0:
-        cumulusmap = "images/sky/cloudmaps/%s" % cumulusmap
+        cumulusmap = "terrains/%s" % cumulusmap
         if cumulusglowmap:
             cumulusglowmap = "images/sky/%s" % cumulusglowmap
         cumulus = Clouds(world=world,
@@ -853,7 +853,7 @@ def create_terrain_1 (world, terraintype, visradius,
                          name=(terraintype + "-clouds-cumulus"))
         # cumulus.node.analyze()
     if stratusmap and stratusdens > 0.0:
-        stratusmap = "images/sky/cloudmaps/%s" % stratusmap
+        stratusmap = "terrains/%s" % stratusmap
         if stratusglowmap:
             stratusglowmap = "images/sky/%s" % stratusglowmap
         stratus = Clouds(world=world,
@@ -874,7 +874,7 @@ def create_terrain_1 (world, terraintype, visradius,
                          name=(terraintype + "-clouds-stratus"))
         # stratus.node.analyze()
     if cirrusmap and cirrusdens > 0.0:
-        cirrusmap = "images/sky/cloudmaps/%s" % cirrusmap
+        cirrusmap = "terrains/%s" % cirrusmap
         if cirrusglowmap:
             cirrusglowmap = "images/sky/%s" % cirrusglowmap
         cirrus = Clouds(world=world,
@@ -1323,11 +1323,11 @@ def assemble_terrain_cuts_1 (groundblend,
                         sls = ls[1 + j * tiledivx + i]
                         spans += [
                             SpanSpec(
-                                texture=("images/terrain/%s" % at_ij(sls, 0, 0)
+                                texture=("terrains/%s" % at_ij(sls, 0, 0)
                                          if at_ij(sls, 0, 0) else None),
-                                normalmap=("images/terrain/%s" % at_ij(sls, il + 1, 0)
+                                normalmap=("terrains/%s" % at_ij(sls, il + 1, 0)
                                            if at_ij(sls, il + 1, 0) else None),
-                                glowmap=("images/terrain/%s" % at_ij(sls, il + 3, 0)
+                                glowmap=("terrains/%s" % at_ij(sls, il + 3, 0)
                                          if at_ij(sls, il + 3, 0) else None),
                                 extents=((i * drx, j * dry),
                                          ((i + 1) * drx, (j + 1) * dry)),
@@ -1361,11 +1361,11 @@ def assemble_terrain_cuts_1 (groundblend,
                     spans=[
                         SpanSpec(
                             name="main",
-                            texture=("images/terrain/%s" % at_ij(ls, 0, 0)
+                            texture=("terrains/%s" % at_ij(ls, 0, 0)
                                      if at_ij(ls, 0, 0) else None),
-                            normalmap=("images/terrain/%s" % at_ij(ls, 0, 1)
+                            normalmap=("terrains/%s" % at_ij(ls, 0, 1)
                                        if at_ij(ls, 0, 1) else None),
-                            glowmap=("images/terrain/%s" % at_ij(ls, 0, 2)
+                            glowmap=("terrains/%s" % at_ij(ls, 0, 2)
                                      if isinstance(at_ij(ls, 0, 2), basestring)
                                      else (at_ij(ls, 0, 2)
                                            if isinstance(at_ij(ls, 0, 2), Vec4)
@@ -1385,11 +1385,11 @@ def assemble_terrain_cuts_1 (groundblend,
                         spans=[
                             SpanSpec(
                                 name="main",
-                                texture=("images/terrain/%s" % at_ij(ls, 1, 0)
+                                texture=("terrains/%s" % at_ij(ls, 1, 0)
                                          if at_ij(ls, 1, 0) else None),
-                                normalmap=("images/terrain/%s" % at_ij(ls, 1, 1)
+                                normalmap=("terrains/%s" % at_ij(ls, 1, 1)
                                            if at_ij(ls, 1, 1) else None),
-                                glowmap=("images/terrain/%s" % at_ij(ls, 1, 2)
+                                glowmap=("terrains/%s" % at_ij(ls, 1, 2)
                                          if isinstance(at_ij(ls, 1, 2), basestring)
                                          else (at_ij(ls, 1, 2)
                                                if isinstance(at_ij(ls, 1, 2), Vec4)
@@ -1414,7 +1414,7 @@ def assemble_terrain_cuts_1 (groundblend,
                         spans=[
                             SpanSpec(
                                 name="main",
-                                texture=("images/terrain/%s" % txfile),
+                                texture=("terrains/%s" % txfile),
                             ),
                         ],
                     ),
@@ -1430,14 +1430,14 @@ def assemble_terrain_cuts_1 (groundblend,
                     spans=[
                         SpanSpec(
                             name="main",
-                            normalmap=("images/terrain/%s" % nmfile
+                            normalmap=("terrains/%s" % nmfile
                                        if nmfile else None),
-                            glowmap=("images/terrain/%s" % gwfile
+                            glowmap=("terrains/%s" % gwfile
                                      if isinstance(gwfile, basestring)
                                      else (gwfile
                                            if isinstance(gwfile, Vec4)
                                            else None)),
-                            glossmap=("images/terrain/%s" % gsfile
+                            glossmap=("terrains/%s" % gsfile
                                       if isinstance(gsfile, basestring)
                                       else (gsfile
                                             if isinstance(gsfile, Vec4)
@@ -1467,9 +1467,9 @@ def assemble_terrain_cuts_1 (groundblend,
                         spans=[
                             SpanSpec(
                                 name="main",
-                                normalmap=("images/terrain/%s" % nmfile
+                                normalmap=("terrains/%s" % nmfile
                                            if nmfile else None),
-                                glossmap=("images/terrain/%s" % gsfile
+                                glossmap=("terrains/%s" % gsfile
                                           if isinstance(gsfile, basestring)
                                           else (gsfile
                                                 if isinstance(gsfile, Vec4)
@@ -1482,7 +1482,7 @@ def assemble_terrain_cuts_1 (groundblend,
     cuts = [
         CutSpec(
             name="ground",
-            blendmask=("images/terrain/heightmaps/%s" % groundmask
+            blendmask=("terrains/%s" % groundmask
                        if groundmask else None),
             blends=[(
                 BlendSpec(
@@ -1500,8 +1500,8 @@ def assemble_terrain_cuts_1 (groundblend,
         cuts += [
             CutSpec(
                 name="water",
-                cutmask=("images/terrain/heightmaps/%s" % watermap),
-                blendmask=("images/terrain/heightmaps/%s" % watermask
+                cutmask=("terrains/%s" % watermap),
+                blendmask=("terrains/%s" % watermask
                            if watermask else None),
                 blends=[(
                     BlendSpec(
