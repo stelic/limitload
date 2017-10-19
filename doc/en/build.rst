@@ -56,7 +56,7 @@ Before building, apply all patches from the game's ``util`` directory.
 This is done by executing in the Panda3D repository directory for
 each patch file::
 
-    patch -p1 <game_directory>/util/patch-panda3d/<name>.patch
+    patch -p1 -i <game_directory>/util/patch-panda3d/<name>.patch
 
 Many of Panda3D's dependencies are not needed to run the game, and can
 be disabled when building it. A possible build command line, on a 4-core
