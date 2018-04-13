@@ -1535,6 +1535,82 @@ class Aim120 (Rocket):
         self.exhaust_trails.append(exhaust2)
 
 
+class Mim104 (Rocket):
+
+    species = "mim104"
+    longdes = _("Raytheon MIM-104 Patriot")
+    shortdes = _("MIM-104")
+    against = ["plane"]
+    mass = 750.0
+    diameter = 0.410
+    maxg = 18.0
+    vmaxalt = 14000.0
+    minspeed = 400.0
+    minspeed1 = 500.0
+    maxspeed = 800.0
+    maxspeed1 = 1400.0
+    maxthracc = 600.0
+    maxthracc1 = 700.0
+    maxvdracc = 5.0
+    maxvdracc1 = 2.0
+    maxflighttime = 70.0
+    minlaunchdist = 3000.0
+    hitforce = 16.0
+    expforce = 180.0
+    seeker = "sarh"
+    flightmodes = ["transfer", "intercept"]
+    maxoffbore = radians(20.0)
+    locktime = 3.0
+    decoyresist = 0.8
+    rcs = 0.00022
+    hitboxdata = [(Point3(0.0, 0.0, 0.0), 1.6)]
+    modelpath = ["models/weapons/missile_mim104.egg"]
+    texture = "models/weapons/missile_mim104_tex.png"
+    normalmap = "models/weapons/missile_mim104_nm.png"
+
+    def __init__ (self, world, name, side,
+                  pos=None, hpr=None, speed=None, dropvel=None,
+                  target=None, offset=None):
+
+        Rocket.__init__(self, world=world, name=name, side=side,
+                        pos=pos, hpr=hpr, speed=speed, dropvel=dropvel,
+                        target=target, offset=offset)
+
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -3.30, 0.0), size=(500, 0.07, 2500, 0.07),
+               # color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               # flickering=rocketcoronaflickering)
+        # Corona(world=world, parent=self, scaling="farscreen1",
+               # pos=Point3(0.0, -3.30, 0.0), size=(300, 0.0001, 400, 0.07),
+               # color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               # flickering=rocketcoronaflickering)
+        Corona(world=world, parent=self, scaling="farscreen1",
+               pos=Point3(0.0, -2.50, 0.0), size=(300, 0.04, 600, 0.06),
+               color=rocketexhaustcolor, density=rocketcoronadensityhigh,
+               flickering=rocketcoronaflickering)
+
+        exhaust1 = PolyExhaust(parent=self, pos=Point3(0.0, -2.5, 0.0),
+                               radius0=0.40, radius1=1.10, length=12.0,
+                               speed=20.0, poolsize=18,
+                               color=rocketexhaustcolor,
+                               ltoff=True,
+                               texture="images/particles/exhaust03.png",
+                               glowmap=rocketexhaustglowmap,
+                               additive=rockettrailadditive,
+                               dbin=0,
+                               freezedist=200.0, hidedist=2000.0,
+                               loddirang=20, loddirskip=6)
+        self.exhaust_trails.append(exhaust1)
+        exhaust2 = PolyTrail(parent=self, pos=Point3(0.0, -2.8, 0.0),
+                             radius0=0.60, radius1=3.00, lifespan=2.5,
+                             color=rockettrailcolor,
+                             texture="images/particles/exhaust06.png",
+                             glowmap=rockettrailglowmap,
+                             dirlit=rockettraildirlit,
+                             dbin=3)
+        self.exhaust_trails.append(exhaust2)
+
+
 class Rim156 (Rocket):
 
     species = "rim156"
