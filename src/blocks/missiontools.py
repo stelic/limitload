@@ -552,8 +552,11 @@ def circle_route (center, radius, starthdg, npoints):
 def zone_wingmen_loop (zc, mc, gc):
 
     for ac in zc.wingmen:
-        if not ac.reported_down and ac.alive and ac.outofbattle:
-            zc.player.show_message("notification", "left", _("%s is shotdown.") % ac.pilot_name, duration=4.0)
+        if not ac.reported_down and ac.alive:
+            if ac.shotdown:
+                zc.player.show_message("notification", "left", _("%s is shotdown.") % ac.pilot_name, duration=4.0)
+            elif ac.retreating:
+                zc.player.show_message("notification", "left", _("%s is retreating.") % ac.pilot_name, duration=4.0)
             ac.reported_down = True
 
     return zc.world, 1.0
