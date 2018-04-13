@@ -33,6 +33,7 @@ MISSION_DIFFICULTY = SimpleProps(
 MISSION_TYPE = SimpleProps(
     DOGFIGHT="dogfight",
     ATTACK="attack",
+    ESCORT="escort",
 )
 
 MISSION_DEBRIEFING = SimpleProps(
@@ -2185,6 +2186,7 @@ class SkirmishMenu (Menu):
             typ_vis = (
                 p_("skirmish type", "dogfight") if typ == T.DOGFIGHT else
                 p_("skirmish type", "ground attack") if typ == T.ATTACK else
+                p_("skirmish type", "escort") if typ == T.ESCORT else
                 p_("skirmish type", "unknown"))
             table_mission_spec.append((shortdes, typ_vis, (dif_vis, dif)))
 
