@@ -19,7 +19,7 @@ from src.core.fire import MuzzleFlash
 from src.core.jammer import Jammer
 from src.core.light import AutoPointLight, PointOverbright
 from src.core.misc import clamp, clampn, pclamp, unitv, vtod, ptod, qtod, sign
-from src.core.misc import to_navhead, hpr_to, norm_ang_delta, vectohpr, hprtovec
+from src.core.misc import to_navhead, norm_ang_delta, vectohpr, hprtovec
 from src.core.misc import AutoProps, SimpleProps
 from src.core.misc import rgba, node_fade_to
 from src.core.misc import make_image, make_text, update_text
@@ -178,38 +178,11 @@ class Helmet (object):
         self._wait_gfactor = 0.0
         self._gfactor_period = 0.053
 
-        # Active navpoints.
-        self._wait_actnav = 0.0
-        self._actnav_period = 0.51
-        self._actnav_names = set()
-        self._actnav_text = None
-        self._actnav_text_size = 10.0
-        self._actnav_text_color = rgba(255, 0, 0, 1.0)
-        self._actnav_text_shcolor = rgba(0, 0, 0, 1.0)
-        self._actnav_text_sel_color = rgba(255, 255, 255, 1.0)
-        self._actnav_seldelay = 0.5
-        self._actnav_clrdelay = 5.0
-        self._actnav_selnp = AutoProps()
-        self.jump_navpoint = None
-
-        # Families which prevent player from jumping through a navpoint
-        # when they target him or his allies.
-        self._no_navjump_when_target_families = (
-            "plane",
-            "rocket",
-        )
-        self._no_navjump_when_attacked_families = (
-            "plane",
-        )
-        self._navjump_clear_delay = 10.0
-        self._navjump_wait_clear = 5.0 # min wait at zone start
-
         self._deactivate()
 
         self.alive = True
         base.taskMgr.add(self._loop, "helmet-loop", sort=-7)
         # ...should come before cockpit and player loops.
-
 
     def destroy (self):
 
@@ -244,8 +217,6 @@ class Helmet (object):
             self._update_view(dt)
             self._update_targeting(dt)
             self._update_cycle_tag(dt)
-
-        self._update_navjumps(dt)
 
         # Always on, must track state.
         self._update_gfactor(dt)
@@ -493,107 +464,6 @@ class Helmet (object):
             base.set_radial_darkening(rad_darken_rad_spec, rad_darken_ang_spec)
 
             #self._gfac_breathing_sound.set_volume(0.0)
-
-
-    def _update_navjumps (self, dt):
-
-        if self.player.ac.onground: # outside, to react on runway hops
-            self._navjump_wait_clear = self._navjump_clear_delay
-
-        self._wait_actnav -= dt
-        self._navjump_wait_clear -= dt
-        if self._wait_actnav <= 0.0:
-            self._wait_actnav += self._actnav_period
-            if not self._navjump_allowed() or self.world.player_control_level > 1:
-                self._navjump_wait_clear = self._navjump_clear_delay
-            if self._navjump_wait_clear <= 0.0:
-                actnps = self.player.cockpit.active_navpoints()
-            else:
-                actnps = []
-            actnp_names = set(np.name for np in actnps)
-            if self._actnav_names != actnp_names:
-                actnps.sort(key=lambda np: np.longdes)
-                self._actnav_textnds = []
-                self._actnav_selnp = AutoProps()
-                def actf (ci):
-                    if ci != self._actnav_selnp.index:
-                        if self._actnav_selnp.index is not None:
-                            textnd = self._actnav_textnds[self._actnav_selnp.index]
-                            update_text(textnd, color=self._actnav_text_color)
-                        self._actnav_selnp.index = ci
-                        self._actnav_selnp.time0 = self.world.wall_time
-                        textnd = self._actnav_textnds[self._actnav_selnp.index]
-                        update_text(textnd, color=self._actnav_text_sel_color)
-                    elif self._actnav_selnp.time0 + self._actnav_seldelay <= self.world.wall_time:
-                        self.jump_navpoint = actnps[ci]
-                        self._jump_to_zone(actnps[ci].tozone, actnps[ci].exitf)
-                self.player.set_choice("nav", len(actnps), actf, priority=10)
-                if self._actnav_text is not None:
-                    self._actnav_text.removeNode()
-                    self._actnav_text = None
-                if actnp_names:
-                    text = select_des(_("Autopilot:"), {"ru": u"Автопилот:"},
-                                      self._lang)
-                    self._actnav_text = make_text(
-                        text=text,
-                        width=1.0, pos=Point3(-0.80, 0.0, -0.10),
-                        font=self._font, size=self._actnav_text_size,
-                        color=self._actnav_text_color,
-                        shcolor=self._actnav_text_shcolor,
-                        align="t", anchor="tl",
-                        shader=self._text_shader,
-                        parent=self.node2d)
-                    dz = font_scale_for_ptsize(self._actnav_text_size) * 1.5
-                    for i, np in enumerate(actnps):
-                        keys = self.player.bindings["choice-%d" % (i + 1)].seqs
-                        keyfmt = ", ".join(keys)
-                        text = (_("[%(key)s] %(navpoint)s") %
-                                dict(key=keyfmt, navpoint=np.longdes))
-                        textnd = make_text(
-                            text=text,
-                            width=1.0, pos=Point3(0.0, 0.0, -dz * (i + 1)),
-                            font=self._font, size=self._actnav_text_size,
-                            color=self._actnav_text_color,
-                            shcolor=self._actnav_text_shcolor,
-                            align="t", anchor="tl",
-                            shader=self._text_shader,
-                            parent=self._actnav_text)
-                        self._actnav_textnds.append(textnd)
-                self._actnav_names = actnp_names
-            elif self._actnav_selnp.index is not None:
-                if self._actnav_selnp.time0 + self._actnav_clrdelay <= self.world.wall_time:
-                    textnd = self._actnav_textnds[self._actnav_selnp.index]
-                    update_text(textnd, color=self._actnav_text_color)
-                    self._actnav_selnp = AutoProps()
-
-
-    def _jump_to_zone (self, zoneid, exitf=None):
-
-        if zoneid:
-            # Configure plane for jump.
-            self.player.input_air_brake = False
-            self.player.input_flaps = False
-            self.player.input_landing_gear = False
-            self.player.input_wheel_brake = False
-
-            m = self.world.mission
-            if m and not m.switching_zones():
-                m.switch_zone(zoneid, exitf=exitf)
-
-
-    def _navjump_allowed (self):
-
-        acp = self.player.ac
-        friendlies = self.world.get_friendlies(
-            self._no_navjump_when_attacked_families, acp.side)
-        for family in self._no_navjump_when_target_families:
-            for body in self.world.iter_bodies(family):
-                if not body.alive:
-                    continue
-                if body.target in friendlies and body is not acp:
-                    return False
-
-        return True
 
 
     def cycle_waypoint_target_init (self):
@@ -985,15 +855,6 @@ class Cockpit (object):
         self._at_current_waypoint = False
         self._waypoint_wait_check = 0.0
         self._waypoint_check_period = 0.53
-
-        # Navpoints.
-        self._navpoints = {}
-        self._navpoint_anon_counter = 0
-
-        # Aerotow.
-        self._aerotow_max_dist = 300.0
-        self._aerotow_max_offbore = radians(15.0)
-        self._aerotow_max_speed_diff = 20.0
 
         # Head moving.
         self._view_idle_hpr = Vec3(0.0, 0.0, 0.0)
@@ -1455,7 +1316,7 @@ class Cockpit (object):
             self._waypoint_wait_check = self._waypoint_check_period
             if self._current_waypoint:
                 wp = self._waypoints[self._current_waypoint]
-                ret = self._to_marker(wp)
+                ret = self.player.to_marker(wp)
                 there, dist, dalt, dhead = ret
                 if there:
                     self._at_current_waypoint = True
@@ -5545,10 +5406,9 @@ void main ()
         self._waypoints[name] = wp
         self._waypoint_keys.append(name)
 
-        if tozone and name not in self._navpoints:
-            self.add_navpoint(name, longdes, shortdes, tozone,
-                              pos, radius, height, active, exitf=exitf)
-
+        if tozone:
+            self.player.add_navpoint(name, longdes, shortdes, tozone,
+                                     pos, radius, height, active, exitf=exitf)
 
         # Create navigation bar node for this waypoint.
         if self.has_hud:
@@ -5637,35 +5497,9 @@ void main ()
             self.select_waypoint(self._waypoint_keys[i1])
 
 
-    def _to_marker (self, md):
-
-        ppos = self.player.ac.pos()
-        bmpos = md.pos
-        if bmpos is None:
-            bmpos = Point3()
-        if not md.onbody:
-            mpos = bmpos
-            onground = isinstance(bmpos, VBase2)
-        else:
-            mpos = md.onbody.pos() + bmpos
-            onground = False
-        if md.height is not None and md.height < 0.0:
-            mpos = Point3(mpos[0], mpos[1], ppos[2])
-        elif onground:
-            mpos = Point3(mpos[0], mpos[1], md.elev)
-        dalt = ppos.getZ() - mpos.getZ()
-        dist = (ppos - mpos).length()
-        dhead = hpr_to(ppos, mpos)[0]
-        there = (md.radius is not None and dist < md.radius and
-                 (md.height is None or md.height < 0.0 or
-                  (onground and 0.0 < dalt < md.height) or
-                  (not onground and -0.5 * md.height < dalt < 0.5 * md.height)))
-        return there, dist, dalt, dhead
-
-
     def at_waypoint (self, name):
 
-        return self._to_marker(self._waypoints[name])[0]
+        return self.player.to_marker(self._waypoints[name])[0]
 
 
     def waypoint_dist (self, key):
@@ -5676,99 +5510,6 @@ void main ()
         else:
             dpos = wp.pos - self.player.ac.pos()
         return dpos.length()
-
-
-    def add_navpoint (self, name, longdes, shortdes, tozone,
-                      pos=None, radius=None, height=None,
-                      active=True, onbody=None, aerotow=False, exitf=None):
-
-        if not name:
-            name = "!anon-%d" % self._navpoint_anon_counter
-            self._navpoint_anon_counter += 1
-        if name in self._navpoints:
-            raise StandardError(
-                "Trying to add already existing navpoint '%s'." % name)
-
-        np = AutoProps()
-        np.name = name
-        np.longdes = longdes
-        np.shortdes = shortdes
-        np.pos = pos
-        np.radius = radius
-        np.height = height
-        np.tozone = tozone
-        np.active = active
-        np.onbody = onbody
-        np.aerotow = aerotow
-        np.exitf = exitf
-
-        if not np.onbody and isinstance(np.pos, VBase2):
-            np.elev = self.world.elevation(np.pos)
-
-        self._navpoints[name] = np
-
-        return name
-
-
-    def update_navpoint (self, name, tozone=False,
-                         pos=False, radius=False, height=False,
-                         active=None, onbody=False, aerotow=False, exitf=False):
-
-        if name not in self._navpoints:
-            raise StandardError("Trying to update non-existing navpoint '%s'." % name)
-
-        np = self._navpoints[name]
-        if tozone is not False:
-            np.tozone = tozone
-        if pos is not False:
-            np.pos = pos
-        if radius is not False:
-            np.radius = radius
-        if height is not False:
-            np.height = height
-        if active is not None:
-            np.active = active
-        if onbody is not False:
-            np.onbody = onbody
-        if aerotow is not False:
-            np.aerotow = aerotow
-        if exitf is not False:
-            np.exitf = exitf
-
-        if not np.onbody and isinstance(np.pos, VBase2):
-            np.elev = self.world.elevation(np.pos)
-
-
-    def active_navpoints (self):
-
-        actnps = []
-        for npname, np in self._navpoints.items():
-            if np.onbody and (not np.onbody.alive or np.onbody.shotdown):
-                self._navpoints.pop(npname)
-            elif (np.active() if callable(np.active) else np.active):
-                if np.aerotow:
-                    if self._aerotow_active(np.onbody):
-                        actnps.append(np)
-                elif self._to_marker(np)[0]:
-                    actnps.append(np)
-        return actnps
-
-
-    def _aerotow_active (self, tac):
-
-        active = False
-        # FIXME: Temporary, until in-game hook implemented.
-        if not tac.shotdown:
-            bdist = self.player.ac.dist(tac)
-            if bdist < self._aerotow_max_dist:
-                spdiff = abs(self.player.ac.speed() - tac.speed())
-                offb = self.player.ac.offbore(tac)
-                offbinv = tac.offbore(self.player.ac)
-                if (spdiff < self._aerotow_max_speed_diff and
-                    offb < self._aerotow_max_offbore and
-                    offbinv > pi - self._aerotow_max_offbore):
-                    active = True
-        return active
 
 
     def cycle_radar_scale (self, up=False):
