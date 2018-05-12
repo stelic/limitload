@@ -296,6 +296,7 @@ class Player (DirectObject):
         if self._prev_player_control_level != pclev:
             self._prev_player_control_level = pclev
             self.helmet.active = (pclev < 2)
+            self.helmet.set_physio_effects(pclev < 2 or self.cockpit.active)
             self._zero_inputs(keepthr=True, keepwpsel=True)
             if pclev == 0:
                 self.node2d.show()
