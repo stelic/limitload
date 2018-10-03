@@ -478,7 +478,7 @@ class Helmet (object):
             self.world.clear_action_chasers()
             self._cycle_waypoint_target_time_pressed = None
         elif self.player.cockpit.hud_mode == "nav":
-            self.player.cockpit.cycle_waypoint()
+            self.player.cycle_waypoint()
             self._cycle_waypoint_target_time_pressed = None
         elif self.player.cockpit.hud_mode in ("atk", "gnd"):
             if self._cycle_waypoint_target_time_pressed is not None:
@@ -849,12 +849,7 @@ class Cockpit (object):
             cannon.mpos_override = mpos
 
         # Waypoints.
-        self._waypoints = {}
-        self._waypoint_keys = []
-        self._current_waypoint = None
-        self._at_current_waypoint = False
-        self._waypoint_wait_check = 0.0
-        self._waypoint_check_period = 0.53
+        self._current_waypoint_name = None
 
         # Head moving.
         self._view_idle_hpr = Vec3(0.0, 0.0, 0.0)
@@ -979,8 +974,8 @@ class Cockpit (object):
         self._frame_created = self.world.frame
 
         self.alive = True
-        base.taskMgr.add(self._loop, "cockpit-loop", sort=-6)
-        # ...should come after helmet loop, before player loop.
+        base.taskMgr.add(self._loop, "cockpit-loop", sort=-5)
+        # ...should come after helmet loop and after player loop.
 
 
     def destroy (self):
@@ -1018,7 +1013,6 @@ class Cockpit (object):
         if self.active:
             self._update_lighting(dt)
             self._update_headpos(dt)
-            self._update_waypoints(dt)
             self._update_aimzoom(dt)
             for upf in self._instr_update_fs:
                 upf(dt)
@@ -1307,25 +1301,6 @@ class Cockpit (object):
             hsx, hsy, hsz = self._hud_overlay_node_hsize
             hpos = Point3(vpx / hsx, 0.0, vpz / hsz)
             self._hud_overlay_node.setPos(hpos)
-
-
-    def _update_waypoints (self, dt):
-
-        self._waypoint_wait_check -= dt
-        if self._waypoint_wait_check <= 0.0:
-            self._waypoint_wait_check = self._waypoint_check_period
-            if self._current_waypoint:
-                wp = self._waypoints[self._current_waypoint]
-                ret = self.player.to_marker(wp)
-                there, dist, dalt, dhead = ret
-                if there:
-                    self._at_current_waypoint = True
-                else:
-                    self._at_current_waypoint = False
-                    self._current_tozone_active = False
-                self._current_waypoint_dalt = dalt
-                self._current_waypoint_dist = dist
-                self._current_waypoint_head = dhead
 
 
     def _update_aimzoom (self, dt):
@@ -2357,19 +2332,19 @@ class Cockpit (object):
 
             self.player.helmet.target_contact = None
 
-            if self._current_waypoint:
+            if self._current_waypoint_name:
                 self._hud_wait_waypoint -= dt
                 if self._hud_wait_waypoint <= 0.0:
                     self._hud_wait_waypoint = self._hud_waypoint_period
-                    if self._hud_prev_waypoint != self._current_waypoint:
+                    if self._hud_prev_waypoint != self._current_waypoint_name:
                         if self._hud_prev_waypoint:
                             self._hud_navbar_nodes[self._hud_prev_waypoint].hide()
-                        self._hud_prev_waypoint = self._current_waypoint
-                    self._hud_navbar_nodes[self._current_waypoint].show()
+                        self._hud_prev_waypoint = self._current_waypoint_name
+                    self._hud_navbar_nodes[self._current_waypoint_name].show()
                     nhead = self._current_waypoint_head
                     ndist = self._current_waypoint_dist
                     ndalt = self._current_waypoint_dalt
-                    val = self._hud_navbar_subnodes[self._current_waypoint]
+                    val = self._hud_navbar_subnodes[self._current_waypoint_name]
                     namend, headnd, distnd, daltnd = val
                     update_text(headnd, text=("%.0f" % to_navhead(nhead)))
                     update_text(distnd, text=_rn("%.1f" % (ndist / 1000)))
@@ -5387,28 +5362,8 @@ void main ()
                     self._mdi_gear_warn_node.hide()
 
 
-    def add_waypoint (self, name, longdes, shortdes,
-                      pos, radius, height=None,
-                      tozone=None, active=True, exitf=None):
-
-        if name in self._waypoints:
-            raise StandardError(
-                "Trying to add already existing waypoint '%s'." % name)
-
-        wp = AutoProps()
-        wp.name = name
-        wp.longdes = longdes
-        wp.shortdes = shortdes
-        wp.pos = pos
-        wp.radius = radius
-        wp.height = height
-        wp.elev = self.world.elevation(pos)
-        self._waypoints[name] = wp
-        self._waypoint_keys.append(name)
-
-        if tozone:
-            self.player.add_navpoint(name, longdes, shortdes, tozone,
-                                     pos, radius, height, active, exitf=exitf)
+    def add_waypoint (self, name, longdes, shortdes, pos,
+                      height=None):
 
         # Create navigation bar node for this waypoint.
         if self.has_hud:
@@ -5473,43 +5428,14 @@ void main ()
             wpspec = (symbnd, namend)
             self._mfd_overmap_waypoints[name] = wpspec
 
-        if self._current_waypoint is None:
-            self.select_waypoint(name)
 
+    def update_waypoint_track (self, name, dist, dalt, dhead, there):
 
-    def select_waypoint (self, name):
-
-        self._current_waypoint = name
-        self._at_current_waypoint = False
-        self._waypoint_wait_check = 0.0
-
-
-    def cycle_waypoint (self):
-
-        if not self._current_waypoint:
-            if self._waypoint_keys:
-                self.select_waypoint(self._waypoint_keys[0])
-        else:
-            i = self._waypoint_keys.index(self._current_waypoint)
-            i1 = i + 1
-            if i1 >= len(self._waypoint_keys):
-                i1 = 0
-            self.select_waypoint(self._waypoint_keys[i1])
-
-
-    def at_waypoint (self, name):
-
-        return self.player.to_marker(self._waypoints[name])[0]
-
-
-    def waypoint_dist (self, key):
-
-        wp = self._waypoints[key]
-        if isinstance(wp.pos, VBase2):
-            dpos = wp.pos - self.player.ac.pos().getXy()
-        else:
-            dpos = wp.pos - self.player.ac.pos()
-        return dpos.length()
+        self._current_waypoint_name = name
+        self._current_waypoint_head = dhead
+        self._current_waypoint_dist = dist
+        self._current_waypoint_dalt = dalt
+        self._current_waypoint_there = there
 
 
     def cycle_radar_scale (self, up=False):

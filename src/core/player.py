@@ -200,6 +200,13 @@ class Player (DirectObject):
         self._text_shader = make_text_shader(glow=rgba(255, 255, 255, 0.4),
                                              shadow=True)
 
+        # Waypoints.
+        self._waypoints = {}
+        self._waypoint_keys = []
+        self._current_waypoint_name = None
+        self._waypoint_wait_check = 0.0
+        self._waypoint_check_period = 0.53
+
         # Navpoints.
         self._navpoints = {}
         self._navpoint_anon_counter = 0
@@ -243,9 +250,9 @@ class Player (DirectObject):
             ac.maxhitdmg = 1e10
 
         self.alive = True
-        base.taskMgr.add(self._loop, "player-loop", sort=-5)
-        base.taskMgr.add(self._slow_loop, "player-slow-loop", sort=-5)
-        # ...should come after helmet and cockpit loops.
+        base.taskMgr.add(self._loop, "player-loop", sort=-6)
+        base.taskMgr.add(self._slow_loop, "player-slow-loop", sort=-6)
+        # ...should come after helmet and before cockpit loop.
 
 
     def destroy (self):
@@ -304,6 +311,9 @@ class Player (DirectObject):
                 self.ac.zero_ap()
             else:
                 self.node2d.hide()
+
+        if True:
+            self._update_waypoints(self.world.dt)
 
         if pclev == 0:
             self._update_navjumps(self.world.dt)
@@ -1258,21 +1268,6 @@ class Player (DirectObject):
         self.notifier.show_message(*args, **kwargs)
 
 
-    def add_waypoint (self, *args, **kwargs):
-
-        return self.cockpit.add_waypoint(*args, **kwargs)
-
-
-    def at_waypoint (self, *args, **kwargs):
-
-        return self.cockpit.at_waypoint(*args, **kwargs)
-
-
-    def waypoint_dist (self, *args, **kwargs):
-
-        return self.cockpit.waypoint_dist(*args, **kwargs)
-
-
     def add_reported_target (self, *args, **kwargs):
 
         self.cockpit.add_reported_target(*args, **kwargs)
@@ -1308,6 +1303,83 @@ class Player (DirectObject):
         _("The enemy is in the other direction!"),
         _("Navigation system defunct? Check the compass!"),
     ]
+
+
+    def add_waypoint (self, name, longdes, shortdes,
+                      pos, radius, height=None,
+                      tozone=None, active=True, exitf=None):
+
+        if name in self._waypoints:
+            raise StandardError(
+                "Trying to add already existing waypoint '%s'." % name)
+
+        wp = AutoProps()
+        wp.name = name
+        wp.longdes = longdes
+        wp.shortdes = shortdes
+        wp.pos = pos
+        wp.radius = radius
+        wp.height = height
+        wp.elev = self.world.elevation(pos)
+        self._waypoints[name] = wp
+        self._waypoint_keys.append(name)
+
+        if tozone:
+            self.add_navpoint(name, longdes, shortdes, tozone,
+                              pos, radius, height, active, exitf=exitf)
+
+        self.cockpit.add_waypoint(name, longdes, shortdes, pos, height)
+
+        if self._current_waypoint_name is None:
+            self._select_waypoint(name)
+
+
+    def _select_waypoint (self, name):
+
+        self._current_waypoint_name = name
+        self._waypoint_wait_check = 0.0
+        self._update_waypoints(0.0)
+
+
+    def cycle_waypoint (self):
+
+        if not self._current_waypoint_name:
+            if self._waypoint_keys:
+                self._select_waypoint(self._waypoint_keys[0])
+        else:
+            i = self._waypoint_keys.index(self._current_waypoint_name)
+            i1 = i + 1
+            if i1 >= len(self._waypoint_keys):
+                i1 = 0
+            self._select_waypoint(self._waypoint_keys[i1])
+
+
+    def at_waypoint (self, name):
+
+        return self._to_marker(self._waypoints[name])[0]
+
+
+    def waypoint_dist (self, key):
+
+        wp = self._waypoints[key]
+        if isinstance(wp.pos, VBase2):
+            dpos = wp.pos - self.ac.pos().getXy()
+        else:
+            dpos = wp.pos - self.ac.pos()
+        return dpos.length()
+
+
+    def _update_waypoints (self, dt):
+
+        self._waypoint_wait_check -= dt
+        if self._waypoint_wait_check <= 0.0:
+            self._waypoint_wait_check = self._waypoint_check_period
+            if self._current_waypoint_name:
+                wp = self._waypoints[self._current_waypoint_name]
+                ret = self._to_marker(wp)
+                there, dist, dalt, dhead = ret
+                self.cockpit.update_waypoint_track(self._current_waypoint_name,
+                                                   dist, dalt, dhead, there)
 
 
     def add_navpoint (self, name, longdes, shortdes, tozone,
@@ -1482,7 +1554,7 @@ class Player (DirectObject):
                 if np.aerotow:
                     if self._aerotow_active(np.onbody):
                         actnps.append(np)
-                elif self.to_marker(np)[0]:
+                elif self._to_marker(np)[0]:
                     actnps.append(np)
         return actnps
 
@@ -1504,7 +1576,7 @@ class Player (DirectObject):
         return active
 
 
-    def to_marker (self, md):
+    def _to_marker (self, md):
 
         ppos = self.ac.pos()
         bmpos = md.pos
