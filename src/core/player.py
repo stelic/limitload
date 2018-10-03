@@ -719,7 +719,7 @@ class Player (DirectObject):
         self._bind_cmd("next-target-section", self.helmet.cycle_target_section)
         self._bind_cmd("next-weapon", self.cycle_weapon, [1])
         self._bind_cmd("previous-weapon", self.cycle_weapon, [-1])
-        self._bind_cmd("radar-on-off", self.cockpit.radar_on_off)
+        self._bind_cmd("radar-on-off", self.radar_on_off)
         self._bind_cmd("radar-scale-up", self.cockpit.cycle_radar_scale, [True])
         self._bind_cmd("radar-scale-down", self.cockpit.cycle_radar_scale, [False])
         self._bind_cmd("next-mfd-mode", self.cockpit.cycle_mfd_mode, [1])
@@ -1600,6 +1600,14 @@ class Player (DirectObject):
                   (onground and 0.0 < dalt < md.height) or
                   (not onground and -0.5 * md.height < dalt < 0.5 * md.height)))
         return there, dist, dalt, dhead
+
+
+    def radar_on_off (self):
+
+        if self.ac.sensorpack.emissive:
+            self.ac.sensorpack.set_emissive(active=False)
+        else:
+            self.ac.sensorpack.set_emissive(active=True)
 
 
 class PlayerNotifier (object):

@@ -1816,14 +1816,6 @@ class Cockpit (object):
             self._radar_blink_wait_update = 0.0
 
 
-    def radar_on_off (self):
-
-        if self.player.ac.sensorpack.emissive:
-            self.player.ac.sensorpack.set_emissive(active=False)
-        else:
-            self.player.ac.sensorpack.set_emissive(active=True)
-
-
     def _init_hud (self, make_shader_sunopq):
 
         screennd = self._model.find("**/hud_screen")
