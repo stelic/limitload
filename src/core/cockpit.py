@@ -115,9 +115,9 @@ class Helmet (object):
         self.target_offset = None
         self.target_hitbox = None
         self._prev_cycle_contact_set = {}
-        self._cycle_waypoint_target_time_pressed = None
-        self._cycle_waypoint_target_deselect_delay = 0.2
-        self._cycle_waypoint_target_immediate_deselect = False
+        self._cycle_target_time_pressed = None
+        self._cycle_target_deselect_delay = 0.2
+        self._cycle_target_immediate_deselect = False
         self._cycle_tag_contact_set = set()
         self._wait_cycle_tag = 0.0
         self._cycle_tag_period = 1.13
@@ -263,13 +263,13 @@ class Helmet (object):
     def _update_targeting (self, dt):
 
         input_deselect = (
-            (self._cycle_waypoint_target_time_pressed is not None and
-             self.world.time - self._cycle_waypoint_target_time_pressed >
-                 self._cycle_waypoint_target_deselect_delay) or
-            self._cycle_waypoint_target_immediate_deselect)
-        if self._cycle_waypoint_target_immediate_deselect:
-            self._cycle_waypoint_target_time_pressed = None
-            self._cycle_waypoint_target_immediate_deselect = False
+            (self._cycle_target_time_pressed is not None and
+             self.world.time - self._cycle_target_time_pressed >
+                 self._cycle_target_deselect_delay) or
+            self._cycle_target_immediate_deselect)
+        if self._cycle_target_immediate_deselect:
+            self._cycle_target_time_pressed = None
+            self._cycle_target_immediate_deselect = False
 
         if (not self.target_contact or
             not self.target_contact.body.alive or
@@ -466,26 +466,26 @@ class Helmet (object):
             #self._gfac_breathing_sound.set_volume(0.0)
 
 
-    def cycle_waypoint_target_init (self):
+    def cycle_focus_init (self):
 
         if self.player.cockpit.hud_mode in ("atk", "gnd"):
-            self._cycle_waypoint_target_time_pressed = self.world.time
+            self._cycle_target_time_pressed = self.world.time
 
 
-    def cycle_waypoint_target (self):
+    def cycle_focus (self):
 
         if self.world.action_chasers:
             self.world.clear_action_chasers()
-            self._cycle_waypoint_target_time_pressed = None
+            self._cycle_target_time_pressed = None
         elif self.player.cockpit.hud_mode == "nav":
             self.player.cycle_waypoint()
-            self._cycle_waypoint_target_time_pressed = None
+            self._cycle_target_time_pressed = None
         elif self.player.cockpit.hud_mode in ("atk", "gnd"):
-            if self._cycle_waypoint_target_time_pressed is not None:
-                time_pressed = self._cycle_waypoint_target_time_pressed
-                self._cycle_waypoint_target_time_pressed = None
+            if self._cycle_target_time_pressed is not None:
+                time_pressed = self._cycle_target_time_pressed
+                self._cycle_target_time_pressed = None
                 if (self.world.time - time_pressed >
-                    self._cycle_waypoint_target_deselect_delay):
+                    self._cycle_target_deselect_delay):
                     return
             self.cycle_target()
 
@@ -493,7 +493,7 @@ class Helmet (object):
     def deselect_target (self):
 
         if self.player.cockpit.hud_mode in ("atk", "gnd"):
-            self._cycle_waypoint_target_immediate_deselect = True
+            self._cycle_target_immediate_deselect = True
 
 
     def cycle_target (self):

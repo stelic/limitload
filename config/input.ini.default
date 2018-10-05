@@ -22,7 +22,7 @@ throttle-up = =
 throttle-down = -
 air-brake = b, joy5
 landing-gear = g
-next-waypoint-target = tab, joy2
+next-target = tab, joy2
 deselect-target = z
 fire-weapon = space, joy1
 next-target-section = s

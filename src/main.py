@@ -915,12 +915,12 @@ class InputConf (object):
                         "Do not forget this when landing."),
                 seqs=["g"]),
             AutoProps(
-                name="next-waypoint-target",
+                name="next-target",
                 desc=p_("input command description",
-                        "switch to next waypoint or next target"),
+                        "switch to next target"),
                 note=p_("input command note",
-                        "Waypoints are switched in the HUD navigation mode, "
-                        "and targets in the HUD weapon modes. "
+                        "Targets are switched in the HUD weapon modes and "
+                        "waypoints are switched in the HUD navigation mode. "
                         "When a target is selected, the selection can be "
                         "cancelled either by holding this input pressed for "
                         "a little while longer or by pressing "
