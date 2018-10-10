@@ -322,7 +322,7 @@ class Player (DirectObject):
         if self._prev_player_control_level != pclev:
             self._prev_player_control_level = pclev
             self.helmet.active = (pclev < 2)
-            self.helmet.set_physio_effects(pclev < 2 or self.cockpit.active)
+            self.cockpit.set_physio_effects(pclev < 2 or self.cockpit.active)
             self._zero_inputs(keepthr=True, keepwpsel=True)
             if pclev == 0:
                 self.node2d.show()
@@ -592,7 +592,7 @@ class Player (DirectObject):
         self._lost_chaser_move_far = False
         self.world.chaser = self._lost_chaser
 
-        self.helmet.set_physio_effects(False)
+        self.cockpit.set_physio_effects(False)
 
         self.world.pause.set_player_shotdown(True)
 

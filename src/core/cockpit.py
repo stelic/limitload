@@ -140,27 +140,6 @@ class Helmet (object):
             path="audio/sounds/flight-lock-target.ogg", loop=True,
             world=self.world, pnode=self.node2d, volume=0.2, fadetime=0.01)
 
-        # G-factor effects.
-        self._gfac_apply = True
-        self._gfac_limup0 = 5.0
-        self._gfac_limup1 = 8.0
-        self._gfac_limlw0 = -2.0
-        self._gfac_limlw1 = -4.0
-        self._gfac_visspdfac_loss = 0.2
-        self._gfac_visspdfac_recv = 0.4
-        self._gfac_visfac_up = 0.0
-        self._gfac_visfac_lw = 0.0
-        #self._gfac_brtspdfac_loss = 0.1
-        #self._gfac_brtspdfac_recv = 0.2
-        #self._gfac_brtfac_up = 0.0
-        #self._gfac_brtvol_min = 0.05
-        #self._gfac_breathing_sound = Sound2D(
-            #path="audio/sounds/flight-breathing.ogg", loop=True,
-            #world=self.world, pnode=self.node2d,
-            #volume=self._gfac_brtvol_min, play=True)
-        self._wait_gfactor = 0.0
-        self._gfactor_period = 0.053
-
         self._deactivate()
 
         self.alive = True
@@ -199,9 +178,6 @@ class Helmet (object):
         if self.active:
             self._update_view(dt)
 
-        # Always on, must track state.
-        self._update_gfactor(dt)
-
         self._prev_player_control_level = self.world.player_control_level
         return task.cont
 
@@ -218,93 +194,6 @@ class Helmet (object):
         self._camera.node().setActive(False)
         self.node.hide()
         self.node2d.hide()
-
-
-    def _update_gfactor (self, dt):
-
-        self._wait_gfactor -= dt
-        if self._wait_gfactor <= 0.0:
-            adt = self._gfactor_period - self._wait_gfactor
-            self._wait_gfactor += self._gfactor_period
-            gfac = self.ac.gfactor()
-
-            visfac_up_fin = 0.0
-            visfac_lw_fin = 0.0
-            if gfac > self._gfac_limup0:
-                duplw = (self._gfac_limup1 - self._gfac_limup0)
-                visfac_up_fin = (gfac - self._gfac_limup0) / duplw
-                visfac_up_fin = clamp(visfac_up_fin, 0.0, 1.0)
-            elif gfac < self._gfac_limlw0:
-                duplw = (self._gfac_limlw1 - self._gfac_limlw0)
-                visfac_lw_fin = (gfac - self._gfac_limlw0) / duplw
-                visfac_lw_fin = clamp(visfac_lw_fin, 0.0, 1.0)
-            if visfac_up_fin > self._gfac_visfac_up:
-                visspdfac_up = self._gfac_visspdfac_loss
-            else:
-                visspdfac_up = self._gfac_visspdfac_recv
-            visspd_up = (visfac_up_fin - self._gfac_visfac_up) * visspdfac_up
-            self._gfac_visfac_up += visspd_up * adt
-            if visfac_lw_fin > self._gfac_visfac_lw:
-                visspdfac_lw = self._gfac_visspdfac_loss
-            else:
-                visspdfac_lw = self._gfac_visspdfac_recv
-            visspd_lw = (visfac_lw_fin - self._gfac_visfac_lw) * visspdfac_lw
-            self._gfac_visfac_lw += visspd_lw * adt
-            visfac = max(self._gfac_visfac_up, self._gfac_visfac_lw)
-            outrad_ds = sqrt(2.0) * (1.0 - visfac)
-            if self._gfac_visfac_up > self._gfac_visfac_lw:
-                ifac0_ds = visfac**0.7
-                ifac1_ds = ifac0_ds + (1.0 - ifac0_ds) * sin(visfac * pi * 0.5)
-            else:
-                ifac0_ds = 0.0
-                ifac1_ds = 0.0
-            rad_desat_spec = Vec4(outrad_ds, ifac0_ds, ifac1_ds, 0.0)
-            outrad_dk = sqrt(2.0) * (1.0 - visfac)
-            ifac0_dk = visfac**4.0
-            ifac1_dk = ifac0_dk + (1.0 - ifac0_dk) * sin(visfac * pi * 0.5)**4.0
-            colred = 0.0 if self._gfac_visfac_up > self._gfac_visfac_lw else 1.0
-            rad_darken_rad_spec = Vec4(outrad_dk, ifac0_dk, ifac1_dk, colred)
-            timeang = 2 * pi * self.world.time
-            dradampl = 0.05 + 0.01 * sin(timeang / 1.0)
-            dradfreq = 8.0
-            dradphase = timeang / 4.0
-            rad_darken_ang_spec = Vec4(dradampl, dradfreq, dradphase, 0.0)
-            if self._gfac_apply:
-                base.set_radial_desaturation(rad_desat_spec)
-                base.set_radial_darkening(rad_darken_rad_spec, rad_darken_ang_spec)
-
-            #brtfac_up_fin = 0.0
-            #if gfac > self._gfac_limup0:
-                #duplw = (self._gfac_limup1 - self._gfac_limup0)
-                #brtfac_up_fin = (gfac - self._gfac_limup0) / duplw
-                #brtfac_up_fin = clamp(brtfac_up_fin, 0.0, 1.0)
-            #if brtfac_up_fin > self._gfac_brtfac_up:
-                #brtspdfac_up = self._gfac_brtspdfac_loss
-            #else:
-                #brtspdfac_up = self._gfac_brtspdfac_recv
-            #brtspd_up = (brtfac_up_fin - self._gfac_brtfac_up) * brtspdfac_up
-            #self._gfac_brtfac_up += brtspd_up * adt
-            #brtfac = self._gfac_brtfac_up
-            #brtvol = self._gfac_brtvol_min * (1.0 - brtfac) + 1.0 * brtfac
-            #if self._gfac_apply:
-                #self._gfac_breathing_sound.set_volume(brtvol)
-
-
-    def set_physio_effects (self, active):
-
-        if active:
-            self._gfac_apply = True
-
-        else:
-            self._gfac_apply = False
-
-            rad_desat_spec = Vec4(sqrt(2.0), 0, 0, 0)
-            base.set_radial_desaturation(rad_desat_spec)
-            rad_darken_rad_spec = Vec4(sqrt(2.0), 0, 0, 0)
-            rad_darken_ang_spec = Vec4(0, 0, 0, 0)
-            base.set_radial_darkening(rad_darken_rad_spec, rad_darken_ang_spec)
-
-            #self._gfac_breathing_sound.set_volume(0.0)
 
 
     def _update_view (self, dt):
@@ -760,6 +649,27 @@ class Cockpit (object):
         self._instr_night_light_on = False
         self.light_on_off(on=self._instr_night_light_on, auto=True)
 
+        # G-factor effects.
+        self._gfac_apply = True
+        self._gfac_limup0 = 5.0
+        self._gfac_limup1 = 8.0
+        self._gfac_limlw0 = -2.0
+        self._gfac_limlw1 = -4.0
+        self._gfac_visspdfac_loss = 0.2
+        self._gfac_visspdfac_recv = 0.4
+        self._gfac_visfac_up = 0.0
+        self._gfac_visfac_lw = 0.0
+        #self._gfac_brtspdfac_loss = 0.1
+        #self._gfac_brtspdfac_recv = 0.2
+        #self._gfac_brtfac_up = 0.0
+        #self._gfac_brtvol_min = 0.05
+        #self._gfac_breathing_sound = Sound2D(
+            #path="audio/sounds/flight-breathing.ogg", loop=True,
+            #world=self.world, pnode=self.node2d,
+            #volume=self._gfac_brtvol_min, play=True)
+        self._wait_gfactor = 0.0
+        self._gfactor_period = 0.053
+
         self._init_sounds()
 
         self.active = False
@@ -816,6 +726,7 @@ class Cockpit (object):
 
         # Always on, must track state.
         self._update_sounds(dt)
+        self._update_gfactor(dt)
 
         self._prev_player_control_level = self.world.player_control_level
 
@@ -1254,6 +1165,93 @@ class Cockpit (object):
             for nd in self._instr_night_light_nodes:
                 nd.setShaderInput(self._shdinp.glowfacn, 0.0)
                 nd.setShaderInput(self._shdinp.glowaddn, 0.0)
+
+
+    def _update_gfactor (self, dt):
+
+        self._wait_gfactor -= dt
+        if self._wait_gfactor <= 0.0:
+            adt = self._gfactor_period - self._wait_gfactor
+            self._wait_gfactor += self._gfactor_period
+            gfac = self.ac.gfactor()
+
+            visfac_up_fin = 0.0
+            visfac_lw_fin = 0.0
+            if gfac > self._gfac_limup0:
+                duplw = (self._gfac_limup1 - self._gfac_limup0)
+                visfac_up_fin = (gfac - self._gfac_limup0) / duplw
+                visfac_up_fin = clamp(visfac_up_fin, 0.0, 1.0)
+            elif gfac < self._gfac_limlw0:
+                duplw = (self._gfac_limlw1 - self._gfac_limlw0)
+                visfac_lw_fin = (gfac - self._gfac_limlw0) / duplw
+                visfac_lw_fin = clamp(visfac_lw_fin, 0.0, 1.0)
+            if visfac_up_fin > self._gfac_visfac_up:
+                visspdfac_up = self._gfac_visspdfac_loss
+            else:
+                visspdfac_up = self._gfac_visspdfac_recv
+            visspd_up = (visfac_up_fin - self._gfac_visfac_up) * visspdfac_up
+            self._gfac_visfac_up += visspd_up * adt
+            if visfac_lw_fin > self._gfac_visfac_lw:
+                visspdfac_lw = self._gfac_visspdfac_loss
+            else:
+                visspdfac_lw = self._gfac_visspdfac_recv
+            visspd_lw = (visfac_lw_fin - self._gfac_visfac_lw) * visspdfac_lw
+            self._gfac_visfac_lw += visspd_lw * adt
+            visfac = max(self._gfac_visfac_up, self._gfac_visfac_lw)
+            outrad_ds = sqrt(2.0) * (1.0 - visfac)
+            if self._gfac_visfac_up > self._gfac_visfac_lw:
+                ifac0_ds = visfac**0.7
+                ifac1_ds = ifac0_ds + (1.0 - ifac0_ds) * sin(visfac * pi * 0.5)
+            else:
+                ifac0_ds = 0.0
+                ifac1_ds = 0.0
+            rad_desat_spec = Vec4(outrad_ds, ifac0_ds, ifac1_ds, 0.0)
+            outrad_dk = sqrt(2.0) * (1.0 - visfac)
+            ifac0_dk = visfac**4.0
+            ifac1_dk = ifac0_dk + (1.0 - ifac0_dk) * sin(visfac * pi * 0.5)**4.0
+            colred = 0.0 if self._gfac_visfac_up > self._gfac_visfac_lw else 1.0
+            rad_darken_rad_spec = Vec4(outrad_dk, ifac0_dk, ifac1_dk, colred)
+            timeang = 2 * pi * self.world.time
+            dradampl = 0.05 + 0.01 * sin(timeang / 1.0)
+            dradfreq = 8.0
+            dradphase = timeang / 4.0
+            rad_darken_ang_spec = Vec4(dradampl, dradfreq, dradphase, 0.0)
+            if self._gfac_apply:
+                base.set_radial_desaturation(rad_desat_spec)
+                base.set_radial_darkening(rad_darken_rad_spec, rad_darken_ang_spec)
+
+            #brtfac_up_fin = 0.0
+            #if gfac > self._gfac_limup0:
+                #duplw = (self._gfac_limup1 - self._gfac_limup0)
+                #brtfac_up_fin = (gfac - self._gfac_limup0) / duplw
+                #brtfac_up_fin = clamp(brtfac_up_fin, 0.0, 1.0)
+            #if brtfac_up_fin > self._gfac_brtfac_up:
+                #brtspdfac_up = self._gfac_brtspdfac_loss
+            #else:
+                #brtspdfac_up = self._gfac_brtspdfac_recv
+            #brtspd_up = (brtfac_up_fin - self._gfac_brtfac_up) * brtspdfac_up
+            #self._gfac_brtfac_up += brtspd_up * adt
+            #brtfac = self._gfac_brtfac_up
+            #brtvol = self._gfac_brtvol_min * (1.0 - brtfac) + 1.0 * brtfac
+            #if self._gfac_apply:
+                #self._gfac_breathing_sound.set_volume(brtvol)
+
+
+    def set_physio_effects (self, active):
+
+        if active:
+            self._gfac_apply = True
+
+        else:
+            self._gfac_apply = False
+
+            rad_desat_spec = Vec4(sqrt(2.0), 0, 0, 0)
+            base.set_radial_desaturation(rad_desat_spec)
+            rad_darken_rad_spec = Vec4(sqrt(2.0), 0, 0, 0)
+            rad_darken_ang_spec = Vec4(0, 0, 0, 0)
+            base.set_radial_darkening(rad_darken_rad_spec, rad_darken_ang_spec)
+
+            #self._gfac_breathing_sound.set_volume(0.0)
 
 
     def _init_radar (self):
