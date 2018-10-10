@@ -410,6 +410,7 @@ class Cockpit (object):
 
         self.player = player
         self.world = player.ac.world
+        self.ac = player.ac
 
         self.node = base.cockpit_root.attachNewNode("cockpit-root")
         self._camera = base.cockpit_camera
@@ -469,7 +470,7 @@ class Cockpit (object):
         # 2 - cockpit scene aircraft model
         self._ac_model_type = 2
 
-        acp = self.player.ac
+        acp = self.ac
         ac_texture = acp.texture
         ac_normalmap = acp.normalmap or "images/_normalmap_none.png"
         #ac_glowmap = acp.glowmap or "images/_glowmap_none.png"
@@ -627,13 +628,13 @@ class Cockpit (object):
 
         # Setup muzzle flashes.
         self._mfspec = mfspec
-        if len(self._mfspec) != len(self.player.ac.cannons):
+        if len(self._mfspec) != len(self.ac.cannons):
             raise StandardError("Different number of aircraft cannons and "
                                 "cockpit muzzle flashes.")
         self._own_mflashes = set()
         for i in range(len(self._mfspec)):
             mshape, mscale, mpos, mhpr, mltpos = self._mfspec[i]
-            cannon = self.player.ac.cannons[i]
+            cannon = self.ac.cannons[i]
             mpos1 = mpos - headpos
             #mltpos1 = mltpos - headpos
             mltpos1 = None
@@ -793,7 +794,7 @@ class Cockpit (object):
 
         if not self.alive:
             return task.done
-        if not self.player.alive or not self.player.ac.alive:
+        if not self.ac.alive:
             self.destroy()
             return task.done
 
@@ -824,19 +825,19 @@ class Cockpit (object):
     def _activate (self):
 
         if self._ac_model_type != 1:
-            self.player.ac.node.hide()
+            self.ac.node.hide()
 
         self._camera.node().setActive(True)
         self.node.show()
         #self.node.setTransparency(TransparencyAttrib.MAlpha)
         #self.node.setSa(0.5)
-        #for i in range(len(self.player.ac.cannons)):
-            #cn, mpovr = self.player.ac.cannons[i], self._mfspec[i][1]
+        #for i in range(len(self.ac.cannons)):
+            #cn, mpovr = self.ac.cannons[i], self._mfspec[i][1]
             #cn.mpos_override = mpovr
         if base.with_cockpit_shadows:
             self._shadow_camera.node().setActive(True)
             self.shadow_node.show()
-        for cannon in self.player.ac.cannons:
+        for cannon in self.ac.cannons:
             for mflash in cannon.mflashes:
                 if mflash not in self._own_mflashes:
                     mflash.node.hide()
@@ -846,16 +847,16 @@ class Cockpit (object):
     def _deactivate (self):
 
         if self._ac_model_type != 1:
-            self.player.ac.node.show()
+            self.ac.node.show()
 
         self._camera.node().setActive(False)
         self.node.hide()
-        #for cn in self.player.ac.cannons:
+        #for cn in self.ac.cannons:
             #cn.mpos_override = None
         if base.with_cockpit_shadows:
             self._shadow_camera.node().setActive(False)
             self.shadow_node.hide()
-        for cannon in self.player.ac.cannons:
+        for cannon in self.ac.cannons:
             for mflash in cannon.mflashes:
                 if mflash not in self._own_mflashes:
                     mflash.node.show()
@@ -890,9 +891,9 @@ class Cockpit (object):
 
         # Project world lights to own.
         # - position of the sun and the moon
-        sunhpr = self.world.sky.sunlight.getHpr(self.player.ac.node)
+        sunhpr = self.world.sky.sunlight.getHpr(self.ac.node)
         self._sunlnd.setHpr(sunhpr)
-        moonhpr = self.world.sky.moonlight.getHpr(self.player.ac.node)
+        moonhpr = self.world.sky.moonlight.getHpr(self.ac.node)
         self._moonlnd.setHpr(moonhpr)
         # - colors
         amblcol = self.world.sky.amblight.node().getColor()
@@ -921,7 +922,7 @@ class Cockpit (object):
 
     def _update_headpos (self, dt):
 
-        acp = self.player.ac
+        acp = self.ac
 
         pclev = self.world.player_control_level
         if pclev != self._prev_player_control_level:
@@ -1107,11 +1108,11 @@ class Cockpit (object):
             if isinstance(wp.handle, (Cannon, PodLauncher)):
                 target = self.player.target_body
                 if (target is not None and
-                    target.side not in self.world.get_allied_sides(self.player.ac.side)):
+                    target.side not in self.world.get_allied_sides(self.ac.side)):
                     inside_dist = False
                     inside_angles = False
                     aimzoom_min_dist = self._aimzoom_min_dist_size_fac * target.bboxdiag
-                    tdist = target.dist(self.player.ac)
+                    tdist = target.dist(self.ac)
                     if aimzoom_min_dist < tdist < self._aimzoom_max_dist:
                         inside_dist = True
                         ang0 = self._aimzoom_max_offbore
@@ -1122,14 +1123,14 @@ class Cockpit (object):
                                     inside_angles = True
                         elif isinstance(wp.handle, PodLauncher):
                             offset = self.player.target_offset
-                            ret = _bore_angles(self.player.ac, target, offset)
+                            ret = _bore_angles(self.ac, target, offset)
                             angth, angtv = ret
                             if abs(angth) < ang0 and abs(angtv) < ang0:
                                 inside_angles = True
                     if inside_angles and inside_dist:
-                        rtpos = target.pos(self.player.ac)
+                        rtpos = target.pos(self.ac)
                         rtdir = unitv(rtpos)
-                        ptarea = target.project_bbox_area(rtdir, refbody=self.player.ac)
+                        ptarea = target.project_bbox_area(rtdir, refbody=self.ac)
                         trad = sqrt(ptarea / pi)
                         tdist = rtpos.length()
                         tangsize = atan(trad / tdist)
@@ -1181,14 +1182,14 @@ class Cockpit (object):
             path="audio/sounds/cockpit-flare.ogg",
             world=self.world, pnode=self.node,
             volume=0.7, loop=False)
-        self._prev_flarechaff_count = self.player.ac.flarechaff
+        self._prev_flarechaff_count = self.ac.flarechaff
 
 
     def _update_sounds (self, dt):
 
         movables_flow_vol = 0.0
 
-        airbrake_active = (self.player.ac.dynstate.brd > 0.0)
+        airbrake_active = (self.ac.dynstate.brd > 0.0)
         if self._prev_airbrake_active != airbrake_active:
             self._prev_airbrake_active = airbrake_active
             if airbrake_active:
@@ -1196,15 +1197,15 @@ class Cockpit (object):
             else:
                 pass
         if airbrake_active:
-            speed = self.player.ac.dynstate.v
+            speed = self.ac.dynstate.v
             airbrake_vol = intl01vr(
                 speed,
                 self._airbrake_flow_min_speed, self._airbrake_flow_max_speed,
                 0.0, self._airbrake_flow_max_volume)
-            airbrake_vol *= self.player.ac.dynstate.brd
+            airbrake_vol *= self.ac.dynstate.brd
             movables_flow_vol = max(movables_flow_vol, airbrake_vol)
 
-        lgear_active = self.player.ac.dynstate.lg
+        lgear_active = self.ac.dynstate.lg
         if self._prev_lgear_active != lgear_active:
             self._prev_lgear_active = lgear_active
             if lgear_active:
@@ -1216,7 +1217,7 @@ class Cockpit (object):
                     self._lgear_down_sound.stop()
                     self._lgear_up_sound.play(fadetime=0.1)
         if lgear_active:
-            speed = self.player.ac.dynstate.v
+            speed = self.ac.dynstate.v
             lgear_vol = intl01vr(
                 speed,
                 self._lgear_flow_min_speed, self._lgear_flow_max_speed,
@@ -1232,7 +1233,7 @@ class Cockpit (object):
             self._movables_flow_active = False
             self._movables_flow_sound.stop()
 
-        flarechaff_count = self.player.ac.flarechaff
+        flarechaff_count = self.ac.flarechaff
         if self._prev_flarechaff_count > flarechaff_count:
             self._prev_flarechaff_count = flarechaff_count
             self._flarechaff_launch_sound.stop(fadetime=0.05)
@@ -1435,11 +1436,11 @@ class Cockpit (object):
         self._radar_blink_wait_update = 0.0
         self._radar_blip_min_alpha = 0.0
 
-        self.player.ac.sensorpack.update(scanperiod=scanperiod, relspfluct=0.0)
-        self.player.ac.sensorpack.set_emissive(active=True)
-        self.player.ac.sensorpack.start_scanning()
+        self.ac.sensorpack.update(scanperiod=scanperiod, relspfluct=0.0)
+        self.ac.sensorpack.set_emissive(active=True)
+        self.ac.sensorpack.start_scanning()
 
-        self._radar_current_emissive = self.player.ac.sensorpack.emissive
+        self._radar_current_emissive = self.ac.sensorpack.emissive
 
         self._prev_target_contact = None
 
@@ -1453,7 +1454,7 @@ class Cockpit (object):
 
     def _update_radar (self, dt):
 
-        acp = self.player.ac
+        acp = self.ac
 
         if self._radar_scale_shift != 0:
             self._radar_grid_nodes[self._radar_scale].hide()
@@ -1478,8 +1479,8 @@ class Cockpit (object):
                 self._radar_radar_jammed_node.hide()
                 self._radar_radar_clear_node.show()
 
-        if self._radar_current_emissive != self.player.ac.sensorpack.emissive:
-            self._radar_current_emissive = self.player.ac.sensorpack.emissive
+        if self._radar_current_emissive != self.ac.sensorpack.emissive:
+            self._radar_current_emissive = self.ac.sensorpack.emissive
             if self._radar_current_emissive:
                 self._radar_active_radar_node.show()
             else:
@@ -1531,7 +1532,7 @@ class Cockpit (object):
 
             # Update blips, slow part.
             allied_sides = self.world.get_allied_sides(acp.side)
-            sens_by_con = self.player.ac.sensorpack.sensors_by_contact()
+            sens_by_con = self.ac.sensorpack.sensors_by_contact()
             for con, blip in self._radar_blips.iteritems():
                 friendly = con.side in allied_sides
                 direct = bool(self._radar_direct_sensors.intersection(sens_by_con[con]))
@@ -1857,7 +1858,7 @@ class Cockpit (object):
         #rrdnd = make_image(
             #"images/cockpit/cockpit_mig29_hud_round_ready_tex.png",
             #size=(4 * un), filtr=False)
-        npyl = len(self.player.ac.pylons)
+        npyl = len(self.ac.pylons)
         pyldist = 0.09
         pyloffx = 0.5 * pyldist if (npyl % 2 == 0) else 0.0
         pylz = -11 * un
@@ -2025,7 +2026,7 @@ class Cockpit (object):
 
     def _update_hud (self, dt):
 
-        parent = self.player.ac
+        parent = self.ac
         ppos = parent.pos()
         phpr = parent.hpr()
 
@@ -2458,7 +2459,7 @@ class Cockpit (object):
         if self._warnrec_wait_update <= 0.0:
             self._warnrec_wait_update += self._warnrec_update_period
 
-            acp = self.player.ac
+            acp = self.ac
             self._warnrec_active = False
 
             # Check for tracking missiles.
@@ -2579,7 +2580,7 @@ class Cockpit (object):
             self._power_aftburn_wait_update -= dt
             if self._power_aftburn_wait_update <= 0.0:
                 self._power_aftburn_wait_update = self._power_aftburn_update_period
-                pthr = self.player.ac.dynstate.tl
+                pthr = self.ac.dynstate.tl
                 if self._power_aftburn_prev_throttle is None:
                     self._power_aftburn_prev_throttle = 2.0 - pthr
                 if self._power_aftburn_prev_throttle <= 1.0 and pthr > 1.0:
@@ -2602,7 +2603,7 @@ class Cockpit (object):
 
         # Gun counter.
         guncntnd = self._model.find("**/ammo_screen")
-        self._weapons_has_gun_counter = not guncntnd.isEmpty() and self.player.ac.cannons
+        self._weapons_has_gun_counter = not guncntnd.isEmpty() and self.ac.cannons
         if self._weapons_has_gun_counter:
             self._weapons_has_gun_counter = True
             ret = self._txscmgr.set_texscene(
@@ -2634,7 +2635,7 @@ class Cockpit (object):
         remove_subnodes(self._model, ("lamp_pylon_l4", "lamp_pylon_r4"))
 
         # Pylon lights.
-        npyl = len(self.player.ac.pylons)
+        npyl = len(self.ac.pylons)
         self._weapons_pylons_lamp_nodes = []
         for i in range(npyl):
             if npyl % 2 == 0:
@@ -2709,7 +2710,7 @@ class Cockpit (object):
             self._weapons_gun_counter_wait_update -= dt
             if self._weapons_gun_counter_wait_update <= 0.0:
                 self._weapons_gun_counter_wait_update = self._weapons_gun_counter_update_period
-                refcannon = self.player.ac.cannons[0] #!!!
+                refcannon = self.ac.cannons[0] #!!!
                 if self._weapons_gun_counter_prev_count != refcannon.ammo:
                     self._weapons_gun_counter_prev_count = refcannon.ammo
                     update_text(self._weapons_gun_counter_text,
@@ -2758,7 +2759,7 @@ class Cockpit (object):
         return
 
         boresight_on = True
-        if self.player.ac.sensorpack.emissive:
+        if self.ac.sensorpack.emissive:
             boresight_on = False
         elif self.player.input_select_weapon < 0:
             boresight_on = False
@@ -2787,8 +2788,8 @@ class Cockpit (object):
                     for body in self.world.iter_bodies(family):
                         if not body.alive:
                             continue
-                        bdist = self.player.ac.dist(body)
-                        boffb = self.player.ac.offbore(body)
+                        bdist = self.ac.dist(body)
+                        boffb = self.ac.offbore(body)
                         if (bdist < self._boresight_maxdist and
                             boffb < self._boresight_maxang):
                             bodies_in_bore.append((bdist, body))
@@ -2872,7 +2873,7 @@ class Cockpit (object):
         if self._compass_wait_update <= 0.0:
             self._compass_wait_update += self._compass_update_period
 
-            phpr = self.player.ac.hpr()
+            phpr = self.ac.hpr()
             phdg = to_navhead(phpr[0])
             offu = phdg / 360
             self._compass_bar_node.setTexOffset(texstage_color, offu, 0.0)
@@ -2960,7 +2961,7 @@ class Cockpit (object):
         if self._fuelpanel_wait_update <= 0.0:
             self._fuelpanel_wait_update += self._fuelpanel_update_period
 
-            fuel = self.player.ac.fuel
+            fuel = self.ac.fuel
 
             fuel1 = max(min(fuel, self._fuelpanel_bar1_fuel), 0.0)
             sz1 = fuel1 / self._fuelpanel_bar1_fuel
@@ -3037,7 +3038,7 @@ class Cockpit (object):
         if self._tachometer_wait_update <= 0.0:
             self._tachometer_wait_update += self._tachometer_update_period
 
-            pthr = self.player.ac.dynstate.tl
+            pthr = self.ac.dynstate.tl
             if pthr <= 1.0:
                 roll0 = self._tachometer_hand_roll0
                 roll1 = self._tachometer_hand_roll1
@@ -3236,7 +3237,7 @@ class Cockpit (object):
         if self._radaraltimeter_wait_update <= 0.0:
             self._radaraltimeter_wait_update += self._radaraltimeter_update_period
 
-            ppos = self.player.ac.pos()
+            ppos = self.ac.pos()
             potralt = self.world.otr_altitude(ppos)
             potralt1 = clamp(potralt, 0.0, self._radaraltimeter_scale_max)
             hroll = self._radaraltimeter_hand_roll_table(potralt1)
@@ -3323,12 +3324,12 @@ class Cockpit (object):
         if self._aoa_wait_update <= 0.0:
             self._aoa_wait_update += self._aoa_update_period
 
-            roll = intl01vr(self.player.ac.dynstate.a,
+            roll = intl01vr(self.ac.dynstate.a,
                             self._aoa_hand_aoa_min, self._aoa_hand_aoa_max,
                             self._aoa_hand_aoa_min_roll, self._aoa_hand_aoa_max_roll)
             self._aoa_hand_aoa_node.setR(roll)
 
-            roll = intl01vr(self.player.ac.dynstate.n,
+            roll = intl01vr(self.ac.dynstate.n,
                             self._aoa_hand_lfac_min, self._aoa_hand_lfac_max,
                             self._aoa_hand_lfac_min_roll, self._aoa_hand_lfac_max_roll)
             self._aoa_hand_lfac_node.setR(roll)
@@ -3429,7 +3430,7 @@ class Cockpit (object):
         if self._machmeter_wait_update <= 0.0:
             self._machmeter_wait_update += self._machmeter_update_period
 
-            pspd = self.player.ac.dynstate.vias
+            pspd = self.ac.dynstate.vias
             if pspd < self._machmeter_speed_min:
                 roll = self._machmeter_speed_min_roll
             elif pspd < self._machmeter_speed_lin:
@@ -3453,7 +3454,7 @@ class Cockpit (object):
             self._machmeter_hand_node.setR(roll)
             hand_roll = roll
 
-            pmach = self.player.ac.dynstate.ma
+            pmach = self.ac.dynstate.ma
             roll = intl01vr(pmach,
                             self._machmeter_mach_min,
                             self._machmeter_mach_max,
@@ -3556,11 +3557,11 @@ class Cockpit (object):
         if self._adi_wait_update <= 0.0:
             self._adi_wait_update += self._adi_update_period
 
-            ppch = self.player.ac.dynstate.pch
+            ppch = self.ac.dynstate.pch
             offv = ppch / pi
             self._adi_bar_node.setTexOffset(texstage_color, 0.0, offv)
 
-            pbnk = self.player.ac.dynstate.bnk
+            pbnk = self.ac.dynstate.bnk
             self._adi_bank_pointer.setR(degrees(pbnk))
 
 
@@ -3658,7 +3659,7 @@ class Cockpit (object):
         if self._vvi_wait_update <= 0.0:
             self._vvi_wait_update += self._vvi_update_period
 
-            crate = self.player.ac.dynstate.cr
+            crate = self.ac.dynstate.cr
             if crate < self._vvi_climb_min:
                 croll = self._vvi_climb_min_roll
             elif crate < self._vvi_climb_neg:
@@ -3674,7 +3675,7 @@ class Cockpit (object):
                 croll = self._vvi_climb_max_roll
             self._vvi_climb_hand_node.setR(croll)
 
-            trate = self.player.ac.dynstate.tr
+            trate = self.ac.dynstate.tr
             troll = intl01vr(trate, self._vvi_turn_min, self._vvi_turn_max,
                              self._vvi_turn_min_roll, self._vvi_turn_max_roll)
             self._vvi_turn_hand_node.setR(troll)
@@ -3753,7 +3754,7 @@ class Cockpit (object):
         if self._bpa_wait_update <= 0.0:
             self._bpa_wait_update += self._bpa_update_period
 
-            alt = self.player.ac.dynstate.h
+            alt = self.ac.dynstate.h
             alt1 = clamp(alt, 0.0, self._bpa_alt_max)
             oroll = (alt1 / 1000.0 - int(alt1 / 1000.0)) * 360.0
             self._bpa_hand_outer_node.setR(oroll)
@@ -3877,7 +3878,7 @@ class Cockpit (object):
 
         # TV display.
         self._mfd_has_tvdisp = False
-        if self.player.ac.tvrange:
+        if self.ac.tvrange:
             self._mfd_mode_names.append("tvdisp")
             self._mfd_tvdisp_node = scenend.attachNewNode("mfd-tvdisp")
             self._mfd_root_nodes.append(self._mfd_tvdisp_node)
@@ -3901,7 +3902,7 @@ class Cockpit (object):
             self._mfd_tvdisp_camera.node().setScene(self.world.root)
             self._mfd_tvdisp_camera.node().setCameraMask(self._mfd_tvdisp_camera_mask)
             if self._ac_model_type == 1:
-                self.player.ac.node.hide(self._mfd_tvdisp_camera_mask)
+                self.ac.node.hide(self._mfd_tvdisp_camera_mask)
             texture = self._mfd_tvdisp_buffer.getTexture()
             #texture.setMinfilter(Texture.FTLinearMipmapLinear)
             #texture.setMagfilter(Texture.FTLinearMipmapLinear)
@@ -3913,7 +3914,7 @@ class Cockpit (object):
             self._mfd_tvdisp_idle_fov = 5
             self._mfd_tvdisp_wide_fov = 20
             self._mfd_tvdisp_idle_dhpr = Vec3(0, -30, 0)
-            minua, maxua, ta = self.player.ac.tvangle
+            minua, maxua, ta = self.ac.tvangle
             self._mfd_tvdisp_gimbal_min_dh = -degrees(ta)
             self._mfd_tvdisp_gimbal_max_dh = +degrees(ta)
             self._mfd_tvdisp_gimbal_min_dp = degrees(minua)
@@ -3999,8 +4000,8 @@ class Cockpit (object):
             self._mfd_tvdisp_update_view_task = None
             def mfd_tvdisp_inf ():
                 self._mfd_tvdisp_camera.node().setActive(True)
-                self._mfd_tvdisp_camera.setPos(self.player.ac.pos())
-                self._mfd_tvdisp_camera.setHpr(self.player.ac.hpr() + self._mfd_tvdisp_idle_dhpr)
+                self._mfd_tvdisp_camera.setPos(self.ac.pos())
+                self._mfd_tvdisp_camera.setHpr(self.ac.hpr() + self._mfd_tvdisp_idle_dhpr)
                 self._mfd_tvdisp_lens.setMinFov(self._mfd_tvdisp_idle_fov)
                 selwp = None
                 if self.player.input_select_weapon >= 0:
@@ -4391,9 +4392,9 @@ void main ()
                 sfac = self._mfd_overmap_scale
                 cpos = self._mfd_overmap_center
 
-                ppos = self.player.ac.pos()
+                ppos = self.ac.pos()
                 mppos = (ppos - cpos) * sfac
-                #phdg = self.player.ac.hpr()[0]
+                #phdg = self.ac.hpr()[0]
                 #oacnd = self._mfd_overmap_ownac_node
                 #oacnd.setX(mppos[0])
                 #oacnd.setZ(mppos[1])
@@ -4406,7 +4407,7 @@ void main ()
                 drv = self._mfd_tvdisp_camera.node().getDisplayRegion(0)
                 drv.setClearColor(drw.getClearColor())
 
-                chpr = self._mfd_tvdisp_camera.getHpr(self.player.ac.node)
+                chpr = self._mfd_tvdisp_camera.getHpr(self.ac.node)
                 apx = intl01vr(chpr[0],
                                self._mfd_tvdisp_angle_horiz_min,
                                self._mfd_tvdisp_angle_horiz_max,
@@ -4430,7 +4431,7 @@ void main ()
                 target = self.player.target_body
                 if target and target.alive:
                     targcon = self.player.target_contact
-                    sens_by_con = self.player.ac.sensorpack.sensors_by_contact()
+                    sens_by_con = self.ac.sensorpack.sensors_by_contact()
                     if "tv" in sens_by_con[targcon]:
                         show_range = True
                         if self.player.input_select_weapon >= 0:
@@ -4448,7 +4449,7 @@ void main ()
                     self._mfd_tvdisp_reticle_locked_node.hide()
                 if show_range:
                     toff = self.player.target_offset
-                    tdist = target.dist(self.player.ac, offset=toff)
+                    tdist = target.dist(self.ac, offset=toff)
                 else:
                     tdist = 0.0
                 update_text(self._mfd_tvdisp_target_dist_text,
@@ -4459,7 +4460,7 @@ void main ()
                 if (target and target.alive and
                     target.family in self._mfd_targid_families):
 
-                    acp = self.player.ac
+                    acp = self.ac
                     dqt = target.dynstate
                     dqp = acp.dynstate
 
@@ -4566,10 +4567,10 @@ void main ()
             if 0: pass
 
             elif mfd_mode == "tvdisp":
-                phpr = self.player.ac.hpr()
-                ppos = self.player.ac.pos()
+                phpr = self.ac.hpr()
+                ppos = self.ac.pos()
                 targcon = self.player.target_contact
-                sens_by_con = self.player.ac.sensorpack.sensors_by_contact()
+                sens_by_con = self.ac.sensorpack.sensors_by_contact()
                 target = self.player.target_body
                 chpr_t = None
                 if target and target.alive and "tv" in sens_by_con[targcon]:
@@ -4705,7 +4706,7 @@ void main ()
             self._countermeasures_flarechaff_counter_wait_update -= dt
             if self._countermeasures_flarechaff_counter_wait_update <= 0.0:
                 self._countermeasures_flarechaff_counter_wait_update = self._countermeasures_flarechaff_counter_update_period
-                numfc = self.player.ac.flarechaff
+                numfc = self.ac.flarechaff
                 if self._countermeasures_flarechaff_counter_prev_count != numfc:
                     self._countermeasures_flarechaff_counter_prev_count = numfc
                     update_text(self._countermeasures_flarechaff_counter_text,
@@ -4901,7 +4902,7 @@ void main ()
         self._imt_wait_update_fast -= dt
 
         if self._imt_wait_update <= 0.0 or self._imt_wait_update_fast <= 0.0:
-            acp = self.player.ac
+            acp = self.ac
             pos = acp.pos()
             fdir = acp.quat().getForward()
             hfdir = Vec3(fdir[0], fdir[1], 0.0)
@@ -5087,7 +5088,7 @@ void main ()
             texture="images/cockpit/cockpit_mig29_mdi_light_warn_tex.png",
             size=2.0, parent=scenend)
         self._mdi_gear_warn_node.hide()
-        self._mdi_gear_warn_limit_speed = self.player.ac.maxlandspeed
+        self._mdi_gear_warn_limit_speed = self.ac.maxlandspeed
         self._mdi_gear_warn_limit_otralt = 50.0
         self._mdi_gear_warn_active = False
         self._mdi_gear_warn_wait_blink = 0.0
@@ -5112,9 +5113,9 @@ void main ()
             self._mdi_wait_update += self._mdi_update_period
 
             light_on = {
-                "airbrake": self.player.ac.dynstate.brd,
-                "flaps": self.player.ac.dynstate.fld,
-                "gear": self.player.ac.dynstate.lg,
+                "airbrake": self.ac.dynstate.brd,
+                "flaps": self.ac.dynstate.fld,
+                "gear": self.ac.dynstate.lg,
                 "grids": False,
                 "hook": False,
             }
@@ -5125,12 +5126,12 @@ void main ()
                     else:
                         lnd.hide()
 
-            if not self.player.ac.dynstate.lg:
+            if not self.ac.dynstate.lg:
                 self._mdi_gear_warn_active = False
-                pclrate = self.player.ac.climbrate()
-                pspeed = self.player.ac.speed()
+                pclrate = self.ac.climbrate()
+                pspeed = self.ac.speed()
                 if pclrate < 0.0 and pspeed < self._mdi_gear_warn_limit_speed:
-                    ppos = self.player.ac.pos()
+                    ppos = self.ac.pos()
                     potralt = self.world.otr_altitude(ppos)
                     if potralt < self._mdi_gear_warn_limit_otralt:
                         self._mdi_gear_warn_active = True
@@ -5341,13 +5342,13 @@ void main ()
                           pos=body.pos(),
                           vel=body.vel(),
                           track=True)
-        self.world.tag_body(tag=DataLink.name_tag(self.player.ac.name),
+        self.world.tag_body(tag=DataLink.name_tag(self.ac.name),
                             body=body, info=contact, expire=None)
 
 
     def remove_reported_target (self, body):
 
-        self.world.expire_body_tag(tag=DataLink.name_tag(self.player.ac.name),
+        self.world.expire_body_tag(tag=DataLink.name_tag(self.ac.name),
                                    body=body)
 
 
@@ -5359,6 +5360,7 @@ class VirtualCockpit (object):
 
         self.player = player
         self.world = player.ac.world
+        self.ac = player.ac
 
         self.node = self.world.overlay_root.attachNewNode("player-virtcpit")
         shader = make_shader(glow=rgba(255, 255, 255, 0.6))
@@ -5396,7 +5398,7 @@ class VirtualCockpit (object):
 
         if not self.alive:
             return task.done
-        if not self.player.alive or not self.player.ac.alive:
+        if not self.ac.alive:
             self.destroy()
             return task.done
 
@@ -5494,7 +5496,7 @@ class VirtualCockpit (object):
 
     def _update_attitude (self, dt):
 
-        parent = self.player.ac
+        parent = self.ac
 
         self._attitude_wait_pitch -= dt
         if self._attitude_wait_pitch <= 0.0:
