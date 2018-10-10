@@ -5219,6 +5219,8 @@ void main ()
 
     def update_waypoint_track (self, name, dist, dalt, dhead, there):
 
+        if self._current_waypoint_name != name:
+            self._hud_wait_waypoint = 0.0
         self._current_waypoint_name = name
         self._current_waypoint_head = dhead
         self._current_waypoint_dist = dist
