@@ -26,6 +26,7 @@ from src.core.misc import hprtovec, hpr_to
 from src.core.misc import make_image, make_text, update_text
 from src.core.misc import uniform, randrange, choice, randvec
 from src.core.misc import font_scale_for_ptsize
+from src.core.misc import map_pos_to_screen
 from src.core.planedyn import FLAPS
 from src.core.podrocket import PodLauncher
 from src.core.rocket import Launcher
@@ -104,7 +105,7 @@ class Player (DirectObject):
             arenaedge_turn = arenaedge * 0.33
 
         self.notifier = PlayerNotifier(self)
-        self.helmet = Helmet(self)
+        self.helmet = Helmet(ac, self.headchaser)
         self.cockpit = Cockpit(self, pos=cpitpos, mfspec=cpitmfspec,
                                headpos=headpos, downto=cpitdownto,
                                arenaedge=arenaedge_warn)
@@ -199,6 +200,24 @@ class Player (DirectObject):
         self.node2d = self.world.overlay_root.attachNewNode("player-indicators")
         self._text_shader = make_text_shader(glow=rgba(255, 255, 255, 0.4),
                                              shadow=True)
+
+        # Targeting.
+        self.target_contact = None
+        self.target_body = None
+        self.target_offset = None
+        self.target_hitbox = None
+        self._prev_cycle_contact_set = {}
+        self._cycle_target_time_pressed = None
+        self._cycle_target_deselect_delay = 0.2
+        self._cycle_target_immediate_deselect = False
+        self._cycle_tag_contact_set = set()
+        self._wait_cycle_tag = 0.0
+        self._cycle_tag_period = 1.13
+        self._target_section_index = 0
+
+        # View tracking.
+        self.view_contact = None
+        self.view_body = None
 
         # Waypoints.
         self._waypoints = {}
@@ -313,6 +332,8 @@ class Player (DirectObject):
                 self.node2d.hide()
 
         if True:
+            self._update_targeting(self.world.dt)
+            self._update_cycle_tag(self.world.dt)
             self._update_waypoints(self.world.dt)
 
         if pclev == 0:
@@ -711,12 +732,12 @@ class Player (DirectObject):
         self._bind_cmd("throttle-down", self._setc0("input_dec_throttle", False), up=True)
         self._bind_cmd("air-brake", self._setbinv(["input_air_brake", "input_wheel_brake"]))
         self._bind_cmd("landing-gear", self._setbinv(["input_landing_gear", "input_flaps_switch"]))
-        self._bind_cmd("next-target", self.helmet.cycle_focus_init)
-        self._bind_cmd("next-target", self.helmet.cycle_focus, up=True)
-        self._bind_cmd("deselect-target", self.helmet.deselect_target)
+        self._bind_cmd("next-target", self.cycle_focus_init)
+        self._bind_cmd("next-target", self.cycle_focus, up=True)
+        self._bind_cmd("deselect-target", self.deselect_target)
         self._bind_cmd("fire-weapon", self._setc0("input_fire_weapon", True))
         self._bind_cmd("fire-weapon", self._setc0("input_fire_weapon", False), up=True)
-        self._bind_cmd("next-target-section", self.helmet.cycle_target_section)
+        self._bind_cmd("next-target-section", self.cycle_target_section)
         self._bind_cmd("next-weapon", self.cycle_weapon, [1])
         self._bind_cmd("previous-weapon", self.cycle_weapon, [-1])
         self._bind_cmd("radar-on-off", self.radar_on_off)
@@ -856,7 +877,7 @@ class Player (DirectObject):
 
     def _set_targchaser (self):
 
-        target = self.helmet.target_body
+        target = self.target_body
         if self._targchaser_prev_target is not target:
             self._targchaser_prev_target = target
             if self.targchaser:
@@ -945,7 +966,7 @@ class Player (DirectObject):
         base.center_mouse_pointer()
 
         if mouse_delta.length() > 1e-4:
-            target = self.helmet.target_body
+            target = self.target_body
             chaser = None
             if self.chaser is self.targchaser and self.targchaser.alive and target.alive:
                 chaser = self.targchaser
@@ -980,7 +1001,7 @@ class Player (DirectObject):
         else:
             chaser = None
             if self.chaser is self.targchaser:
-                target = self.helmet.target_body
+                target = self.target_body
                 if self.targchaser.alive and target.alive:
                     chaser = self.targchaser
                     fov = self._targchaser_fov
@@ -998,6 +1019,217 @@ class Player (DirectObject):
                     self._dimchaser_fov = fov_1
 
 
+    def cycle_focus_init (self):
+
+        if self.world.player_control_level > 0:
+            return
+
+        if self.cockpit.hud_mode in ("atk", "gnd"):
+            self._cycle_target_time_pressed = self.world.time
+
+
+    def cycle_focus (self):
+
+        if self.world.player_control_level > 0:
+            return
+
+        if self.world.action_chasers:
+            self.world.clear_action_chasers()
+            self._cycle_target_time_pressed = None
+        elif self.cockpit.hud_mode == "nav":
+            self.cycle_waypoint()
+            self._cycle_target_time_pressed = None
+        elif self.cockpit.hud_mode in ("atk", "gnd"):
+            if self._cycle_target_time_pressed is not None:
+                time_pressed = self._cycle_target_time_pressed
+                self._cycle_target_time_pressed = None
+                if (self.world.time - time_pressed >
+                    self._cycle_target_deselect_delay):
+                    return
+            self.cycle_target()
+
+
+    def deselect_target (self):
+
+        if self.world.player_control_level > 0:
+            return
+
+        if self.cockpit.hud_mode in ("atk", "gnd"):
+            self._cycle_target_immediate_deselect = True
+
+
+    def cycle_target (self):
+
+        if self.world.player_control_level > 0:
+            return
+
+        if self.input_select_weapon < 0:
+            return
+        wp = self.weapons[self.input_select_weapon]
+
+        cycle_contact_set = {}
+        all_plock = True
+        for con in self.ac.sensorpack.contacts():
+            if not (con.trackable() or con.firsthand) or con.body.shotdown:
+                continue
+            if con.body.family in wp.against():
+                ret = map_pos_to_screen(self.world.camera, con.body.node,
+                                        scrnode=self.world.overlay_root)
+                tpos, back = ret
+                hw = base.aspect_ratio
+                if (not con.trackable() and
+                    (back or abs(tpos[0]) > hw or abs(tpos[2]) > 1.0) and
+                    con not in self._cycle_tag_contact_set):
+                    continue
+                if not back:
+                    cdist = tpos.length()
+                else:
+                    cdist = 2 * hw + self.ac.dist(con.body)
+                prev_con_spec = self._prev_cycle_contact_set.get(con)
+                plock = prev_con_spec[1] if prev_con_spec else False
+                track = con.trackable()
+                cycle_contact_set[con] = [cdist, plock, track]
+                if not plock:
+                    all_plock = False
+        if all_plock:
+            for con, con_spec in cycle_contact_set.iteritems():
+                con_spec[1] = False
+
+        if cycle_contact_set:
+            cycle = sorted(cycle_contact_set.items(), key=lambda x: x[1][0])
+            skip_con = None
+            if len(cycle_contact_set) > 1:
+                #skip_con = self.target_contact
+                skip_con = self.view_contact
+            sel_con = None
+            for con, (cdist, plock, track) in cycle:
+                if not plock and con is not skip_con:
+                    sel_con = con
+                    sel_con_track = track
+                    break
+            if sel_con:
+                if sel_con_track:
+                    self.target_contact = sel_con
+                    self.target_body = sel_con.body
+                    self.cycle_target_section(reset=True)
+                    self.helmet.update_target_track(sel_con)
+                else:
+                    self.target_contact = None
+                    self.target_body = None
+                self.view_contact = sel_con
+                self.view_body = sel_con.body
+                cycle_contact_set[sel_con][1] = True
+                self._cycle_tag_contact_set.add(sel_con)
+            else:
+                self.target_contact = None
+                self.target_body = None
+                self.view_contact = None
+                self.view_body = None
+                cycle_contact_set = {}
+
+        self._prev_cycle_contact_set = cycle_contact_set
+
+
+    def cycle_target_section (self, reset=False):
+
+        if self.world.player_control_level > 0:
+            return
+
+        if not self.target_contact:
+            return
+
+        target = self.target_contact.body
+        self.target_offset = None
+        self.target_hitbox = None
+        selhitboxes = [x for x in target.hitboxes if x.selectable]
+        if selhitboxes:
+            if not reset:
+                self._target_section_index += 1
+                if self._target_section_index >= len(selhitboxes):
+                    self._target_section_index = 0 #-1
+            else:
+                self._target_section_index = 0 #-1
+            secname = None
+            if self._target_section_index >= 0:
+                hbx = selhitboxes[self._target_section_index]
+                self.target_offset = hbx.center
+                self.target_hitbox = hbx
+                secname = hbx.name
+            #print "--cycle-target-section", target.species, secname
+
+
+    def _update_targeting (self, dt):
+
+        input_deselect = (
+            (self._cycle_target_time_pressed is not None and
+             self.world.time - self._cycle_target_time_pressed >
+                 self._cycle_target_deselect_delay) or
+            self._cycle_target_immediate_deselect)
+        if self._cycle_target_immediate_deselect:
+            self._cycle_target_time_pressed = None
+            self._cycle_target_immediate_deselect = False
+
+        if (not self.target_contact or
+            not self.target_contact.body.alive or
+            self.target_contact not in self.ac.sensorpack.contacts() or
+            not self.target_contact.trackable() or
+            self.target_contact.body.shotdown or
+            input_deselect):
+            self.target_contact = None
+            self.target_body = None
+
+        if (not self.view_contact or
+            not self.view_contact.body.alive or
+            self.view_contact not in self.ac.sensorpack.contacts() or
+            not self.view_contact.firsthand or
+            input_deselect):
+            self.view_contact = None
+            self.view_body = None
+
+        if (self.view_contact and
+            self.view_contact.trackable() and
+            not self.target_contact):
+            self.target_contact = self.view_contact
+            self.target_body = self.view_body
+
+        if not self.target_contact and not self.view_contact:
+            self._prev_cycle_contact_set = {}
+
+        weapon_class = None
+        weapon_state = None
+        if self.target_contact:
+            self.ac.target = self.target_contact.body
+
+            if self.input_select_weapon >= 0:
+                wp = self.weapons[self.input_select_weapon]
+                if isinstance(wp.handle, Launcher) and wp.handle.mtype.seeker:
+                    weapon_class = Launcher
+                    launcher = wp.handle
+                    weapon_state = launcher.ready(target=self.target_contact.body)[0]
+                #elif isinstance(wp.handle, Dropper):
+        else:
+            self.ac.target = None
+
+        self.helmet.update_target_track(self.target_contact, self.target_offset,
+                                        weapon_class, weapon_state)
+
+        view_is_target = self.view_contact is self.target_contact
+        self.helmet.update_view_track(self.view_contact, self.target_offset,
+                                      view_is_target)
+
+
+    def _update_cycle_tag (self, dt):
+
+        self._wait_cycle_tag -= dt
+        if self._wait_cycle_tag <= 0.0:
+            self._wait_cycle_tag += self._cycle_tag_period
+            new_cycle_tag_contact_set = set()
+            for con in self._cycle_tag_contact_set:
+                if con in self.ac.sensorpack.contacts():
+                    new_cycle_tag_contact_set.add(con)
+            self._cycle_tag_contact_set = new_cycle_tag_contact_set
+
+
     def cycle_weapon (self, skip=1):
 
         wpind0 = self.input_select_weapon
@@ -1008,9 +1240,9 @@ class Player (DirectObject):
                 wpind = -1
             elif wpind < -1:
                 wpind = len(self.weapons) - 1
-            if self.helmet.target_body:
+            if self.target_body:
                 wp = self.weapons[wpind] if wpind >= 0 else None
-                if wp and self.helmet.target_body.family in wp.against():
+                if wp and self.target_body.family in wp.against():
                     break
             else:
                 break
@@ -1022,14 +1254,14 @@ class Player (DirectObject):
                     #break
         if wpind != wpind0:
             wp = self.weapons[wpind] if wpind >= 0 else None
-            if (self.helmet.target_body and
-                (not wp or self.helmet.target_body.family not in wp.against())):
-                self.helmet.target_contact = None
-                self.helmet.target_body = None
-            if (self.helmet.view_body and
-                (not wp or self.helmet.view_body.family not in wp.against())):
-                self.helmet.view_contact = None
-                self.helmet.view_body = None
+            if (self.target_body and
+                (not wp or self.target_body.family not in wp.against())):
+                self.target_contact = None
+                self.target_body = None
+            if (self.view_body and
+                (not wp or self.view_body.family not in wp.against())):
+                self.view_contact = None
+                self.view_body = None
             if wpind0 >= 0:
                 wp0 = self.weapons[wpind0]
                 wp0.reset()
@@ -1195,9 +1427,9 @@ class Player (DirectObject):
                 if launcher.mtype.seeker:
                     target = None
                     offset = None
-                    if self.helmet.target_body:
-                        target = self.helmet.target_body
-                        offset = self.helmet.target_offset
+                    if self.target_body:
+                        target = self.target_body
+                        offset = self.target_offset
                     elif self.cockpit.has_boresight and self.cockpit.boresight_target:
                         target = self.cockpit.boresight_target
                     if self.input_fire_weapon and target:

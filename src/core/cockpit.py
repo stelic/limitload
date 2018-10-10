@@ -58,12 +58,13 @@ def select_des (langdes, cpitdes, cpitlang):
 
 class Helmet (object):
 
-    def __init__ (self, player):
+    def __init__ (self, ac, headchaser):
 
         self._lang = "ru"
 
-        self.world = player.ac.world
-        self.player = player
+        self.world = ac.world
+        self.ac = ac
+        self._headchaser = headchaser
 
         self.active = False
         self._prev_active = False
@@ -83,7 +84,7 @@ class Helmet (object):
         self._camera = base.helmet_camera
         self._camlens = self._camera.node().getLens()
 
-        #self._model = load_model("foo")
+        #self._model = load_model("helmet")
         #self._model.reparentTo(self.node)
         #self._model.setPos(0, 0, 0)
         #self._model.hide()
@@ -103,25 +104,6 @@ class Helmet (object):
         self._screen_node.setMaterialOff(True)
         self._text_shader = make_text_shader(glow=rgba(255, 255, 255, 0.4),
                                              shadow=True)
-
-        # View tracking.
-        self.view_contact = None
-        self.view_body = None
-        self._prev_view_contact = None
-
-        # Targeting.
-        self.target_contact = None
-        self.target_body = None
-        self.target_offset = None
-        self.target_hitbox = None
-        self._prev_cycle_contact_set = {}
-        self._cycle_target_time_pressed = None
-        self._cycle_target_deselect_delay = 0.2
-        self._cycle_target_immediate_deselect = False
-        self._cycle_tag_contact_set = set()
-        self._wait_cycle_tag = 0.0
-        self._cycle_tag_period = 1.13
-        self._target_section_index = 0
 
         # Targeting visuals.
         self._target_node = self._screen_node.attachNewNode("target")
@@ -148,6 +130,7 @@ class Helmet (object):
             size=128*u, filtr=False, parent=self._view_node)
         self._target_visual_scale_duration = 0.4
         self._target_visual_scale_remtime = None
+        self._prev_view_contact = None
 
         # Targeting sounds.
         self._locking_weapon_sound = Sound2D(
@@ -200,7 +183,7 @@ class Helmet (object):
 
         if not self.alive:
             return task.done
-        if not self.player.alive or not self.player.ac.alive:
+        if not self.ac.alive:
             self.destroy()
             return task.done
 
@@ -215,8 +198,6 @@ class Helmet (object):
 
         if self.active:
             self._update_view(dt)
-            self._update_targeting(dt)
-            self._update_cycle_tag(dt)
 
         # Always on, must track state.
         self._update_gfactor(dt)
@@ -239,153 +220,13 @@ class Helmet (object):
         self.node2d.hide()
 
 
-    def _update_view (self, dt):
-
-        self._camlens.setMinFov(self.player.headchaser.fov)
-
-
-    def _project_to_visor (self, wnode, offset=None):
-
-        if offset is not None:
-            hpos = self.player.headchaser.node.getRelativePoint(wnode, offset)
-        else:
-            hpos = wnode.getPos(self.player.headchaser.node)
-        vpos = Point3(unitv(hpos) * self._screen_distance)
-        return vpos
-
-
-    def _set_on_visor (self, node, pos=Point3(), updir=Vec3(0, 0, 1)):
-
-        node.setPos(pos)
-        node.lookAt(pos * 1.1, updir)
-
-
-    def _update_targeting (self, dt):
-
-        input_deselect = (
-            (self._cycle_target_time_pressed is not None and
-             self.world.time - self._cycle_target_time_pressed >
-                 self._cycle_target_deselect_delay) or
-            self._cycle_target_immediate_deselect)
-        if self._cycle_target_immediate_deselect:
-            self._cycle_target_time_pressed = None
-            self._cycle_target_immediate_deselect = False
-
-        if (not self.target_contact or
-            not self.target_contact.body.alive or
-            self.target_contact not in self.player.ac.sensorpack.contacts() or
-            not self.target_contact.trackable() or
-            self.target_contact.body.shotdown or
-            input_deselect):
-            self.target_contact = None
-            self.target_body = None
-
-        if (not self.view_contact or
-            not self.view_contact.body.alive or
-            self.view_contact not in self.player.ac.sensorpack.contacts() or
-            not self.view_contact.firsthand or
-            input_deselect):
-            self.view_contact = None
-            self.view_body = None
-
-        if (self.view_contact and
-            self.view_contact.trackable() and
-            not self.target_contact):
-            self.target_contact = self.view_contact
-            self.target_body = self.view_body
-
-        if not self.target_contact and not self.view_contact:
-            self._prev_cycle_contact_set = {}
-
-        play_locking_sound = False
-        play_ready_sound = False
-
-        if self.target_contact:
-            vpos = self._project_to_visor(self.target_contact.body.node,
-                                          self.target_offset)
-            self._set_on_visor(self._target_node, vpos)
-
-            self._target_selected_node.show()
-            self._target_locked_node.hide()
-
-            if self.player.input_select_weapon >= 0:
-                wp = self.player.weapons[self.player.input_select_weapon]
-                if isinstance(wp.handle, Launcher) and wp.handle.mtype.seeker:
-                    launcher = wp.handle
-                    rst, rnds = launcher.ready(target=self.target_contact.body)
-                    if rst in ("locking", "locked"):
-                        if int(self.world.time / self._target_locking_rate) % 2 == 0:
-                            self._target_locked_node.show()
-                        else:
-                            self._target_locked_node.hide()
-                        play_locking_sound = True
-                    elif rst == "ready":
-                        self._target_locked_node.show()
-                        play_ready_sound = True
-                #elif isinstance(wp.handle, Dropper):
-
-            self._choose_selection_reticle(self.target_contact)
-
-            self.player.ac.target = self.target_contact.body
-        else:
-            self._target_selected_node.hide()
-            self._target_locked_node.hide()
-
-            self.player.ac.target = None
-
-        if self.view_contact:
-            vpos = self._project_to_visor(self.view_contact.body.node,
-                                          self.target_offset)
-            self._set_on_visor(self._view_node, vpos)
-        if self.view_contact is not self._prev_view_contact:
-            if self.view_contact and self.view_contact is not self.target_contact:
-                ret = map_pos_to_screen(self.world.camera,
-                                        self.view_contact.body.node,
-                                        scrnode=self.world.overlay_root)
-                tpos, back = ret
-                if not back and abs(tpos[0]) < 0.2 and abs(tpos[2]) < 0.2:
-                    self._target_visual_scale_remtime = self._target_visual_scale_duration
-                    self._prev_view_contact = self.view_contact
-                else:
-                    self._target_visual_scale_remtime = None
-            else:
-                self._prev_view_contact = self.view_contact
-                self._target_visual_scale_remtime = None
-        if self._target_visual_scale_remtime:
-            self._target_visual_scale_remtime -= dt
-            if self._target_visual_scale_remtime > 0.0:
-                self._target_visual_node.show()
-                tvsc = self._target_visual_scale_remtime / self._target_visual_scale_duration
-                self._target_visual_node.setScale(tvsc)
-            else:
-                self._target_visual_node.hide()
-                self._target_visual_scale_remtime = None
-        else:
-            self._target_visual_node.hide()
-
-        self._locking_weapon_sound.set_state(play_locking_sound)
-        self._ready_weapon_sound.set_state(play_ready_sound)
-
-
-    def _update_cycle_tag (self, dt):
-
-        self._wait_cycle_tag -= dt
-        if self._wait_cycle_tag <= 0.0:
-            self._wait_cycle_tag += self._cycle_tag_period
-            new_cycle_tag_contact_set = set()
-            for con in self._cycle_tag_contact_set:
-                if con in self.player.ac.sensorpack.contacts():
-                    new_cycle_tag_contact_set.add(con)
-            self._cycle_tag_contact_set = new_cycle_tag_contact_set
-
-
     def _update_gfactor (self, dt):
 
         self._wait_gfactor -= dt
         if self._wait_gfactor <= 0.0:
             adt = self._gfactor_period - self._wait_gfactor
             self._wait_gfactor += self._gfactor_period
-            gfac = self.player.ac.gfactor()
+            gfac = self.ac.gfactor()
 
             visfac_up_fin = 0.0
             visfac_lw_fin = 0.0
@@ -466,142 +307,97 @@ class Helmet (object):
             #self._gfac_breathing_sound.set_volume(0.0)
 
 
-    def cycle_focus_init (self):
+    def _update_view (self, dt):
 
-        if self.player.cockpit.hud_mode in ("atk", "gnd"):
-            self._cycle_target_time_pressed = self.world.time
-
-
-    def cycle_focus (self):
-
-        if self.world.action_chasers:
-            self.world.clear_action_chasers()
-            self._cycle_target_time_pressed = None
-        elif self.player.cockpit.hud_mode == "nav":
-            self.player.cycle_waypoint()
-            self._cycle_target_time_pressed = None
-        elif self.player.cockpit.hud_mode in ("atk", "gnd"):
-            if self._cycle_target_time_pressed is not None:
-                time_pressed = self._cycle_target_time_pressed
-                self._cycle_target_time_pressed = None
-                if (self.world.time - time_pressed >
-                    self._cycle_target_deselect_delay):
-                    return
-            self.cycle_target()
+        self._camlens.setMinFov(self._headchaser.fov)
 
 
-    def deselect_target (self):
+    def _project_to_visor (self, wnode, offset=None):
 
-        if self.player.cockpit.hud_mode in ("atk", "gnd"):
-            self._cycle_target_immediate_deselect = True
+        if offset is not None:
+            hpos = self._headchaser.node.getRelativePoint(wnode, offset)
+        else:
+            hpos = wnode.getPos(self._headchaser.node)
+        vpos = Point3(unitv(hpos) * self._screen_distance)
+        return vpos
 
 
-    def cycle_target (self):
+    def _set_on_visor (self, node, pos=Point3(), updir=Vec3(0, 0, 1)):
 
-        if not self.active:
-            return
+        node.setPos(pos)
+        node.lookAt(pos * 1.1, updir)
 
-        if self.player.input_select_weapon < 0:
-            return
-        wp = self.player.weapons[self.player.input_select_weapon]
 
-        cycle_contact_set = {}
-        all_plock = True
-        for con in self.player.ac.sensorpack.contacts():
-            if not (con.trackable() or con.firsthand) or con.body.shotdown:
-                continue
-            if con.body.family in wp.against():
-                ret = map_pos_to_screen(self.world.camera, con.body.node,
+    def update_target_track (self, contact, offset=None,
+                             wpclass=None, wpstate=None):
+
+        play_locking_sound = False
+        play_ready_sound = False
+
+        if contact:
+            vpos = self._project_to_visor(contact.body.node, offset)
+            self._set_on_visor(self._target_node, vpos)
+
+            self._target_selected_node.show()
+            self._target_locked_node.hide()
+
+            allied_sides = self.world.get_allied_sides(self.ac.side)
+            if contact.side in allied_sides:
+                self._target_selected_friendly_node.show()
+                self._target_selected_other_node.hide()
+            else:
+                self._target_selected_friendly_node.hide()
+                self._target_selected_other_node.show()
+
+            if wpclass is Launcher:
+                if wpstate in ("locking", "locked"):
+                    if int(self.world.time / self._target_locking_rate) % 2 == 0:
+                        self._target_locked_node.show()
+                    else:
+                        self._target_locked_node.hide()
+                    play_locking_sound = True
+                elif wpstate == "ready":
+                    self._target_locked_node.show()
+                    play_ready_sound = True
+            #elif wpclass is Dropper:
+        else:
+            self._target_selected_node.hide()
+            self._target_locked_node.hide()
+
+        self._locking_weapon_sound.set_state(play_locking_sound)
+        self._ready_weapon_sound.set_state(play_ready_sound)
+
+
+    def update_view_track (self, contact, offset=None,
+                           istarget=False):
+
+        if contact:
+            vpos = self._project_to_visor(contact.body.node, offset)
+            self._set_on_visor(self._view_node, vpos)
+        if contact is not self._prev_view_contact:
+            if contact and not istarget:
+                ret = map_pos_to_screen(self.world.camera, contact.body.node,
                                         scrnode=self.world.overlay_root)
                 tpos, back = ret
-                hw = base.aspect_ratio
-                if (not con.trackable() and
-                    (back or abs(tpos[0]) > hw or abs(tpos[2]) > 1.0) and
-                    con not in self._cycle_tag_contact_set):
-                    continue
-                if not back:
-                    cdist = tpos.length()
+                if not back and abs(tpos[0]) < 0.2 and abs(tpos[2]) < 0.2:
+                    self._target_visual_scale_remtime = self._target_visual_scale_duration
+                    self._prev_view_contact = contact
                 else:
-                    cdist = 2 * hw + self.player.ac.dist(con.body)
-                prev_con_spec = self._prev_cycle_contact_set.get(con)
-                plock = prev_con_spec[1] if prev_con_spec else False
-                track = con.trackable()
-                cycle_contact_set[con] = [cdist, plock, track]
-                if not plock:
-                    all_plock = False
-        if all_plock:
-            for con, con_spec in cycle_contact_set.iteritems():
-                con_spec[1] = False
-
-        if cycle_contact_set:
-            cycle = sorted(cycle_contact_set.items(), key=lambda x: x[1][0])
-            skip_con = None
-            if len(cycle_contact_set) > 1:
-                #skip_con = self.target_contact
-                skip_con = self.view_contact
-            sel_con = None
-            for con, (cdist, plock, track) in cycle:
-                if not plock and con is not skip_con:
-                    sel_con = con
-                    sel_con_track = track
-                    break
-            if sel_con:
-                if sel_con_track:
-                    self.target_contact = sel_con
-                    self.target_body = sel_con.body
-                    self.cycle_target_section(reset=True)
-                    self._choose_selection_reticle(sel_con)
-                else:
-                    self.target_contact = None
-                    self.target_body = None
-                self.view_contact = sel_con
-                self.view_body = sel_con.body
-                cycle_contact_set[sel_con][1] = True
-                self._cycle_tag_contact_set.add(sel_con)
+                    self._target_visual_scale_remtime = None
             else:
-                self.target_contact = None
-                self.target_body = None
-                self.view_contact = None
-                self.view_body = None
-                cycle_contact_set = {}
-
-        self._prev_cycle_contact_set = cycle_contact_set
-
-
-    def cycle_target_section (self, reset=False):
-
-        if not self.active or not self.target_contact:
-            return
-
-        target = self.target_contact.body
-        self.target_offset = None
-        self.target_hitbox = None
-        selhitboxes = [x for x in target.hitboxes if x.selectable]
-        if selhitboxes:
-            if not reset:
-                self._target_section_index += 1
-                if self._target_section_index >= len(selhitboxes):
-                    self._target_section_index = 0 #-1
+                self._prev_view_contact = contact
+                self._target_visual_scale_remtime = None
+        if self._target_visual_scale_remtime:
+            self._target_visual_scale_remtime -= dt
+            if self._target_visual_scale_remtime > 0.0:
+                self._target_visual_node.show()
+                tvsc = self._target_visual_scale_remtime / self._target_visual_scale_duration
+                self._target_visual_node.setScale(tvsc)
             else:
-                self._target_section_index = 0 #-1
-            secname = None
-            if self._target_section_index >= 0:
-                hbx = selhitboxes[self._target_section_index]
-                self.target_offset = hbx.center
-                self.target_hitbox = hbx
-                secname = hbx.name
-            #print "--cycle-target-section", target.species, secname
-
-
-    def _choose_selection_reticle (self, contact):
-
-        allied_sides = self.world.get_allied_sides(self.player.ac.side)
-        if contact.side in allied_sides:
-            self._target_selected_friendly_node.show()
-            self._target_selected_other_node.hide()
+                self._target_visual_node.hide()
+                self._target_visual_scale_remtime = None
         else:
-            self._target_selected_friendly_node.hide()
-            self._target_selected_other_node.show()
+            self._target_visual_node.hide()
 
 
 class Cockpit (object):
@@ -1138,10 +934,10 @@ class Cockpit (object):
                 self._view_fov_speed_time = self._view_idle_fov_speed_time
 
         # Head moving.
-        if (self.player.helmet.view_body is not None and
+        if (self.player.view_body is not None and
             #self._view_base_hpr is self._view_idle_hpr and
             not self._view_ignore_lock):
-            rvpos = self.player.helmet.view_body.pos(acp)
+            rvpos = self.player.view_body.pos(acp)
             view_base_hpr = vectohpr(unitv(rvpos))
         else:
             view_base_hpr = self._view_base_hpr
@@ -1167,7 +963,7 @@ class Cockpit (object):
                 abs(self._view_look_speed[1]) < 0.05):
                 view_vfov = self._camlens.getMinFov()
                 ifac = view_vfov / self._view_look_snap_back_vfov_ref
-                if self.player.helmet.view_body and not self._view_ignore_lock:
+                if self.player.view_body and not self._view_ignore_lock:
                     view_look_snap_back_off_ref = self._view_look_snap_back_off_ref_lock_view
                 else:
                     view_look_snap_back_off_ref = self._view_look_snap_back_off_ref
@@ -1176,10 +972,10 @@ class Cockpit (object):
                     abs(self._view_look_off[1]) < view_look_snap_back_off[1]):
                     self._view_look_speed = None
         if self._view_look_speed is not None:
-            if ((self._view_look_prev_body is not self.player.helmet.view_body and
+            if ((self._view_look_prev_body is not self.player.view_body and
                  not self._view_ignore_lock) or
                 self._view_prev_ignore_lock != self._view_ignore_lock):
-                self._view_look_prev_body = self.player.helmet.view_body
+                self._view_look_prev_body = self.player.view_body
                 self._view_prev_ignore_lock = self._view_ignore_lock
                 self._view_look_speed = None
         self._view_look_prev_base_hpr = view_base_hpr
@@ -1309,7 +1105,7 @@ class Cockpit (object):
         if self.player.input_select_weapon >= 0 and not self._view_ignore_lock:
             wp = self.player.weapons[self.player.input_select_weapon]
             if isinstance(wp.handle, (Cannon, PodLauncher)):
-                target = self.player.helmet.target_body
+                target = self.player.target_body
                 if (target is not None and
                     target.side not in self.world.get_allied_sides(self.player.ac.side)):
                     inside_dist = False
@@ -1325,7 +1121,7 @@ class Cockpit (object):
                                 if abs(anglh - angth) < ang0 and abs(anglv - angtv) < ang0:
                                     inside_angles = True
                         elif isinstance(wp.handle, PodLauncher):
-                            offset = self.player.helmet.target_offset
+                            offset = self.player.target_offset
                             ret = _bore_angles(self.player.ac, target, offset)
                             angth, angtv = ret
                             if abs(angth) < ang0 and abs(angtv) < ang0:
@@ -1794,7 +1590,7 @@ class Cockpit (object):
                         blip.alt_below_node.hide()
 
         # Update blip blinking.
-        tcon = self.player.helmet.target_contact
+        tcon = self.player.target_contact
         if tcon is not self._prev_target_contact:
             blip = self._radar_blips_blinking.pop(self._prev_target_contact, None)
             if blip is not None:
@@ -2322,7 +2118,7 @@ class Cockpit (object):
         if self.hud_mode == "nav":
             self._hud_waypoint_node.show()
 
-            self.player.helmet.target_contact = None
+            self.player.target_contact = None
 
             if self._current_waypoint_name:
                 self._hud_wait_waypoint -= dt
@@ -2351,11 +2147,11 @@ class Cockpit (object):
         if self.hud_mode in ("atk", "gnd"):
             self._hud_attack_node.show()
 
-            target = self.player.helmet.target_body
+            target = self.player.target_body
 
             hastarget = (target and target.alive)
             if hastarget:
-                toff = self.player.helmet.target_offset
+                toff = self.player.target_offset
                 tpos = target.pos(offset=toff)
                 thpr = target.hpr()
 
@@ -4631,9 +4427,9 @@ void main ()
 
                 show_locked = False
                 show_range = False
-                target = self.player.helmet.target_body
+                target = self.player.target_body
                 if target and target.alive:
-                    targcon = self.player.helmet.target_contact
+                    targcon = self.player.target_contact
                     sens_by_con = self.player.ac.sensorpack.sensors_by_contact()
                     if "tv" in sens_by_con[targcon]:
                         show_range = True
@@ -4651,7 +4447,7 @@ void main ()
                     self._mfd_tvdisp_reticle_idle_node.show()
                     self._mfd_tvdisp_reticle_locked_node.hide()
                 if show_range:
-                    toff = self.player.helmet.target_offset
+                    toff = self.player.target_offset
                     tdist = target.dist(self.player.ac, offset=toff)
                 else:
                     tdist = 0.0
@@ -4659,7 +4455,7 @@ void main ()
                             text=_rn("%.1f" % (tdist / 1000)))
 
             elif mfd_mode == "targid":
-                target = self.player.helmet.target_body
+                target = self.player.target_body
                 if (target and target.alive and
                     target.family in self._mfd_targid_families):
 
@@ -4772,12 +4568,12 @@ void main ()
             elif mfd_mode == "tvdisp":
                 phpr = self.player.ac.hpr()
                 ppos = self.player.ac.pos()
-                targcon = self.player.helmet.target_contact
+                targcon = self.player.target_contact
                 sens_by_con = self.player.ac.sensorpack.sensors_by_contact()
-                target = self.player.helmet.target_body
+                target = self.player.target_body
                 chpr_t = None
                 if target and target.alive and "tv" in sens_by_con[targcon]:
-                    toff = self.player.helmet.target_offset
+                    toff = self.player.target_offset
                     tpos = target.pos(offset=toff)
                     tpos[2] += target.bbox[2] * 0.33
                     dpos = tpos - ppos
@@ -4799,8 +4595,8 @@ void main ()
                     if not (self._mfd_tvdisp_gimbal_min_dh < dh < self._mfd_tvdisp_gimbal_max_dh and
                             self._mfd_tvdisp_gimbal_min_dp < dp < self._mfd_tvdisp_gimbal_max_dp):
                         chpr_t = None
-                        self.player.helmet.target_contact = None
-                        self.player.helmet.target_body = None
+                        self.player.target_contact = None
+                        self.player.target_body = None
                 if chpr_t is None:
                     cpos_t = ppos
                     chpr_t = phpr + self._mfd_tvdisp_idle_dhpr
