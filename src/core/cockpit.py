@@ -201,20 +201,15 @@ class Helmet (object):
         self._visor_camlens.setMinFov(self._headchaser.fov)
 
 
-    def _project_to_visor (self, wnode, offset=None):
+    def _visor_cover_on_screen (self, wnode, cnode, woffset=None):
 
-        if offset is not None:
-            hpos = self._headchaser.node.getRelativePoint(wnode, offset)
+        if woffset is not None:
+            hpos = self._headchaser.node.getRelativePoint(wnode, woffset)
         else:
             hpos = wnode.getPos(self._headchaser.node)
         vpos = Point3(unitv(hpos) * self._visor_screen_distance)
-        return vpos
-
-
-    def _set_on_visor (self, node, pos=Point3(), updir=Vec3(0, 0, 1)):
-
-        node.setPos(pos)
-        node.lookAt(pos * 1.1, updir)
+        cnode.setPos(vpos)
+        cnode.lookAt(vpos * 1.1, Vec3(0, 0, 1))
 
 
     def update_target_track (self, contact, offset=None,
@@ -224,8 +219,8 @@ class Helmet (object):
         play_ready_sound = False
 
         if contact:
-            vpos = self._project_to_visor(contact.body.node, offset)
-            self._set_on_visor(self._visor_target_node, vpos)
+            self._visor_cover_on_screen(contact.body.node,
+                                        self._visor_target_node, offset)
 
             self._visor_target_selected_node.show()
             self._visor_target_locked_node.hide()
@@ -261,8 +256,8 @@ class Helmet (object):
                            istarget=False):
 
         if contact:
-            vpos = self._project_to_visor(contact.body.node, offset)
-            self._set_on_visor(self._visor_view_node, vpos)
+            self._visor_cover_on_screen(contact.body.node,
+                                        self._visor_view_node, offset)
         if contact is not self._visor_prev_view_contact:
             if contact and not istarget:
                 ret = map_pos_to_screen(self.world.camera, contact.body.node,
