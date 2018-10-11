@@ -296,6 +296,7 @@ class Cockpit (object):
         self.player = player
         self.world = player.ac.world
         self.ac = player.ac
+        self._headchaser = player.headchaser
 
         self.node = base.cockpit_root.attachNewNode("cockpit-root")
         self._camera = base.cockpit_camera
@@ -563,7 +564,7 @@ class Cockpit (object):
         self._view_aim_fov_off = -30
         assert self._view_aim_fov_off <= self._view_min_fov_off
         self._view_force_fov_off = None
-        self._camlens.setMinFov(self.player.headchaser.fov)
+        self._camlens.setMinFov(self._headchaser.fov)
         self._view_idle_fov_speed_time = 0.05
         self._view_fov_speed_time = self._view_idle_fov_speed_time
         self._view_fov_min_speed = 1.0 # [deg/s]
@@ -767,7 +768,7 @@ class Cockpit (object):
             for mflash in cannon.mflashes:
                 if mflash not in self._own_mflashes:
                     mflash.node.show()
-        self.player.headchaser.move_to(atref=Vec3(0.0, 1.0, 0.0))
+        self._headchaser.move_to(atref=Vec3(0.0, 1.0, 0.0))
         self._txscmgr.deactivate()
 
 
@@ -991,13 +992,13 @@ class Cockpit (object):
         view_dfov += self._view_fov_off
 
         # Update camera.
-        pch = self.player.headchaser
+        pch = self._headchaser
         pch.set_offset(dpos=view_pos, dhpr=view_hpr, dfov=view_dfov)
         ch_pos = pch.node.getPos()
         ch_hpr = pch.node.getHpr()
         self._camera.setPos(ch_pos - self._head_pos)
         self._camera.setHpr(ch_hpr)
-        self._camlens.setMinFov(self.player.headchaser.fov)
+        self._camlens.setMinFov(self._headchaser.fov)
 
         # Collimated HUD projection moving due to head inertia.
         if self.has_hud:
@@ -2317,7 +2318,7 @@ class Cockpit (object):
                                 sx = tan(anglh) / tanmaxang
                                 sz = tan(anglv) / tanmaxang
                                 if COCKPIT_FOV != OUTSIDE_FOV:
-                                    wfov = radians(self.player.headchaser.fov)
+                                    wfov = radians(self._headchaser.fov)
                                     cfov = radians(self._camlens.getMinFov())
                                     wcfovfac = tan(0.5 * cfov) / tan(0.5 * wfov)
                                     sx *= wcfovfac
