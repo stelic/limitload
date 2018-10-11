@@ -179,6 +179,14 @@ class Helmet (object):
         if self.active:
             self._update_view(dt)
 
+        if self._visor_target_visual_scale_remtime:
+            self._visor_target_visual_scale_remtime -= dt
+            if self._visor_target_visual_scale_remtime > 0.0:
+                tvsc = self._visor_target_visual_scale_remtime / self._visor_target_visual_scale_duration
+                self._visor_target_visual_node.setScale(tvsc)
+            else:
+                self._visor_target_visual_node.hide()
+
         return task.cont
 
 
@@ -272,14 +280,7 @@ class Helmet (object):
                 self._visor_prev_view_contact = contact
                 self._visor_target_visual_scale_remtime = None
         if self._visor_target_visual_scale_remtime:
-            self._visor_target_visual_scale_remtime -= dt
-            if self._visor_target_visual_scale_remtime > 0.0:
-                self._visor_target_visual_node.show()
-                tvsc = self._visor_target_visual_scale_remtime / self._visor_target_visual_scale_duration
-                self._visor_target_visual_node.setScale(tvsc)
-            else:
-                self._visor_target_visual_node.hide()
-                self._visor_target_visual_scale_remtime = None
+            self._visor_target_visual_node.show()
         else:
             self._visor_target_visual_node.hide()
 
