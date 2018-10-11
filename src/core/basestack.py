@@ -158,7 +158,7 @@ class BaseStack (DirectObject):
         (render_roots, render_cameras, postproc_specs, shadow_specs,
          bloom_specs) = ret
         (stack_root,
-         world_root, cockpit_root, helmet_root, overlay_root,
+         world_root, cockpit_root, visor_root, overlay_root,
          stage_root, uiface_root, front_root, square_root,
          world_shadow_root, cockpit_shadow_root) = render_roots
         (desat_factor_pack, rad_desat_spec, rad_darken_spec,
@@ -170,7 +170,7 @@ class BaseStack (DirectObject):
         self.stack_root = stack_root
         self.world_root = world_root
         self.cockpit_root = cockpit_root
-        self.helmet_root = helmet_root
+        self.visor_root = visor_root
         self.overlay_root = overlay_root
         self.stage_root = stage_root
         self.uiface_root = uiface_root
@@ -180,12 +180,12 @@ class BaseStack (DirectObject):
         self.cockpit_shadow_root = cockpit_shadow_root
         __builtin__.render = world_root # for Audio3DManager
         __builtin__.render2d = square_root # for BufferViewer
-        (world_camera, cockpit_camera, helmet_camera,
+        (world_camera, cockpit_camera, visor_camera,
          stack_camera, overlay_camera,
          world_shadow_camera, cockpit_shadow_camera) = render_cameras
         self.world_camera = world_camera
         self.cockpit_camera = cockpit_camera
-        self.helmet_camera = helmet_camera
+        self.visor_camera = visor_camera
         self.overlay_camera = overlay_camera
         self.stack_camera = stack_camera
         self.world_shadow_camera = world_shadow_camera
@@ -475,7 +475,7 @@ class BaseStack (DirectObject):
 
         cockpit_root = make_root("cockpit-root")
 
-        helmet_root = make_root("helmet-root")
+        visor_root = make_root("visor-root")
 
         overlay_root = make_root_2d("overlay-root")
 
@@ -501,7 +501,7 @@ class BaseStack (DirectObject):
             cockpit_shadow_root = None
 
         render_roots = (stack_root,
-                        world_root, cockpit_root, helmet_root, overlay_root,
+                        world_root, cockpit_root, visor_root, overlay_root,
                         stage_root, uiface_root, front_root, square_root)
         if with_antialiasing:
             for root in render_roots:
@@ -626,11 +626,11 @@ class BaseStack (DirectObject):
         cockpit_camera.node().getLens().setNear(0.1)
         cockpit_camera.node().getLens().setFar(100.0)
 
-        helmet_camera = BaseStack._make_camera(
-            window=wbuffer, sort=2, scene=helmet_root,
+        visor_camera = BaseStack._make_camera(
+            window=wbuffer, sort=2, scene=visor_root,
             clear_depth=True)
-        helmet_camera.node().getLens().setNear(0.01)
-        helmet_camera.node().getLens().setFar(1.0)
+        visor_camera.node().getLens().setNear(0.01)
+        visor_camera.node().getLens().setFar(1.0)
 
         overlay_camera = BaseStack._make_camera_2d(
             window=wbuffer, sort=3, scene=overlay_root,
@@ -676,7 +676,7 @@ class BaseStack (DirectObject):
             cockpit_shadow_camera = None
             cockpit_shadow_specs = (None, None, None)
 
-        render_cameras = (world_camera, cockpit_camera, helmet_camera,
+        render_cameras = (world_camera, cockpit_camera, visor_camera,
                           overlay_camera, stack_camera,
                           world_shadow_camera, cockpit_shadow_camera)
 

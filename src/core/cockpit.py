@@ -74,13 +74,13 @@ class Helmet (object):
         u = screen_indicator_scale * self._visor_screen_distance
         uf = screen_indicator_scale * 100
 
-        self._visor_node = base.helmet_root.attachNewNode("visor-root")
+        self._visor_node = base.visor_root.attachNewNode("visor-root")
         #self._visor_node.setTransparency(TransparencyAttrib.MAlpha)
         #self._visor_node.setSa(0.8)
         #self._visor_node.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
         #shader = make_shader()
         #self._visor_node.setShader(shader)
-        self._visor_camera = base.helmet_camera
+        self._visor_camera = base.visor_camera
         self._visor_camlens = self._visor_camera.node().getLens()
 
         #self._visor_model = load_model("visor")
@@ -121,7 +121,7 @@ class Helmet (object):
         #self._visor_launch_auth_text = make_text(
                 #text=select_des(_("LA"), {"ru": u"ПР"}, self._lang),
                 #width=0.3, pos=Point3(48*u, 0.0, 48*u),
-                #font=self._font, size=8*uf, color=self._helmet_color,
+                #font=self._font, size=8*uf, color=self._visor_color,
                 #align="c", anchor="mc", parent=self._visor_target_node)
         self._visor_view_node = self._visor_target_node.attachNewNode("view")
         self._visor_target_visual_node = make_image(
