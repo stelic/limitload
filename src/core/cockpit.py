@@ -459,7 +459,7 @@ class Cockpit (object):
 
         self.alive = True
         base.taskMgr.add(self._loop, "cockpit-loop", sort=-5)
-        # ...should come after helmet loop and after player loop.
+        # ...should come after player loop.
 
 
     def destroy (self):
@@ -1107,13 +1107,14 @@ class Cockpit (object):
                 #width=0.3, pos=Point3(48*u, 0.0, 48*u),
                 #font=self._font, size=8*uf, color=self._visor_color,
                 #align="c", anchor="mc", parent=self._visor_target_node)
-        self._visor_view_node = self._visor_target_node.attachNewNode("view")
+        self._visor_view_node = self._visor_screen_node.attachNewNode("view")
         self._visor_target_visual_node = make_image(
             "images/cockpit/cockpit_mig29_helmet_target_visual_tex.png",
             size=128*u, filtr=False, parent=self._visor_view_node)
-        self._visor_target_visual_scale_duration = 0.4
+        self._visor_target_visual_prev_contact = None
+        self._visor_target_visual_prev_offset = None
         self._visor_target_visual_scale_remtime = None
-        self._visor_prev_view_contact = None
+        self._visor_target_visual_scale_duration = 0.4
 
         # Targeting sounds.
         self._visor_locking_weapon_sound = Sound2D(
@@ -1142,10 +1143,14 @@ class Cockpit (object):
         if self._visor_target_visual_scale_remtime:
             self._visor_target_visual_scale_remtime -= dt
             if self._visor_target_visual_scale_remtime > 0.0:
+                self._visor_target_visual_node.show()
                 tvsc = self._visor_target_visual_scale_remtime / self._visor_target_visual_scale_duration
                 self._visor_target_visual_node.setScale(tvsc)
             else:
+                self._visor_target_visual_scale_remtime = None
                 self._visor_target_visual_node.hide()
+        else:
+            self._visor_target_visual_node.hide()
 
 
     def _activate_visor (self):
@@ -1174,8 +1179,8 @@ class Cockpit (object):
         play_ready_sound = False
 
         if contact:
-            self._visor_cover_on_screen(contact.body.node,
-                                        self._visor_target_node, offset)
+            self._visor_cover_on_screen(self._visor_target_node,
+                                        contact.body.node, offset)
 
             self._visor_target_selected_node.show()
             self._visor_target_locked_node.hide()
@@ -1210,29 +1215,30 @@ class Cockpit (object):
     def _update_view_track_visor (self, contact,
                                   offset=None, istarget=False):
 
+
         if contact:
-            self._visor_cover_on_screen(contact.body.node,
-                                        self._visor_view_node, offset)
-        if contact is not self._visor_prev_view_contact:
+            self._visor_cover_on_screen(self._visor_view_node,
+                                        contact.body.node, offset)
+
+        if (contact is not self._visor_target_visual_prev_contact or
+            offset != self._visor_target_visual_prev_offset):
             if contact and not istarget:
                 ret = map_pos_to_screen(self.world.camera, contact.body.node,
                                         scrnode=self.world.overlay_root)
                 tpos, back = ret
                 if not back and abs(tpos[0]) < 0.2 and abs(tpos[2]) < 0.2:
                     self._visor_target_visual_scale_remtime = self._visor_target_visual_scale_duration
-                    self._visor_prev_view_contact = contact
+                    self._visor_target_visual_prev_contact = contact
+                    self._visor_target_visual_prev_offset = offset
                 else:
                     self._visor_target_visual_scale_remtime = None
             else:
-                self._visor_prev_view_contact = contact
+                self._visor_target_visual_prev_contact = contact
+                self._visor_target_visual_prev_offset = offset
                 self._visor_target_visual_scale_remtime = None
-        if self._visor_target_visual_scale_remtime:
-            self._visor_target_visual_node.show()
-        else:
-            self._visor_target_visual_node.hide()
 
 
-    def _visor_cover_on_screen (self, wnode, cnode, woffset=None):
+    def _visor_cover_on_screen (self, cnode, wnode, woffset=None):
 
         if woffset is not None:
             hpos = self._headchaser.node.getRelativePoint(wnode, woffset)
@@ -5380,8 +5386,8 @@ class VirtualCockpit (object):
         self._prev_active = None
 
         self.alive = True
-        base.taskMgr.add(self._loop, "virtcpit-loop", sort=-6)
-        # ...should come after helmet loop, before player loop.
+        base.taskMgr.add(self._loop, "virtcpit-loop", sort=-5)
+        # ...should come after after player loop.
 
 
     def destroy (self):

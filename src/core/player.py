@@ -216,6 +216,7 @@ class Player (DirectObject):
 
         # View tracking.
         self.view_contact = None
+        self.view_offset = None
         self.view_body = None
 
         # Waypoints.
@@ -1210,7 +1211,7 @@ class Player (DirectObject):
                                          weapon_class, weapon_state)
 
         view_is_target = self.view_contact is self.target_contact
-        self.cockpit.update_view_track(self.view_contact, self.target_offset,
+        self.cockpit.update_view_track(self.view_contact, self.view_offset,
                                        view_is_target)
 
 
