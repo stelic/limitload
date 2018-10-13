@@ -56,235 +56,6 @@ def select_des (langdes, cpitdes, cpitlang):
         return cpitdes.get(cpitlang, langdes)
 
 
-class Helmet (object):
-
-    def __init__ (self, ac, headchaser):
-
-        self._lang = "ru"
-
-        self.world = ac.world
-        self.ac = ac
-        self._headchaser = headchaser
-
-        self.active = False
-        self._prev_active = False
-
-        self._visor_screen_distance = 0.10
-        screen_indicator_scale = 0.0006
-        u = screen_indicator_scale * self._visor_screen_distance
-        uf = screen_indicator_scale * 100
-
-        self._visor_node = base.visor_root.attachNewNode("visor-root")
-        #self._visor_node.setTransparency(TransparencyAttrib.MAlpha)
-        #self._visor_node.setSa(0.8)
-        #self._visor_node.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
-        #shader = make_shader()
-        #self._visor_node.setShader(shader)
-        self._visor_camera = base.visor_camera
-        self._visor_camlens = self._visor_camera.node().getLens()
-
-        #self._visor_model = load_model("visor")
-        #self._visor_model.reparentTo(self.node)
-        #self._visor_model.setPos(0, 0, 0)
-        #self._visor_model.hide()
-
-        self._visor_node2d = self.world.overlay_root.attachNewNode("player-visor")
-
-        #self._visor_font = "fonts/DejaVuSans-Bold.ttf"
-        self._visor_font = "fonts/red-october-regular.otf"
-        #self._visor_font = "fonts/DidactGothic.ttf"
-        self._visor_color = rgba(255, 0, 0, 1.0)
-
-        self._visor_screen_node = self._visor_node.attachNewNode("screen")
-        shader = make_shader(glow=rgba(255, 255, 255, 0.6), modcol=True)
-        self._visor_screen_node.setShader(shader)
-        #self._visor_screen_node.setDepthTest(False)
-        self._visor_screen_node.setDepthWrite(False)
-        self._visor_screen_node.setMaterialOff(True)
-        self._visor_text_shader = make_text_shader(glow=rgba(255, 255, 255, 0.4),
-                                                   shadow=True)
-
-        # Targeting visuals.
-        self._visor_target_node = self._visor_screen_node.attachNewNode("target")
-        #self._visor_target_node.setSa(0.5)
-        self._visor_target_selected_node = self._visor_target_node.attachNewNode("target-select")
-        self._visor_target_selected_other_node = make_image(
-            "images/cockpit/cockpit_mig29_helmet_target_selected_a3.png",
-            size=128*u, filtr=False, parent=self._visor_target_selected_node)
-        self._visor_target_selected_friendly_node = make_image(
-            "images/cockpit/cockpit_mig29_helmet_target_selected_friendly.png",
-            size=128*u, filtr=False, parent=self._visor_target_selected_node)
-        self._visor_target_locked_node = make_image(
-            "images/cockpit/cockpit_mig29_helmet_target_locked_a4.png",
-            size=128*u, filtr=False, parent=self._visor_target_node)
-        self._visor_target_locking_rate = 0.1
-        #self._visor_launch_auth_text = make_text(
-                #text=select_des(_("LA"), {"ru": u"ПР"}, self._lang),
-                #width=0.3, pos=Point3(48*u, 0.0, 48*u),
-                #font=self._font, size=8*uf, color=self._visor_color,
-                #align="c", anchor="mc", parent=self._visor_target_node)
-        self._visor_view_node = self._visor_target_node.attachNewNode("view")
-        self._visor_target_visual_node = make_image(
-            "images/cockpit/cockpit_mig29_helmet_target_visual_tex.png",
-            size=128*u, filtr=False, parent=self._visor_view_node)
-        self._visor_target_visual_scale_duration = 0.4
-        self._visor_target_visual_scale_remtime = None
-        self._visor_prev_view_contact = None
-
-        # Targeting sounds.
-        self._visor_locking_weapon_sound = Sound2D(
-            path="audio/sounds/flight-locking-target.ogg", loop=True,
-            world=self.world, pnode=self._visor_node2d,
-            volume=0.2, fadetime=0.01)
-        self._visor_ready_weapon_sound = Sound2D(
-            path="audio/sounds/flight-lock-target.ogg", loop=True,
-            world=self.world, pnode=self._visor_node2d,
-            volume=0.2, fadetime=0.01)
-
-        self._deactivate()
-
-        self.alive = True
-        base.taskMgr.add(self._loop, "helmet-loop", sort=-7)
-        # ...should come before cockpit and player loops.
-
-    def destroy (self):
-
-        if not self.alive:
-            return
-        self.alive = False
-        #self._pointer.detachNode()
-        for node in self._visor_node.getChildren():
-            node.removeNode()
-        self._visor_node.removeNode()
-        self._visor_node2d.removeNode()
-
-
-    def _loop (self, task):
-
-        if not self.alive:
-            return task.done
-        if not self.ac.alive:
-            self.destroy()
-            return task.done
-
-        dt = self.world.dt
-
-        if self._prev_active != self.active:
-            self._prev_active = self.active
-            if self.active:
-                self._activate()
-            else:
-                self._deactivate()
-
-        if self.active:
-            self._update_view(dt)
-
-        if self._visor_target_visual_scale_remtime:
-            self._visor_target_visual_scale_remtime -= dt
-            if self._visor_target_visual_scale_remtime > 0.0:
-                tvsc = self._visor_target_visual_scale_remtime / self._visor_target_visual_scale_duration
-                self._visor_target_visual_node.setScale(tvsc)
-            else:
-                self._visor_target_visual_node.hide()
-
-        return task.cont
-
-
-    def _activate (self):
-
-        self._visor_camera.node().setActive(True)
-        self._visor_node.show()
-        self._visor_node2d.show()
-
-
-    def _deactivate (self):
-
-        self._visor_camera.node().setActive(False)
-        self._visor_node.hide()
-        self._visor_node2d.hide()
-
-
-    def _update_view (self, dt):
-
-        self._visor_camlens.setMinFov(self._headchaser.fov)
-
-
-    def _visor_cover_on_screen (self, wnode, cnode, woffset=None):
-
-        if woffset is not None:
-            hpos = self._headchaser.node.getRelativePoint(wnode, woffset)
-        else:
-            hpos = wnode.getPos(self._headchaser.node)
-        vpos = Point3(unitv(hpos) * self._visor_screen_distance)
-        cnode.setPos(vpos)
-        cnode.lookAt(vpos * 1.1, Vec3(0, 0, 1))
-
-
-    def update_target_track (self, contact, offset=None,
-                             wpclass=None, wpstate=None):
-
-        play_locking_sound = False
-        play_ready_sound = False
-
-        if contact:
-            self._visor_cover_on_screen(contact.body.node,
-                                        self._visor_target_node, offset)
-
-            self._visor_target_selected_node.show()
-            self._visor_target_locked_node.hide()
-
-            allied_sides = self.world.get_allied_sides(self.ac.side)
-            if contact.side in allied_sides:
-                self._visor_target_selected_friendly_node.show()
-                self._visor_target_selected_other_node.hide()
-            else:
-                self._visor_target_selected_friendly_node.hide()
-                self._visor_target_selected_other_node.show()
-
-            if wpclass is Launcher:
-                if wpstate in ("locking", "locked"):
-                    if int(self.world.time / self._visor_target_locking_rate) % 2 == 0:
-                        self._visor_target_locked_node.show()
-                    else:
-                        self._visor_target_locked_node.hide()
-                    play_locking_sound = True
-                elif wpstate == "ready":
-                    self._visor_target_locked_node.show()
-                    play_ready_sound = True
-            #elif wpclass is Dropper:
-        else:
-            self._visor_target_selected_node.hide()
-            self._visor_target_locked_node.hide()
-
-        self._visor_locking_weapon_sound.set_state(play_locking_sound)
-        self._visor_ready_weapon_sound.set_state(play_ready_sound)
-
-
-    def update_view_track (self, contact, offset=None,
-                           istarget=False):
-
-        if contact:
-            self._visor_cover_on_screen(contact.body.node,
-                                        self._visor_view_node, offset)
-        if contact is not self._visor_prev_view_contact:
-            if contact and not istarget:
-                ret = map_pos_to_screen(self.world.camera, contact.body.node,
-                                        scrnode=self.world.overlay_root)
-                tpos, back = ret
-                if not back and abs(tpos[0]) < 0.2 and abs(tpos[2]) < 0.2:
-                    self._visor_target_visual_scale_remtime = self._visor_target_visual_scale_duration
-                    self._visor_prev_view_contact = contact
-                else:
-                    self._visor_target_visual_scale_remtime = None
-            else:
-                self._visor_prev_view_contact = contact
-                self._visor_target_visual_scale_remtime = None
-        if self._visor_target_visual_scale_remtime:
-            self._visor_target_visual_node.show()
-        else:
-            self._visor_target_visual_node.hide()
-
-
 class Cockpit (object):
 
     _shader_cache = {}
@@ -564,7 +335,9 @@ class Cockpit (object):
         self._view_aim_fov_off = -30
         assert self._view_aim_fov_off <= self._view_min_fov_off
         self._view_force_fov_off = None
-        self._camlens.setMinFov(self._headchaser.fov)
+        #self._camlens.setMinFov(self._headchaser.fov)
+        #for upf in self._instr_update_camera_fov_fs:
+            #upf(self._headchaser.fov)
         self._view_idle_fov_speed_time = 0.05
         self._view_fov_speed_time = self._view_idle_fov_speed_time
         self._view_fov_min_speed = 1.0 # [deg/s]
@@ -594,6 +367,12 @@ class Cockpit (object):
         self._instr_update_fs = []
         self._instr_cleanup_fs = []
         self._instr_night_light_nodes = []
+        self._instr_activate_fs = []
+        self._instr_deactivate_fs = []
+        self._instr_update_camera_fov_fs = []
+        self._instr_update_target_track_fs = []
+        self._instr_update_view_track_fs = []
+        self.has_visor = self._init_visor()
         self.has_radar = self._init_radar()
         self.has_hud = self._init_hud(make_shader_sunopq)
         self.has_warnrec = self._init_warnrec()
@@ -615,6 +394,7 @@ class Cockpit (object):
         self.has_rwr = self._init_rwr()
         self.has_imt = self._init_imt()
         self.has_mdi = self._init_mdi()
+        #self.has_visor = False
         #self.has_radar = False
         #self.has_hud = False
         #self.has_warnrec = False
@@ -751,8 +531,14 @@ class Cockpit (object):
                     mflash.node.hide()
         self._txscmgr.activate()
 
+        for actf in self._instr_activate_fs:
+            actf()
+
 
     def _deactivate (self):
+
+        for dctf in self._instr_deactivate_fs:
+            dctf()
 
         if self._ac_model_type != 1:
             self.ac.node.show()
@@ -999,6 +785,8 @@ class Cockpit (object):
         self._camera.setPos(ch_pos - self._head_pos)
         self._camera.setHpr(ch_hpr)
         self._camlens.setMinFov(self._headchaser.fov)
+        for upf in self._instr_update_camera_fov_fs:
+            upf(self._headchaser.fov)
 
         # Collimated HUD projection moving due to head inertia.
         if self.has_hud:
@@ -1249,6 +1037,210 @@ class Cockpit (object):
             base.set_radial_darkening(rad_darken_rad_spec, rad_darken_ang_spec)
 
             #self._gfac_breathing_sound.set_volume(0.0)
+
+
+    def _init_visor (self):
+
+        #screennd = self._model.find("**/visor_screen")
+        #if screennd.isEmpty():
+            #return False
+        self._instr_update_fs.append(self._update_visor)
+        self._instr_cleanup_fs.append(self._cleanup_visor)
+        self._instr_activate_fs.append(self._activate_visor)
+        self._instr_deactivate_fs.append(self._deactivate_visor)
+        self._instr_update_camera_fov_fs.append(self._update_camera_fov_visor)
+        self._instr_update_target_track_fs.append(self._update_target_track_visor)
+        self._instr_update_view_track_fs.append(self._update_view_track_visor)
+
+        self._visor_camera = base.visor_camera
+        self._visor_camlens = self._visor_camera.node().getLens()
+
+        self._visor_screen_distance = 0.10
+        screen_indicator_scale = 0.0006
+        u = screen_indicator_scale * self._visor_screen_distance
+        uf = screen_indicator_scale * 100
+
+        self._visor_node = base.visor_root.attachNewNode("visor-root")
+        #self._visor_node.setTransparency(TransparencyAttrib.MAlpha)
+        #self._visor_node.setSa(0.8)
+        #self._visor_node.setAttrib(ColorBlendAttrib.make(ColorBlendAttrib.MAdd))
+        #shader = make_shader()
+        #self._visor_node.setShader(shader)
+
+        #self._visor_model = load_model("visor")
+        #self._visor_model.reparentTo(self.node)
+        #self._visor_model.setPos(0, 0, 0)
+        #self._visor_model.hide()
+
+        self._visor_node2d = self.world.overlay_root.attachNewNode("player-visor")
+
+        #self._visor_font = "fonts/DejaVuSans-Bold.ttf"
+        self._visor_font = "fonts/red-october-regular.otf"
+        #self._visor_font = "fonts/DidactGothic.ttf"
+        self._visor_color = rgba(255, 0, 0, 1.0)
+
+        self._visor_screen_node = self._visor_node.attachNewNode("screen")
+        shader = make_shader(glow=rgba(255, 255, 255, 0.6), modcol=True)
+        self._visor_screen_node.setShader(shader)
+        #self._visor_screen_node.setDepthTest(False)
+        self._visor_screen_node.setDepthWrite(False)
+        self._visor_screen_node.setMaterialOff(True)
+        self._visor_text_shader = make_text_shader(glow=rgba(255, 255, 255, 0.4),
+                                                   shadow=True)
+
+        # Targeting visuals.
+        self._visor_target_node = self._visor_screen_node.attachNewNode("target")
+        #self._visor_target_node.setSa(0.5)
+        self._visor_target_selected_node = self._visor_target_node.attachNewNode("target-select")
+        self._visor_target_selected_other_node = make_image(
+            "images/cockpit/cockpit_mig29_helmet_target_selected_a3.png",
+            size=128*u, filtr=False, parent=self._visor_target_selected_node)
+        self._visor_target_selected_friendly_node = make_image(
+            "images/cockpit/cockpit_mig29_helmet_target_selected_friendly.png",
+            size=128*u, filtr=False, parent=self._visor_target_selected_node)
+        self._visor_target_locked_node = make_image(
+            "images/cockpit/cockpit_mig29_helmet_target_locked_a4.png",
+            size=128*u, filtr=False, parent=self._visor_target_node)
+        self._visor_target_locking_rate = 0.1
+        #self._visor_launch_auth_text = make_text(
+                #text=select_des(_("LA"), {"ru": u"ПР"}, self._lang),
+                #width=0.3, pos=Point3(48*u, 0.0, 48*u),
+                #font=self._font, size=8*uf, color=self._visor_color,
+                #align="c", anchor="mc", parent=self._visor_target_node)
+        self._visor_view_node = self._visor_target_node.attachNewNode("view")
+        self._visor_target_visual_node = make_image(
+            "images/cockpit/cockpit_mig29_helmet_target_visual_tex.png",
+            size=128*u, filtr=False, parent=self._visor_view_node)
+        self._visor_target_visual_scale_duration = 0.4
+        self._visor_target_visual_scale_remtime = None
+        self._visor_prev_view_contact = None
+
+        # Targeting sounds.
+        self._visor_locking_weapon_sound = Sound2D(
+            path="audio/sounds/flight-locking-target.ogg", loop=True,
+            world=self.world, pnode=self._visor_node2d,
+            volume=0.2, fadetime=0.01)
+        self._visor_ready_weapon_sound = Sound2D(
+            path="audio/sounds/flight-lock-target.ogg", loop=True,
+            world=self.world, pnode=self._visor_node2d,
+            volume=0.2, fadetime=0.01)
+
+        return True
+
+
+    def _cleanup_visor (self):
+
+        # FIXME: Why removing children first needed?
+        for node in self._visor_node.getChildren():
+            node.removeNode()
+        self._visor_node.removeNode()
+        self._visor_node2d.removeNode()
+
+
+    def _update_visor (self, dt):
+
+        if self._visor_target_visual_scale_remtime:
+            self._visor_target_visual_scale_remtime -= dt
+            if self._visor_target_visual_scale_remtime > 0.0:
+                tvsc = self._visor_target_visual_scale_remtime / self._visor_target_visual_scale_duration
+                self._visor_target_visual_node.setScale(tvsc)
+            else:
+                self._visor_target_visual_node.hide()
+
+
+    def _activate_visor (self):
+
+        self._visor_camera.node().setActive(True)
+        self._visor_node.show()
+        self._visor_node2d.show()
+
+
+    def _deactivate_visor (self):
+
+        self._visor_camera.node().setActive(False)
+        self._visor_node.hide()
+        self._visor_node2d.hide()
+
+
+    def _update_camera_fov_visor (self, fov):
+
+        self._visor_camlens.setMinFov(fov)
+
+
+    def _update_target_track_visor (self, contact,
+                                    offset=None, wpclass=None, wpstate=None):
+
+        play_locking_sound = False
+        play_ready_sound = False
+
+        if contact:
+            self._visor_cover_on_screen(contact.body.node,
+                                        self._visor_target_node, offset)
+
+            self._visor_target_selected_node.show()
+            self._visor_target_locked_node.hide()
+
+            allied_sides = self.world.get_allied_sides(self.ac.side)
+            if contact.side in allied_sides:
+                self._visor_target_selected_friendly_node.show()
+                self._visor_target_selected_other_node.hide()
+            else:
+                self._visor_target_selected_friendly_node.hide()
+                self._visor_target_selected_other_node.show()
+
+            if wpclass is Launcher:
+                if wpstate in ("locking", "locked"):
+                    if int(self.world.time / self._visor_target_locking_rate) % 2 == 0:
+                        self._visor_target_locked_node.show()
+                    else:
+                        self._visor_target_locked_node.hide()
+                    play_locking_sound = True
+                elif wpstate == "ready":
+                    self._visor_target_locked_node.show()
+                    play_ready_sound = True
+            #elif wpclass is Dropper:
+        else:
+            self._visor_target_selected_node.hide()
+            self._visor_target_locked_node.hide()
+
+        self._visor_locking_weapon_sound.set_state(play_locking_sound)
+        self._visor_ready_weapon_sound.set_state(play_ready_sound)
+
+
+    def _update_view_track_visor (self, contact,
+                                  offset=None, istarget=False):
+
+        if contact:
+            self._visor_cover_on_screen(contact.body.node,
+                                        self._visor_view_node, offset)
+        if contact is not self._visor_prev_view_contact:
+            if contact and not istarget:
+                ret = map_pos_to_screen(self.world.camera, contact.body.node,
+                                        scrnode=self.world.overlay_root)
+                tpos, back = ret
+                if not back and abs(tpos[0]) < 0.2 and abs(tpos[2]) < 0.2:
+                    self._visor_target_visual_scale_remtime = self._visor_target_visual_scale_duration
+                    self._visor_prev_view_contact = contact
+                else:
+                    self._visor_target_visual_scale_remtime = None
+            else:
+                self._visor_prev_view_contact = contact
+                self._visor_target_visual_scale_remtime = None
+        if self._visor_target_visual_scale_remtime:
+            self._visor_target_visual_node.show()
+        else:
+            self._visor_target_visual_node.hide()
+
+
+    def _visor_cover_on_screen (self, wnode, cnode, woffset=None):
+
+        if woffset is not None:
+            hpos = self._headchaser.node.getRelativePoint(wnode, woffset)
+        else:
+            hpos = wnode.getPos(self._headchaser.node)
+        vpos = Point3(unitv(hpos) * self._visor_screen_distance)
+        cnode.setPos(vpos)
+        cnode.lookAt(vpos * 1.1, Vec3(0, 0, 1))
 
 
     def _init_radar (self):
@@ -5144,6 +5136,19 @@ void main ()
                     self._mdi_gear_warn_node.show()
                 else:
                     self._mdi_gear_warn_node.hide()
+
+
+    def update_target_track (self, contact,
+                             offset=None, wpclass=None, wpstate=None):
+
+        for upf in self._instr_update_target_track_fs:
+            upf(contact, offset, wpclass, wpstate)
+
+
+    def update_view_track (self, contact, offset=None, istarget=False):
+
+        for upf in self._instr_update_view_track_fs:
+            upf(contact, offset, istarget)
 
 
     def add_waypoint (self, name, longdes, shortdes, pos,

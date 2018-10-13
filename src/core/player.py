@@ -14,7 +14,7 @@ import pygame
 from src import OUTSIDE_FOV, ANIMATION_FOV
 from src.core.bomb import Dropper
 from src.core.chaser import HeadChaser, ElasticChaser, TrackChaser
-from src.core.cockpit import Cockpit, VirtualCockpit, Helmet
+from src.core.cockpit import Cockpit, VirtualCockpit
 from src.core.cockpit import select_des
 from src.core.dialog import Dialog
 from src.core.interface import SimpleText, BubbleText
@@ -105,7 +105,6 @@ class Player (DirectObject):
             arenaedge_turn = arenaedge * 0.33
 
         self.notifier = PlayerNotifier(self)
-        self.helmet = Helmet(ac, self.headchaser)
         self.cockpit = Cockpit(self, pos=cpitpos, mfspec=cpitmfspec,
                                headpos=headpos, downto=cpitdownto,
                                arenaedge=arenaedge_warn)
@@ -271,7 +270,7 @@ class Player (DirectObject):
         self.alive = True
         base.taskMgr.add(self._loop, "player-loop", sort=-6)
         base.taskMgr.add(self._slow_loop, "player-slow-loop", sort=-6)
-        # ...should come after helmet and before cockpit loop.
+        # ...should come before cockpit loop.
 
 
     def destroy (self):
@@ -282,7 +281,6 @@ class Player (DirectObject):
         for jsdev in self._jsdevs.values():
             jsdev.dev.quit()
         self.notifier.destroy()
-        self.helmet.destroy()
         self.cockpit.destroy()
         self.virtcpit.destroy()
         self.headchaser.destroy()
@@ -312,7 +310,6 @@ class Player (DirectObject):
         world = self.world
 
         self.cockpit.active = world.chaser is self.headchaser
-        self.helmet.active = world.chaser is self.headchaser
 
         outchs = (self.dimchaser, self.rvchaser, self.targchaser)
         self.virtcpit.active = (self._virtcpit_available and
@@ -321,7 +318,6 @@ class Player (DirectObject):
 
         if self._prev_player_control_level != pclev:
             self._prev_player_control_level = pclev
-            self.helmet.active = (pclev < 2)
             self.cockpit.set_physio_effects(pclev < 2 or self.cockpit.active)
             self._zero_inputs(keepthr=True, keepwpsel=True)
             if pclev == 0:
@@ -1112,7 +1108,7 @@ class Player (DirectObject):
                     self.target_contact = sel_con
                     self.target_body = sel_con.body
                     self.cycle_target_section(reset=True)
-                    self.helmet.update_target_track(sel_con)
+                    self.cockpit.update_target_track(sel_con)
                 else:
                     self.target_contact = None
                     self.target_body = None
@@ -1210,12 +1206,12 @@ class Player (DirectObject):
         else:
             self.ac.target = None
 
-        self.helmet.update_target_track(self.target_contact, self.target_offset,
-                                        weapon_class, weapon_state)
+        self.cockpit.update_target_track(self.target_contact, self.target_offset,
+                                         weapon_class, weapon_state)
 
         view_is_target = self.view_contact is self.target_contact
-        self.helmet.update_view_track(self.view_contact, self.target_offset,
-                                      view_is_target)
+        self.cockpit.update_view_track(self.view_contact, self.target_offset,
+                                       view_is_target)
 
 
     def _update_cycle_tag (self, dt):
@@ -1982,7 +1978,7 @@ class PlayerNotifier (object):
 
         dt = self.world.dt
 
-        if self.player.helmet.active:
+        if self.player.cockpit.active:
             self._only_head_node.show()
         else:
             self._only_head_node.hide()
