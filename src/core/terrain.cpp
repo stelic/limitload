@@ -101,7 +101,7 @@ TerrainGeom::TerrainGeom (
     double celldensity, bool periodic,
     ENC_LST_STRING cutmaskpaths_, ENC_LST_BOOL levints_)
 {
-    std::vector<string> cutmaskpaths = dec_lst_string(cutmaskpaths_);
+    std::vector<std::string> cutmaskpaths = dec_lst_string(cutmaskpaths_);
     std::vector<bool> levints = dec_lst_bool(levints_);
 
     bool timeit = false;
@@ -1591,8 +1591,8 @@ void TerrainGeom::_triangulate_interface_quads (
             const LVector3d &pc = icp.pc;
             const std::pair<int, int> &qva = icp.qva, &qvb = icp.qvb;
             verts.push_back(pc);
-            vqvas.push_back(qva.first >= 0 ? make_pair(i + qva.first, j + qva.second) : make_pair(-1, -1));
-            vqvbs.push_back(qvb.first >= 0 ? make_pair(i + qvb.first, j + qvb.second) : make_pair(-1, -1));
+            vqvas.push_back(qva.first >= 0 ? std::make_pair(i + qva.first, j + qva.second) : std::make_pair(-1, -1));
+            vqvbs.push_back(qvb.first >= 0 ? std::make_pair(i + qvb.first, j + qvb.second) : std::make_pair(-1, -1));
             vinds.push_back(nverts1);
             nverts1 += 1;
         }
