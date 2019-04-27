@@ -20,9 +20,9 @@ terrain-mesh: high
 vertical-sync = false
 
 [audio]
-; Audio system: none, al, fmod.
-; It is recommended to use al unless there are errors in sound.
-sound-system = al
+; Audio system: none, openal, fmod.
+; It is recommended to use openal unless there are errors in sound.
+sound-system = openal
 
 [misc]
 ; Language of in-game text: system, <code>

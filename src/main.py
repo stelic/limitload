@@ -470,7 +470,7 @@ class GameConf (SimpleProps):
             vertical_sync=False, _vertical_sync_p=pset([True, False]),
         )
         self.audio = SimpleProps(
-            sound_system="al", _sound_system_p=pset(["none", "al", "fmod"]),
+            sound_system="openal", _sound_system_p=pset(["none", "al", "openal", "fmod"]),
         )
         avail_langs = [item[:-len(".po")]
                        for item in list_dir_files("data", "language/po/limload")
@@ -739,7 +739,8 @@ def set_panda_config (options, gameconf):
 
     pc["audio-library-name"] = {
         "none": "p3fmod_none",
-        "al": "p3openal_audio",
+        "al": "p3openal_audio", # DEPRECATED: renamed to openal
+        "openal": "p3openal_audio",
         "fmod": "p3fmod_audio",
         }[gc.audio.sound_system]
 
