@@ -52,7 +52,7 @@ Building Panda3D from source
 Panda3D source code should be taken from its repository
 ``release/1.9.x`` branch.
 
-Before building, apply all patches from the game's ``util`` directory.
+Before building, apply all patches (if any) from the ``util`` directory.
 This is done by executing in the Panda3D repository directory for
 each patch file::
 

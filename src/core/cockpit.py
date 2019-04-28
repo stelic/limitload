@@ -515,7 +515,7 @@ class Cockpit (object):
         if self._ac_model_type != 1:
             self.ac.node.hide()
 
-        self._camera.node().setActive(True)
+        #self._camera.node().setActive(True)
         self.node.show()
         #self.node.setTransparency(TransparencyAttrib.MAlpha)
         #self.node.setSa(0.5)
@@ -523,7 +523,7 @@ class Cockpit (object):
             #cn, mpovr = self.ac.cannons[i], self._mfspec[i][1]
             #cn.mpos_override = mpovr
         if base.with_cockpit_shadows:
-            self._shadow_camera.node().setActive(True)
+            #self._shadow_camera.node().setActive(True)
             self.shadow_node.show()
         for cannon in self.ac.cannons:
             for mflash in cannon.mflashes:
@@ -543,12 +543,12 @@ class Cockpit (object):
         if self._ac_model_type != 1:
             self.ac.node.show()
 
-        self._camera.node().setActive(False)
+        #self._camera.node().setActive(False)
         self.node.hide()
         #for cn in self.ac.cannons:
             #cn.mpos_override = None
         if base.with_cockpit_shadows:
-            self._shadow_camera.node().setActive(False)
+            #self._shadow_camera.node().setActive(False)
             self.shadow_node.hide()
         for cannon in self.ac.cannons:
             for mflash in cannon.mflashes:
@@ -1155,14 +1155,14 @@ class Cockpit (object):
 
     def _activate_visor (self):
 
-        self._visor_camera.node().setActive(True)
+        #self._visor_camera.node().setActive(True)
         self._visor_node.show()
         self._visor_node2d.show()
 
 
     def _deactivate_visor (self):
 
-        self._visor_camera.node().setActive(False)
+        #self._visor_camera.node().setActive(False)
         self._visor_node.hide()
         self._visor_node2d.hide()
 

@@ -116,7 +116,6 @@ class BaseStack (DirectObject):
 
         graphics_engine = GraphicsEngine.getGlobalPtr()
         self.graphics_engine = graphics_engine
-        self.graphicsEngine = graphics_engine # for BufferViewer
 
         loader = Loader(self)
         graphics_engine.setDefaultLoader(loader.loader)
@@ -139,7 +138,6 @@ class BaseStack (DirectObject):
         #messenger.send("open_window", [window, is_main_window])
         #messenger.send("open_main_window")
         self.window = window
-        self.win = window # for BufferViewer
         self.pipe = window.getPipe()
         self.wbuffer = wbuffer
         self.config = panda_config # for DirectGuiBase
@@ -179,7 +177,6 @@ class BaseStack (DirectObject):
         self.world_shadow_root = world_shadow_root
         self.cockpit_shadow_root = cockpit_shadow_root
         __builtin__.render = world_root # for Audio3DManager
-        __builtin__.render2d = square_root # for BufferViewer
         (world_camera, cockpit_camera, visor_camera,
          stack_camera, overlay_camera,
          world_shadow_camera, cockpit_shadow_camera) = render_cameras
@@ -230,7 +227,7 @@ class BaseStack (DirectObject):
         self.with_dev = with_dev
         __builtin__.__dev__ = with_dev # for direct.* stuff
 
-        buffer_viewer = BufferViewer()
+        buffer_viewer = BufferViewer(window, square_root)
         self.buffer_viewer = buffer_viewer
 
         self.accept("window-event", self._window_event)

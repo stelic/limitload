@@ -42,8 +42,6 @@ interrogate_module \
     -oc $mod_name-module.cpp \
     $mod_name.in
 
-panda_core_lib=$($python_cmd -c "import panda3d.core; print panda3d.core.__file__")
-
 if test $build_env = lingcc; then
 
     optrtti=$(test $panda_rtti == false && echo -fno-rtti || echo)
@@ -60,7 +58,7 @@ if test $build_env = lingcc; then
         -lpandaexpress \
         -lp3dtool \
         -lp3dtoolconfig \
-        $panda_core_lib \
+        -lp3interrogatedb \
         -o $mod_name.so
 
     rm -f $mod_name.o
@@ -68,7 +66,6 @@ if test $build_env = lingcc; then
 elif test $build_env = winmsvc; then
 
     mod_srcs=$(echo "$mod_srcs" | sed 's/\.pyd\b/.lib/g')
-    panda_core_lib_real=$(echo $panda_core_lib | sed 's/\(.*\)panda3d\(.*\)\.pyd\b/\1lib\2.lib/')
     cl -O2 -EHsc -wd4275 -LD -MD \
         -I "$python_inc_dir" -I "$panda_inc_dir" -I . \
         -D WINMSVC \
@@ -78,7 +75,7 @@ elif test $build_env = winmsvc; then
         "$panda_lib_dir"/libpandaexpress.lib \
         "$panda_lib_dir"/libp3dtool.lib \
         "$panda_lib_dir"/libp3dtoolconfig.lib \
-        "$panda_core_lib_real" \
+        "$panda_lib_dir"/libp3interrogatedb.lib \
         -D BUILDING_$mod_incd \
         -Fe$mod_name.pyd
 
