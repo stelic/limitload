@@ -322,7 +322,7 @@ class World (object):
             else:
                 self.pause = ActionEnd(self)
         else:
-            self.pause = None
+            self.pause = ActionPause(self, self.uiface_root)
 
         base.set_particle_dt_function(lambda: self.dt)
         Dialog.set_dt_function(lambda: self.dt)
