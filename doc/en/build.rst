@@ -12,14 +12,14 @@ The build requirements are as follows:
   - Microsoft Visual C++ 10 (e.g. from the Windows SDK 7.1 package)
   - Python 2.7
   - Pygame 1.9
-  - Panda3D 1.9 (with custom patches, must be built)
+  - Panda3D 1.10 (perhaps must be built with patches)
   - GNU Make, Bash, Gettext (e.g. from the MinGW package)
 
 * Linux:
   - GCC (any reasonably new release should do)
   - Python 2.7
   - Pygame 1.9
-  - Panda3D 1.9 (with custom patches, must be built)
+  - Panda3D 1.10 (perhaps must be built with patches)
   - GNU Make, Bash, Gettext
 
 Before building Panda3D, see notes about that below.
@@ -50,7 +50,7 @@ Building Panda3D from source
 ----------------------------
 
 Panda3D source code should be taken from its repository
-``release/1.9.x`` branch.
+``release/1.10.x`` branch.
 
 Before building, apply all patches (if any) from the ``util`` directory.
 This is done by executing in the Panda3D repository directory for
