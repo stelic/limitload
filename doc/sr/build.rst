@@ -62,25 +62,27 @@
 за градњу, на 4-језгарном процесору::
 
     python makepanda/makepanda.py --installer --optimize 4 --threads 4 \
-        --lzma --use-python --use-direct --use-gl --no-gles --no-gles2 \
+        --use-python --use-direct --use-gl --no-gles --no-gles2 \
         --no-dx9 --no-tinydisplay --no-nvidiacg --no-egl --no-eigen \
-        --use-openal --use-fmodex --use-vorbis --no-ffmpeg \
-        --no-ode --no-physx --no-bullet \
-        --use-pandaphysics --use-speedtree --use-zlib \
-        --use-png --use-jpeg --use-tiff --use-squish --use-freetype \
+        --use-openal --use-fmodex --use-vorbis --no-opus --no-ffmpeg \
+        --use-swscale --use-swresample \
+        --no-ode --no-physx --no-bullet --use-pandaphysics \
+        --no-speedtree --use-zlib \
+        --use-png --use-jpeg --use-tiff --no-openexr --use-squish \
         --no-maya6 --no-maya65 --no-maya7 --no-maya8 --no-maya85 \
         --no-maya2008 --no-maya2009 --no-maya2010 --no-maya2011 \
         --no-maya2012 --no-maya2013 --no-maya20135 --no-maya2014 \
-        --no-maya2015 --no-max6 --no-max7 --no-max8 --no-max9 --no-max2009 \
+        --no-maya2015 --no-maya2016 --no-maya20165 --no-maya2017 \
+        --no-maya2018 --no-max6 --no-max7 --no-max8 --no-max9 --no-max2009 \
         --no-max2010 --no-max2011 --no-max2012 --no-max2013 --no-max2014 \
-        --no-fcollada --no-vrpn --no-openssl --no-fftw  --no-artoolkit \
+        --no-fcollada --use-assimp --use-egg --use-freetype --no-harfbuzz \
+        --no-vrpn --no-openssl --no-fftw  --no-artoolkit \
         --no-opencv --no-directcam --no-vision \
-        --no-mfc --no-gtk2 --no-wx --no-fltk --no-rocket --no-awesomium \
-        --no-carbon --no-cocoa \
-        --use-x11 --use-xf86dga --use-xrandr --use-xcursor \
+        --no-mfc --no-gtk2 --no-wx --no-fltk --no-rocket \
+        --no-carbon --no-cocoa --use-x11  \
         --use-pandatool --use-pview --use-deploytools --use-skel \
         --use-pandafx --use-pandaparticlesystem --use-contrib \
-        --use-sse2 --no-neon --no-touchinput
+        --use-sse2 --no-neon
 
 Имајте у виду да ће степен оптимизације 4 такође уклонити већину порука неопходних за дијагностику падова, што је прилично лоша идеја чак и за пакете издања. Да бисте ово избегли, уклоните компилаторске заставице без-исправљања из ``makepanda/makepanda.py`` (потражите ниску ``-DNDEBUG`` на линуксу и ``/DNDEBUG`` на виндоузу).
 
