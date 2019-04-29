@@ -218,13 +218,6 @@ private:
 DECLARE_TYPE_HANDLE(HaltonDistrib)
 };
 
-#ifdef _MSC_VER
-/**
- * fmax from C99.
- */
-double EXPORT fmax (double a, double b);
-#endif
-
 /**
  * Convert angle from degrees to radians.
  */

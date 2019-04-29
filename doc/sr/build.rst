@@ -9,7 +9,7 @@
 Захтеви градње су следећи:
 
 * виндоуз:
-  - Microsoft Visual C++ 10 (нпр. из пакета Windows SDK 7.1)
+  - Microsoft Visual C++ 2019
   - Python 2.7
   - Pygame 1.9
   - Panda3D 1.10 (можда мора да се изгради са закрпама)

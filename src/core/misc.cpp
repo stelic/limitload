@@ -187,13 +187,6 @@ void add_tri (
     gvwnormal->add_data3(n3);
 }
 
-#ifdef _MSC_VER
-double fmax (double a, double b)
-{
-    return a < b ? b : a;
-}
-#endif
-
 double torad (double a)
 {
     return a * (M_PI / 180.0);

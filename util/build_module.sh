@@ -19,7 +19,7 @@ if test $build_env = lingcc; then
 
 elif test $build_env = winmsvc; then
 
-    intgr_extra_defines="-DWIN32_VC -longlong __int64"
+    intgr_extra_defines="-DWIN32_VC"
 
 else
     echo "*** Unknown build environment '$build_env'."
@@ -66,10 +66,21 @@ if test $build_env = lingcc; then
 elif test $build_env = winmsvc; then
 
     mod_srcs=$(echo "$mod_srcs" | sed 's/\.pyd\b/.lib/g')
-    cl -O2 -EHsc -wd4275 -LD -MD \
+    cl_cmd="$msvc_root_dir/$msvc_version/bin/Hostx64/x64/cl.exe"
+    "$cl_cmd" -O2 -EHsc -wd4275 -LD -MD \
+        -I "$msvc_root_dir/$msvc_version/include" \
+        -I "$winsdk_root_dir/Include/$winsdk_version/shared" \
+        -I "$winsdk_root_dir/Include/$winsdk_version/ucrt" \
+        -I "$winsdk_root_dir/Include/$winsdk_version/um" \
         -I "$python_inc_dir" -I "$panda_inc_dir" -I . \
         -D WINMSVC \
         $mod_name-module.cpp $mod_name-igate.cpp $mod_srcs \
+        "$msvc_root_dir/$msvc_version/lib/x64"/msvcprt.lib \
+        "$msvc_root_dir/$msvc_version/lib/x64"/msvcrt.lib \
+        "$msvc_root_dir/$msvc_version/lib/x64"/oldnames.lib \
+        "$msvc_root_dir/$msvc_version/lib/x64"/vcruntime.lib \
+        "$winsdk_root_dir/Lib/$winsdk_version/um/x64"/kernel32.lib \
+        "$winsdk_root_dir/Lib/$winsdk_version/ucrt/x64"/ucrt.lib \
         "$python_lib_dir"/python27.lib \
         "$panda_lib_dir"/libpanda.lib \
         "$panda_lib_dir"/libpandaexpress.lib \
@@ -84,3 +95,4 @@ elif test $build_env = winmsvc; then
 fi
 
 rm -f $mod_name-igate.* $mod_name.in $mod_name-module.*
+

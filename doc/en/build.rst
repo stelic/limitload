@@ -9,7 +9,7 @@ The latest version of the sources can be fetched from Github, using::
 The build requirements are as follows:
 
 * Windows:
-  - Microsoft Visual C++ 10 (e.g. from the Windows SDK 7.1 package)
+  - Microsoft Visual C++ 2019
   - Python 2.7
   - Pygame 1.9
   - Panda3D 1.10 (perhaps must be built with patches)
